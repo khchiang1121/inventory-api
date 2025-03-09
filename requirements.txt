@@ -1,0 +1,11 @@
+Django>=4.2
+djangorestframework
+django-ninja
+pydantic
+uvicorn
+psycopg2-binary
+pytest
+pytest-django
+django-stubs
+sqlalchemy
+python-dotenv
