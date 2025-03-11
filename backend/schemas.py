@@ -1,32 +1,105 @@
-from ninja import ModelSchema
-from backend import models
-from ninja import Field, FilterSchema, Schema
+from uuid import UUID
+from datetime import datetime
+from typing import Optional
+from ninja import Schema, Field
 
-# class MaintainerSchema(ModelSchema):
-#     class Config:
-#         model = models.Maintainer
-#         model_fields = ['id', 'name', 'email', 'status', 'created_at', 'updated_at']
+# -----------------------
+# Maintainer Schemas
+# -----------------------
 
-# class MaintainerCreateSchema(ModelSchema):
-#     class Config:
-#         model = models.Maintainer
-#         model_fields = ['name', 'email', 'status']
+class MaintainerSchemaIn(Schema):
+    name: str
+    email: Optional[str] = Field(examples=['user@example.com'])
+    status: str
 
-# 其他 Schema 可依照模型定義方式類似建立…
-# 例如：MaintainerGroupSchema, HostSchema, TenantSchema, VirtualMachineSchema 等
-# ADD Host Schema
-# class HostSchema(ModelSchema):
-#     class Config:
-#         model = models.Host
-#         model_fields = ['id', 'name', 'status', 'total_cpu', 'total_memory', 'total_storage', 'available_cpu', 'available_memory', 'available_storage', 'group', 'region', 'dc', 'room', 'rack', 'unit', 'created_at', 'updated_at']
+class MaintainerSchemaOut(Schema):
+    id: UUID
+    name: str
+    email: Optional[str] = Field(examples=['user@example.com'])
+    status: str
+    created_at: datetime
+    updated_at: datetime
 
-# class HostGroupSchema(ModelSchema):
-#     class Config:
-#         model = models.HostGroup
-#         model_fields = ['id', 'name', 'description', 'status', 'created_at', 'updated_at']
 
-class HostSchema(Schema):
-    # id: str
+# -----------------------
+# MaintainerGroup Schemas
+# -----------------------
+
+class MaintainerGroupSchemaIn(Schema):
+    name: str
+    group_manager: UUID  # Provide the manager's UUID in request.
+    description: Optional[str] = None
+    status: str
+
+class MaintainerGroupSchemaOut(Schema):
+    id: UUID
+    name: str
+    group_manager: MaintainerSchemaOut  # Nested maintainer details.
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# MaintainerGroupMember Schemas
+# -----------------------
+
+class MaintainerGroupMemberSchemaIn(Schema):
+    group: UUID
+    maintainer: UUID
+
+class MaintainerGroupMemberSchemaOut(Schema):
+    id: UUID
+    group: MaintainerGroupSchemaOut
+    maintainer: MaintainerSchemaOut
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# ResourceMaintainer Schemas
+# -----------------------
+
+class ResourceMaintainerSchemaIn(Schema):
+    resource_type: str
+    resource_id: UUID
+    maintainer_type: str  # "individual" or "group"
+    maintainer_id: UUID
+
+class ResourceMaintainerSchemaOut(Schema):
+    id: UUID
+    resource_type: str
+    resource_id: UUID
+    maintainer_type: str
+    maintainer_id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# HostGroup Schemas
+# -----------------------
+
+class HostGroupSchemaIn(Schema):
+    name: str
+    description: Optional[str] = None
+    status: str
+
+class HostGroupSchemaOut(Schema):
+    id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# Host Schemas
+# -----------------------
+
+class HostSchemaIn(Schema):
     name: str
     status: str
     total_cpu: int
@@ -35,17 +108,135 @@ class HostSchema(Schema):
     available_cpu: int
     available_memory: int
     available_storage: int
-    # group: str
+    group: UUID  # Provide HostGroup UUID
     region: str
     dc: str
     room: str
     rack: str
-    unit: str
-    
+    unit: Optional[str] = None
+    old_system_id: str
 
-    
-class HostGroupSchema(Schema):
-    # id: str
+class HostSchemaOut(Schema):
+    id: UUID
     name: str
-    description: str
     status: str
+    total_cpu: int
+    total_memory: int
+    total_storage: int
+    available_cpu: int
+    available_memory: int
+    available_storage: int
+    group: HostGroupSchemaOut  # Nested host group details.
+    region: str
+    dc: str
+    room: str
+    rack: str
+    unit: Optional[str] = None
+    old_system_id: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# Tenant Schemas
+# -----------------------
+
+class TenantSchemaIn(Schema):
+    name: str
+    description: Optional[str] = None
+    status: str
+
+class TenantSchemaOut(Schema):
+    id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# VirtualMachineSpecification Schemas
+# -----------------------
+
+class VirtualMachineSpecificationSchemaIn(Schema):
+    name: str
+    required_cpu: int
+    required_memory: int
+    required_storage: int
+
+class VirtualMachineSpecificationSchemaOut(Schema):
+    id: UUID
+    name: str
+    required_cpu: int
+    required_memory: int
+    required_storage: int
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# K8sCluster Schemas
+# -----------------------
+
+class K8sClusterSchemaIn(Schema):
+    name: str
+    tenant: UUID  # Provide tenant's UUID.
+    description: Optional[str] = None
+    status: str
+
+class K8sClusterSchemaOut(Schema):
+    id: UUID
+    name: str
+    tenant: TenantSchemaOut  # Nested tenant details.
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# VirtualMachine Schemas
+# -----------------------
+# Note: The ForeignKey "specification" refers to VirtualMachineSpecification.
+
+class VirtualMachineSchemaIn(Schema):
+    name: str
+    tenant: UUID  # Tenant's UUID.
+    host: UUID    # Host's UUID.
+    specification: UUID  # VirtualMachineSpecification UUID.
+    k8s_cluster: Optional[UUID] = None  # Optional cluster association.
+    status: str
+
+class VirtualMachineSchemaOut(Schema):
+    id: UUID
+    name: str
+    tenant: TenantSchemaOut
+    host: HostSchemaOut
+    specification: VirtualMachineSpecificationSchemaOut
+    k8s_cluster: Optional[K8sClusterSchemaOut] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# -----------------------
+# HostGroupTenantQuota Schemas
+# -----------------------
+
+class HostGroupTenantQuotaSchemaIn(Schema):
+    group: UUID  # HostGroup UUID.
+    tenant: UUID  # Tenant UUID.
+    cpu_quota_percentage: float
+    memory_quota: int
+    storage_quota: int
+
+class HostGroupTenantQuotaSchemaOut(Schema):
+    id: UUID
+    group: HostGroupSchemaOut
+    tenant: TenantSchemaOut
+    cpu_quota_percentage: float
+    memory_quota: int
+    storage_quota: int
+    created_at: datetime
+    updated_at: datetime

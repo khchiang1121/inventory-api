@@ -1,41 +1,41 @@
-from fastapi import APIRouter, HTTPException
-from backend.models import HostGroupTenantQuota
-from backend.schemas import HostGroupTenantQuotaSchema
+from uuid import UUID
+from ninja import Router
+from backend import schemas
+from backend import models
+from backend.models import MaintainerGroup
+from backend import schemas
 from typing import List
+from backend.dependencies import api_auth
+from django.shortcuts import get_object_or_404
 
-router = APIRouter()
+# ----------------------------
+# HostGroupTenantQuota Router
+# ----------------------------
+hostgroup_tenant_quota_router = Router(tags=["HostGroupTenantQuota"], auth=api_auth)
 
-@router.post("/host-group-tenant-quotas/", response_model=HostGroupTenantQuotaSchema)
-def create_host_group_tenant_quota(quota: HostGroupTenantQuotaSchema):
-    db_quota = HostGroupTenantQuota(**quota.dict())
-    db_quota.save()
-    return db_quota
+@hostgroup_tenant_quota_router.get("/", response=list[schemas.HostGroupTenantQuotaSchemaOut])
+def list_hostgroup_tenant_quotas(request):
+    return models.HostGroupTenantQuota.objects.all()
 
-@router.get("/host-group-tenant-quotas/", response_model=List[HostGroupTenantQuotaSchema])
-def read_host_group_tenant_quotas():
-    return HostGroupTenantQuota.objects.all()
+@hostgroup_tenant_quota_router.get("/{quota_id}", response=schemas.HostGroupTenantQuotaSchemaOut)
+def get_hostgroup_tenant_quota(request, quota_id: UUID):
+    return get_object_or_404(models.HostGroupTenantQuota, id=quota_id)
 
-@router.get("/host-group-tenant-quotas/{quota_id}", response_model=HostGroupTenantQuotaSchema)
-def read_host_group_tenant_quota(quota_id: int):
-    quota = HostGroupTenantQuota.objects.get(id=quota_id)
-    if not quota:
-        raise HTTPException(status_code=404, detail="Quota not found")
+@hostgroup_tenant_quota_router.post("/", response=schemas.HostGroupTenantQuotaSchemaOut)
+def create_hostgroup_tenant_quota(request, payload: schemas.HostGroupTenantQuotaSchemaIn):
+    quota = models.HostGroupTenantQuota.objects.create(**payload.dict())
     return quota
 
-@router.put("/host-group-tenant-quotas/{quota_id}", response_model=HostGroupTenantQuotaSchema)
-def update_host_group_tenant_quota(quota_id: int, quota: HostGroupTenantQuotaSchema):
-    db_quota = HostGroupTenantQuota.objects.get(id=quota_id)
-    if not db_quota:
-        raise HTTPException(status_code=404, detail="Quota not found")
-    for key, value in quota.dict().items():
-        setattr(db_quota, key, value)
-    db_quota.save()
-    return db_quota
+@hostgroup_tenant_quota_router.put("/{quota_id}", response=schemas.HostGroupTenantQuotaSchemaOut)
+def update_hostgroup_tenant_quota(request, quota_id: UUID, payload: schemas.HostGroupTenantQuotaSchemaIn):
+    quota = get_object_or_404(models.HostGroupTenantQuota, id=quota_id)
+    for attr, value in payload.dict().items():
+        setattr(quota, attr, value)
+    quota.save()
+    return quota
 
-@router.delete("/host-group-tenant-quotas/{quota_id}")
-def delete_host_group_tenant_quota(quota_id: int):
-    quota = HostGroupTenantQuota.objects.get(id=quota_id)
-    if not quota:
-        raise HTTPException(status_code=404, detail="Quota not found")
+@hostgroup_tenant_quota_router.delete("/{quota_id}")
+def delete_hostgroup_tenant_quota(request, quota_id: UUID):
+    quota = get_object_or_404(models.HostGroupTenantQuota, id=quota_id)
     quota.delete()
-    return {"detail": "Quota deleted"}
+    return {"success": True}

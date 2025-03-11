@@ -1,36 +1,41 @@
-from fastapi import APIRouter, HTTPException
-from backend.models import Tenant
-from backend.schemas import TenantSchema
+from uuid import UUID
+from ninja import Router
+from backend import schemas
+from backend import models
+from backend.models import MaintainerGroup
+from backend import schemas
+from typing import List
+from backend.dependencies import api_auth
+from django.shortcuts import get_object_or_404
 
-router = APIRouter()
+# ----------------------------
+# Tenant Router
+# ----------------------------
+tenant_router = Router(tags=["Tenant"], auth=api_auth)
 
-@router.post("/tenants/", response_model=TenantSchema)
-def create_tenant(tenant: TenantSchema):
-    db_tenant = Tenant(**tenant.dict())
-    db_tenant.save()
-    return db_tenant
+@tenant_router.get("/", response=list[schemas.TenantSchemaOut])
+def list_tenants(request):
+    return models.Tenant.objects.all()
 
-@router.get("/tenants/{tenant_id}", response_model=TenantSchema)
-def read_tenant(tenant_id: int):
-    tenant = Tenant.get(tenant_id)
-    if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+@tenant_router.get("/{tenant_id}", response=schemas.TenantSchemaOut)
+def get_tenant(request, tenant_id: UUID):
+    return get_object_or_404(models.Tenant, id=tenant_id)
+
+@tenant_router.post("/", response=schemas.TenantSchemaOut)
+def create_tenant(request, payload: schemas.TenantSchemaIn):
+    tenant = models.Tenant.objects.create(**payload.dict())
     return tenant
 
-@router.put("/tenants/{tenant_id}", response_model=TenantSchema)
-def update_tenant(tenant_id: int, tenant: TenantSchema):
-    db_tenant = Tenant.get(tenant_id)
-    if not db_tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
-    for key, value in tenant.dict().items():
-        setattr(db_tenant, key, value)
-    db_tenant.save()
-    return db_tenant
+@tenant_router.put("/{tenant_id}", response=schemas.TenantSchemaOut)
+def update_tenant(request, tenant_id: UUID, payload: schemas.TenantSchemaIn):
+    tenant = get_object_or_404(models.Tenant, id=tenant_id)
+    for attr, value in payload.dict().items():
+        setattr(tenant, attr, value)
+    tenant.save()
+    return tenant
 
-@router.delete("/tenants/{tenant_id}")
-def delete_tenant(tenant_id: int):
-    tenant = Tenant.get(tenant_id)
-    if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant not found")
+@tenant_router.delete("/{tenant_id}")
+def delete_tenant(request, tenant_id: UUID):
+    tenant = get_object_or_404(models.Tenant, id=tenant_id)
     tenant.delete()
-    return {"detail": "Tenant deleted"}
+    return {"success": True}

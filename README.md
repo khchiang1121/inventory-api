@@ -103,9 +103,10 @@ python manage.py migrate --plan
 python manage.py sqlmigrate app1 0002_add_new_field
  python manage.py createsuperuser
 
- python manage.py makemigrations backend
 
-
+python manage.py makemigrations backend
+python manage.py migrate
+python manage.py runserver
 
 5️⃣ 測試模型是否能正常使用
 如果你成功遷移，但仍然出錯，可以試試 Django shell：
@@ -125,3 +126,12 @@ print(Host.objects.all())
 如果這時候仍然報錯 relation "backend_host" does not exist，那麼可能是資料庫的問題，請重新檢查 migration。
 
 uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8000
+
+
+
+pip uninstall ninja
+mamba install --yes --file requirements.txt
+
+conda create --name virtflow python=3.13 "mamba>=0.22.1"
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate virtflow

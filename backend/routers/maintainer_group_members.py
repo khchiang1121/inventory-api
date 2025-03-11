@@ -1,42 +1,41 @@
-from fastapi import APIRouter, HTTPException
-from backend.models import MaintainerGroupMember
-from backend.schemas import MaintainerGroupMemberSchema
+from uuid import UUID
+from ninja import Router
+from backend import schemas
+from backend import models
+from backend.models import MaintainerGroup
+from backend import schemas
 from typing import List
+from backend.dependencies import api_auth
+from django.shortcuts import get_object_or_404
 
-router = APIRouter()
+# ----------------------------
+# MaintainerGroupMember Router
+# ----------------------------
+maintainer_group_member_router = Router(tags=["MaintainerGroupMember"], auth=api_auth)
 
-@router.post("/maintainer_group_members/", response_model=MaintainerGroupMemberSchema)
-def create_maintainer_group_member(member: MaintainerGroupMemberSchema):
-    db_member = MaintainerGroupMember(**member.dict())
-    db_member.save()
-    return db_member
+@maintainer_group_member_router.get("/", response=list[schemas.MaintainerGroupMemberSchemaOut])
+def list_group_members(request):
+    return models.MaintainerGroupMember.objects.all()
 
-@router.get("/maintainer_group_members/", response_model=List[MaintainerGroupMemberSchema])
-def read_maintainer_group_members(skip: int = 0, limit: int = 10):
-    members = MaintainerGroupMember.objects.all()[skip: skip + limit]
-    return members
+@maintainer_group_member_router.get("/{member_id}", response=schemas.MaintainerGroupMemberSchemaOut)
+def get_group_member(request, member_id: UUID):
+    return get_object_or_404(models.MaintainerGroupMember, id=member_id)
 
-@router.get("/maintainer_group_members/{member_id}", response_model=MaintainerGroupMemberSchema)
-def read_maintainer_group_member(member_id: int):
-    member = MaintainerGroupMember.objects.get(id=member_id)
-    if not member:
-        raise HTTPException(status_code=404, detail="Member not found")
+@maintainer_group_member_router.post("/", response=schemas.MaintainerGroupMemberSchemaOut)
+def create_group_member(request, payload: schemas.MaintainerGroupMemberSchemaIn):
+    member = models.MaintainerGroupMember.objects.create(**payload.dict())
     return member
 
-@router.put("/maintainer_group_members/{member_id}", response_model=MaintainerGroupMemberSchema)
-def update_maintainer_group_member(member_id: int, member: MaintainerGroupMemberSchema):
-    db_member = MaintainerGroupMember.objects.get(id=member_id)
-    if not db_member:
-        raise HTTPException(status_code=404, detail="Member not found")
-    for key, value in member.dict().items():
-        setattr(db_member, key, value)
-    db_member.save()
-    return db_member
+@maintainer_group_member_router.put("/{member_id}", response=schemas.MaintainerGroupMemberSchemaOut)
+def update_group_member(request, member_id: UUID, payload: schemas.MaintainerGroupMemberSchemaIn):
+    member = get_object_or_404(models.MaintainerGroupMember, id=member_id)
+    for attr, value in payload.dict().items():
+        setattr(member, attr, value)
+    member.save()
+    return member
 
-@router.delete("/maintainer_group_members/{member_id}")
-def delete_maintainer_group_member(member_id: int):
-    member = MaintainerGroupMember.objects.get(id=member_id)
-    if not member:
-        raise HTTPException(status_code=404, detail="Member not found")
+@maintainer_group_member_router.delete("/{member_id}")
+def delete_group_member(request, member_id: UUID):
+    member = get_object_or_404(models.MaintainerGroupMember, id=member_id)
     member.delete()
-    return {"detail": "Member deleted"}
+    return {"success": True}

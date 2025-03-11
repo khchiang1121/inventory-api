@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Host  # Replace with your actual model names
+from django.apps import apps
 
-# Register your models here.
-admin.site.register(Host)  # Replace with your actual model names to register
+app = apps.get_app_config('backend')  # Replace 'backend' with your app's name
+for model in app.get_models():
+    admin.site.register(model)

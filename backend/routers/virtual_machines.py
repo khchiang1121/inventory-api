@@ -1,36 +1,41 @@
-from fastapi import APIRouter, HTTPException
-from backend.models import VirtualMachine
-from backend.schemas import VirtualMachineSchema
+from uuid import UUID
+from ninja import Router
+from backend import schemas
+from backend import models
+from backend.models import MaintainerGroup
+from backend import schemas
+from typing import List
+from backend.dependencies import api_auth
+from django.shortcuts import get_object_or_404
 
-router = APIRouter()
+# ----------------------------
+# VirtualMachine Router
+# ----------------------------
+vm_router = Router(tags=["VirtualMachine"], auth=api_auth)
 
-@router.post("/virtual-machines/", response_model=VirtualMachineSchema)
-def create_virtual_machine(vm: VirtualMachineSchema):
-    db_vm = VirtualMachine(**vm.dict())
-    db_vm.save()
-    return db_vm
+@vm_router.get("/", response=list[schemas.VirtualMachineSchemaOut])
+def list_virtual_machines(request):
+    return models.VirtualMachine.objects.all()
 
-@router.get("/virtual-machines/{vm_id}", response_model=VirtualMachineSchema)
-def read_virtual_machine(vm_id: int):
-    vm = VirtualMachine.get(vm_id)
-    if not vm:
-        raise HTTPException(status_code=404, detail="Virtual Machine not found")
+@vm_router.get("/{vm_id}", response=schemas.VirtualMachineSchemaOut)
+def get_virtual_machine(request, vm_id: UUID):
+    return get_object_or_404(models.VirtualMachine, id=vm_id)
+
+@vm_router.post("/", response=schemas.VirtualMachineSchemaOut)
+def create_virtual_machine(request, payload: schemas.VirtualMachineSchemaIn):
+    vm = models.VirtualMachine.objects.create(**payload.dict())
     return vm
 
-@router.put("/virtual-machines/{vm_id}", response_model=VirtualMachineSchema)
-def update_virtual_machine(vm_id: int, vm: VirtualMachineSchema):
-    db_vm = VirtualMachine.get(vm_id)
-    if not db_vm:
-        raise HTTPException(status_code=404, detail="Virtual Machine not found")
-    for key, value in vm.dict().items():
-        setattr(db_vm, key, value)
-    db_vm.save()
-    return db_vm
+@vm_router.put("/{vm_id}", response=schemas.VirtualMachineSchemaOut)
+def update_virtual_machine(request, vm_id: UUID, payload: schemas.VirtualMachineSchemaIn):
+    vm = get_object_or_404(models.VirtualMachine, id=vm_id)
+    for attr, value in payload.dict().items():
+        setattr(vm, attr, value)
+    vm.save()
+    return vm
 
-@router.delete("/virtual-machines/{vm_id}")
-def delete_virtual_machine(vm_id: int):
-    vm = VirtualMachine.get(vm_id)
-    if not vm:
-        raise HTTPException(status_code=404, detail="Virtual Machine not found")
+@vm_router.delete("/{vm_id}")
+def delete_virtual_machine(request, vm_id: UUID):
+    vm = get_object_or_404(models.VirtualMachine, id=vm_id)
     vm.delete()
-    return {"detail": "Virtual Machine deleted successfully"}
+    return {"success": True}
