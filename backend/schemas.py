@@ -94,7 +94,18 @@ class HostGroupSchemaOut(Schema):
     created_at: datetime
     updated_at: datetime
 
-
+class HostResourceSchemaOut(Schema):
+    id: str
+    name: str
+    total_cpu: int
+    available_cpu: int
+    used_cpu: int
+    total_memory: int
+    available_memory: int
+    used_memory: int
+    total_storage: int
+    available_storage: int
+    used_storage: int
 # -----------------------
 # Host Schemas
 # -----------------------
