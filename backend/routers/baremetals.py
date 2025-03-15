@@ -39,29 +39,3 @@ def delete_host(request, host_id: UUID):
     host = get_object_or_404(models.Baremetal, id=host_id)
     host.delete()
     return {"success": True}
-
-# @baremetal_router.get("/{host_id}/usage", response=schemas.BaremetalResourceSchemaOut)
-# def get_host_usage(request, host_id: str):
-#     """ 查詢特定實體機的資源使用狀況 """
-#     host = get_object_or_404(models.Baremetal, id=host_id)
-    
-#     # 計算該 Baremetal 上所有 VM 佔用的資源
-#     vm_resources = models.VirtualMachine.objects.filter(host=host).aggregate(
-#         total_cpu=Sum("specification__required_cpu"),
-#         total_memory=Sum("specification__required_memory"),
-#         total_storage=Sum("specification__required_storage")
-#     )
-    
-#     return {
-#         "id": str(host.id),
-#         "name": host.name,
-#         "total_cpu": host.total_cpu,
-#         "available_cpu": host.available_cpu,
-#         "used_cpu": vm_resources["total_cpu"] or 0,
-#         "total_memory": host.total_memory,
-#         "available_memory": host.available_memory,
-#         "used_memory": vm_resources["total_memory"] or 0,
-#         "total_storage": host.total_storage,
-#         "available_storage": host.available_storage,
-#         "used_storage": vm_resources["total_storage"] or 0
-#     }

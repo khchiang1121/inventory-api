@@ -344,12 +344,6 @@ class K8sClusterOutSchema(Schema):
     created_at: datetime
     updated_at: datetime
 
-from uuid import UUID
-from datetime import datetime
-from typing import Optional
-from ninja import Schema, Field
-
-
 # =============================================================================
 # K8sClusterPlugin Schemas
 # =============================================================================
