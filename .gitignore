@@ -1,3 +1,6 @@
+static/
+backend/tests
+
 # Django #
 *.log
 *.pot
@@ -136,3 +139,5 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+pgadmin4/.pgpass
+backend/migrations

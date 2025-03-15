@@ -3,71 +3,92 @@ from datetime import datetime
 from typing import Optional
 from ninja import Schema, Field
 
-# -----------------------
+# =============================================================================
 # Maintainer Schemas
-# -----------------------
+# =============================================================================
 
-class MaintainerSchemaIn(Schema):
+class MaintainerCreateSchema(Schema):
     name: str
-    email: Optional[str] = Field(examples=['user@example.com'])
+    account: str  # new field in model
+    email: Optional[str] = Field(None, examples=["user@example.com"])
     status: str
 
-class MaintainerSchemaOut(Schema):
+class MaintainerUpdateSchema(Schema):
+    name: Optional[str] = None
+    account: Optional[str] = None
+    email: Optional[str] = Field(None, examples=["user@example.com"])
+    status: Optional[str] = None
+
+class MaintainerOutSchema(Schema):
     id: UUID
     name: str
-    email: Optional[str] = Field(examples=['user@example.com'])
+    account: str
+    email: Optional[str] = Field(None, examples=["user@example.com"])
     status: str
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Maintainer Group Schemas
+# =============================================================================
 
-# -----------------------
-# MaintainerGroup Schemas
-# -----------------------
-
-class MaintainerGroupSchemaIn(Schema):
+class MaintainerGroupCreateSchema(Schema):
     name: str
-    group_manager: UUID  # Provide the manager's UUID in request.
+    group_manager: UUID  # manager's UUID
     description: Optional[str] = None
     status: str
 
-class MaintainerGroupSchemaOut(Schema):
+class MaintainerGroupUpdateSchema(Schema):
+    name: Optional[str] = None
+    group_manager: Optional[UUID] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+class MaintainerGroupOutSchema(Schema):
     id: UUID
     name: str
-    group_manager: MaintainerSchemaOut  # Nested maintainer details.
+    group_manager: MaintainerOutSchema  # nested maintainer details
     description: Optional[str] = None
     status: str
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Maintainer Group Member (Through Model) Schemas
+# =============================================================================
 
-# -----------------------
-# MaintainerGroupMember Schemas
-# -----------------------
-
-class MaintainerGroupMemberSchemaIn(Schema):
-    group: UUID
+class MaintainerToMaintainerGroupCreateSchema(Schema):
+    maintainer_group: UUID
     maintainer: UUID
 
-class MaintainerGroupMemberSchemaOut(Schema):
+class MaintainerToMaintainerGroupUpdateSchema(Schema):
+    maintainer_group: Optional[UUID] = None
+    maintainer: Optional[UUID] = None
+
+class MaintainerToMaintainerGroupOutSchema(Schema):
     id: UUID
-    group: MaintainerGroupSchemaOut
-    maintainer: MaintainerSchemaOut
+    maintainer_group: MaintainerGroupOutSchema
+    maintainer: MaintainerOutSchema
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Resource Maintainer Schemas
+# =============================================================================
 
-# -----------------------
-# ResourceMaintainer Schemas
-# -----------------------
-
-class ResourceMaintainerSchemaIn(Schema):
+class ResourceMaintainerCreateSchema(Schema):
     resource_type: str
     resource_id: UUID
-    maintainer_type: str  # "individual" or "group"
+    maintainer_type: str  # allowed: "maintainer" or "maintainer_group"
     maintainer_id: UUID
 
-class ResourceMaintainerSchemaOut(Schema):
+class ResourceMaintainerUpdateSchema(Schema):
+    resource_type: Optional[str] = None
+    resource_id: Optional[UUID] = None
+    maintainer_type: Optional[str] = None
+    maintainer_id: Optional[UUID] = None
+
+class ResourceMaintainerOutSchema(Schema):
     id: UUID
     resource_type: str
     resource_id: UUID
@@ -76,88 +97,190 @@ class ResourceMaintainerSchemaOut(Schema):
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Rack Schemas (for Baremetal placement)
+# =============================================================================
 
-# -----------------------
-# HostGroup Schemas
-# -----------------------
-
-class HostGroupSchemaIn(Schema):
+class RackCreateSchema(Schema):
     name: str
-    description: Optional[str] = None
-    status: str
+    bgp_number: str
+    as_number: str
+    old_system_id: Optional[str] = None
 
-class HostGroupSchemaOut(Schema):
+class RackUpdateSchema(Schema):
+    name: Optional[str] = None
+    bgp_number: Optional[str] = None
+    as_number: Optional[str] = None
+    old_system_id: Optional[str] = None
+
+class RackOutSchema(Schema):
     id: UUID
     name: str
-    description: Optional[str] = None
-    status: str
-    created_at: datetime
-    updated_at: datetime
-
-class HostResourceSchemaOut(Schema):
-    id: str
-    name: str
-    total_cpu: int
-    available_cpu: int
-    used_cpu: int
-    total_memory: int
-    available_memory: int
-    used_memory: int
-    total_storage: int
-    available_storage: int
-    used_storage: int
-# -----------------------
-# Host Schemas
-# -----------------------
-
-class HostSchemaIn(Schema):
-    name: str
-    status: str
-    total_cpu: int
-    total_memory: int
-    total_storage: int
-    available_cpu: int
-    available_memory: int
-    available_storage: int
-    group: UUID  # Provide HostGroup UUID
-    region: str
-    dc: str
-    room: str
-    rack: str
-    unit: Optional[str] = None
-    old_system_id: str
-
-class HostSchemaOut(Schema):
-    id: UUID
-    name: str
-    status: str
-    total_cpu: int
-    total_memory: int
-    total_storage: int
-    available_cpu: int
-    available_memory: int
-    available_storage: int
-    group: HostGroupSchemaOut  # Nested host group details.
-    region: str
-    dc: str
-    room: str
-    rack: str
-    unit: Optional[str] = None
+    bgp_number: str
+    as_number: str
     old_system_id: str
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Baremetal Group Schemas (replacing HostGroup)
+# =============================================================================
 
-# -----------------------
+class BaremetalGroupCreateSchema(Schema):
+    name: str
+    description: Optional[str] = None
+    total_cpu: int
+    total_memory: int
+    total_storage: int
+    available_cpu: int
+    available_memory: int
+    available_storage: int
+    status: str
+
+class BaremetalGroupUpdateSchema(Schema):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    total_cpu: Optional[int] = None
+    total_memory: Optional[int] = None
+    total_storage: Optional[int] = None
+    available_cpu: Optional[int] = None
+    available_memory: Optional[int] = None
+    available_storage: Optional[int] = None
+    status: Optional[str] = None
+
+class BaremetalGroupOutSchema(Schema):
+    id: UUID
+    name: str
+    description: Optional[str] = None
+    total_cpu: int
+    total_memory: int
+    total_storage: int
+    available_cpu: int
+    available_memory: int
+    available_storage: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+# =============================================================================
+# Baremetal Schemas (replacing Host)
+# =============================================================================
+
+class BaremetalCreateSchema(Schema):
+    name: str
+    serial_number: str
+    region: str
+    fab: str
+    phase: str
+    dc: str
+    room: str
+    rack: UUID  # reference to Rack
+    unit: Optional[str] = None
+    status: str
+    total_cpu: int
+    total_memory: int
+    total_storage: int
+    available_cpu: int
+    available_memory: int
+    available_storage: int
+    group: UUID  # reference to BaremetalGroup
+    old_system_id: str
+
+class BaremetalUpdateSchema(Schema):
+    name: Optional[str] = None
+    serial_number: Optional[str] = None
+    region: Optional[str] = None
+    fab: Optional[str] = None
+    phase: Optional[str] = None
+    dc: Optional[str] = None
+    room: Optional[str] = None
+    rack: Optional[UUID] = None
+    unit: Optional[str] = None
+    status: Optional[str] = None
+    total_cpu: Optional[int] = None
+    total_memory: Optional[int] = None
+    total_storage: Optional[int] = None
+    available_cpu: Optional[int] = None
+    available_memory: Optional[int] = None
+    available_storage: Optional[int] = None
+    group: Optional[UUID] = None
+    old_system_id: Optional[str] = None
+
+class BaremetalOutSchema(Schema):
+    id: UUID
+    name: str
+    serial_number: str
+    region: str
+    fab: str
+    phase: str
+    dc: str
+    room: str
+    rack: RackOutSchema  # nested rack details
+    unit: Optional[str] = None
+    status: str
+    total_cpu: int
+    total_memory: int
+    total_storage: int
+    available_cpu: int
+    available_memory: int
+    available_storage: int
+    group: BaremetalGroupOutSchema  # nested group details
+    old_system_id: str
+    created_at: datetime
+    updated_at: datetime
+
+# =============================================================================
+# Baremetal Group Tenant Quota Schemas
+# =============================================================================
+
+class BaremetalGroupTenantQuotaCreateSchema(Schema):
+    """
+    Schema for creating a Baremetal Group Tenant Quota.
+    """
+    group: UUID 
+    tenant: UUID
+    cpu_quota_percentage: float
+    memory_quota: int
+    storage_quota: int
+
+class BaremetalGroupTenantQuotaUpdateSchema(Schema):
+    """
+    Schema for updating a Baremetal Group Tenant Quota.
+    """
+    group: Optional[UUID]
+    tenant: Optional[UUID]
+    cpu_quota_percentage: Optional[float]
+    memory_quota: Optional[int]
+    storage_quota: Optional[int]
+
+class BaremetalGroupTenantQuotaOutSchema(Schema):
+    """
+    Schema for outputting a Baremetal Group Tenant Quota.
+    """
+    id: UUID
+    group: UUID 
+    tenant: UUID
+    cpu_quota_percentage: float
+    memory_quota: int
+    storage_quota: int
+    created_at: datetime
+    updated_at: datetime
+
+# =============================================================================
 # Tenant Schemas
-# -----------------------
+# =============================================================================
 
-class TenantSchemaIn(Schema):
+class TenantCreateSchema(Schema):
     name: str
     description: Optional[str] = None
     status: str
 
-class TenantSchemaOut(Schema):
+class TenantUpdateSchema(Schema):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+class TenantOutSchema(Schema):
     id: UUID
     name: str
     description: Optional[str] = None
@@ -165,89 +288,199 @@ class TenantSchemaOut(Schema):
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# Virtual Machine Specification Schemas
+# =============================================================================
 
-# -----------------------
-# VirtualMachineSpecification Schemas
-# -----------------------
-
-class VirtualMachineSpecificationSchemaIn(Schema):
+class VirtualMachineSpecificationCreateSchema(Schema):
     name: str
+    generation: str
     required_cpu: int
     required_memory: int
     required_storage: int
 
-class VirtualMachineSpecificationSchemaOut(Schema):
+class VirtualMachineSpecificationUpdateSchema(Schema):
+    name: Optional[str] = None
+    generation: Optional[str] = None
+    required_cpu: Optional[int] = None
+    required_memory: Optional[int] = None
+    required_storage: Optional[int] = None
+
+class VirtualMachineSpecificationOutSchema(Schema):
     id: UUID
     name: str
+    generation: str
     required_cpu: int
     required_memory: int
     required_storage: int
     created_at: datetime
     updated_at: datetime
 
+# =============================================================================
+# K8s Cluster Schemas
+# =============================================================================
 
-# -----------------------
-# K8sCluster Schemas
-# -----------------------
-
-class K8sClusterSchemaIn(Schema):
+class K8sClusterCreateSchema(Schema):
     name: str
-    tenant: UUID  # Provide tenant's UUID.
+    version: str
+    tenant: UUID  # tenant's UUID
     description: Optional[str] = None
     status: str
 
-class K8sClusterSchemaOut(Schema):
+class K8sClusterUpdateSchema(Schema):
+    name: Optional[str] = None
+    version: Optional[str] = None
+    tenant: Optional[UUID] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+class K8sClusterOutSchema(Schema):
     id: UUID
     name: str
-    tenant: TenantSchemaOut  # Nested tenant details.
+    version: str
+    tenant: TenantOutSchema  # nested tenant details
     description: Optional[str] = None
     status: str
     created_at: datetime
     updated_at: datetime
 
+from uuid import UUID
+from datetime import datetime
+from typing import Optional
+from ninja import Schema, Field
 
-# -----------------------
-# VirtualMachine Schemas
-# -----------------------
-# Note: The ForeignKey "specification" refers to VirtualMachineSpecification.
 
-class VirtualMachineSchemaIn(Schema):
+# =============================================================================
+# K8sClusterPlugin Schemas
+# =============================================================================
+
+class K8sClusterPluginCreateSchema(Schema):
+    cluster: UUID
     name: str
-    tenant: UUID  # Tenant's UUID.
-    host: UUID    # Host's UUID.
-    specification: UUID  # VirtualMachineSpecification UUID.
-    k8s_cluster: Optional[UUID] = None  # Optional cluster association.
+    version: str
     status: str
+    additional_info: Optional[dict] = None
 
-class VirtualMachineSchemaOut(Schema):
+
+class K8sClusterPluginUpdateSchema(Schema):
+    cluster: Optional[UUID] = None
+    name: Optional[str] = None
+    version: Optional[str] = None
+    status: Optional[str] = None
+    additional_info: Optional[dict] = None
+
+
+class K8sClusterPluginOutSchema(Schema):
     id: UUID
+    cluster: UUID
     name: str
-    tenant: TenantSchemaOut
-    host: HostSchemaOut
-    specification: VirtualMachineSpecificationSchemaOut
-    k8s_cluster: Optional[K8sClusterSchemaOut] = None
+    version: str
     status: str
+    additional_info: Optional[dict] = None
     created_at: datetime
     updated_at: datetime
 
 
-# -----------------------
-# HostGroupTenantQuota Schemas
-# -----------------------
+# =============================================================================
+# BastionClusterAssociation Schemas
+# =============================================================================
 
-class HostGroupTenantQuotaSchemaIn(Schema):
-    group: UUID  # HostGroup UUID.
-    tenant: UUID  # Tenant UUID.
-    cpu_quota_percentage: float
-    memory_quota: int
-    storage_quota: int
+class BastionClusterAssociationCreateSchema(Schema):
+    bastion: UUID
+    k8s_cluster: UUID
 
-class HostGroupTenantQuotaSchemaOut(Schema):
+class BastionClusterAssociationUpdateSchema(Schema):
+    bastion: Optional[UUID] = None
+    k8s_cluster: Optional[UUID] = None
+
+class BastionClusterAssociationOutSchema(Schema):
     id: UUID
-    group: HostGroupSchemaOut
-    tenant: TenantSchemaOut
-    cpu_quota_percentage: float
-    memory_quota: int
-    storage_quota: int
+    bastion: UUID
+    k8s_cluster: UUID
     created_at: datetime
     updated_at: datetime
+
+# =============================================================================
+# K8sClusterToServiceMesh Schemas
+# =============================================================================
+
+class K8sClusterToServiceMeshCreateSchema(Schema):
+    cluster: UUID
+    service_mesh: UUID
+    role: str
+
+class K8sClusterToServiceMeshUpdateSchema(Schema):
+    cluster: Optional[UUID] = None
+    service_mesh: Optional[UUID] = None
+    role: Optional[str] = None
+
+class K8sClusterToServiceMeshOutSchema(Schema):
+    id: UUID
+    cluster: UUID
+    service_mesh: UUID
+    role: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# =============================================================================
+# ServiceMesh Schemas
+# =============================================================================
+
+class ServiceMeshCreateSchema(Schema):
+    name: str
+    type: str
+    description: Optional[str] = None
+    status: str
+
+
+class ServiceMeshUpdateSchema(Schema):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+
+class ServiceMeshOutSchema(Schema):
+    id: UUID
+    name: str
+    type: str
+    description: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+# =============================================================================
+# Virtual Machine Schemas
+# =============================================================================
+
+class VirtualMachineCreateSchema(Schema):
+    name: str
+    tenant: UUID
+    baremetal: UUID  # now references a Baremetal server
+    specification: UUID
+    k8s_cluster: Optional[UUID] = None
+    type: str  # e.g., "control-plane", "worker", "management", "other"
+    status: str
+
+class VirtualMachineUpdateSchema(Schema):
+    name: Optional[str] = None
+    tenant: Optional[UUID] = None
+    baremetal: Optional[UUID] = None
+    specification: Optional[UUID] = None
+    k8s_cluster: Optional[UUID] = None
+    type: Optional[str] = None
+    status: Optional[str] = None
+
+class VirtualMachineOutSchema(Schema):
+    id: UUID
+    name: str
+    tenant: TenantOutSchema
+    baremetal: BaremetalOutSchema
+    specification: VirtualMachineSpecificationOutSchema
+    k8s_cluster: Optional[K8sClusterOutSchema] = None
+    type: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+

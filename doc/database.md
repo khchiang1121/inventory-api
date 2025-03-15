@@ -63,7 +63,7 @@
 
 ### ④ 資源維護者關聯（ResourceMaintainer）
 **用途：**  
-由於各資源（如 Host、VirtualMachine、HostGroup、Tenant、K8sCluster 等）都可能同時配置個人或維護者群組作為維護者，此表使用多型關聯（Polymorphic Association）來統一管理。  
+由於各資源（如 Baremetal、VirtualMachine、BaremetalGroup、Tenant、K8sCluster 等）都可能同時配置個人或維護者群組作為維護者，此表使用多型關聯（Polymorphic Association）來統一管理。  
 **使用方式：**  
 - 當需要查詢某個資源的維護者（或反向查詢某個維護者負責哪些資源）時，可透過此表查詢。  
 - `resource_type` 用來指明資源種類，而 `resource_id` 則對應各資源的主鍵；  
@@ -73,7 +73,7 @@
 | 欄位名稱        | 型態          | 說明                                                                                   |
 |-----------------|---------------|----------------------------------------------------------------------------------------|
 | id              | UUID (PK)     | 唯一識別碼                                                                             |
-| resource_type   | String        | 資源類型（例如："Host", "VirtualMachine", "HostGroup", "Tenant", "K8sCluster"）         |
+| resource_type   | String        | 資源類型（例如："Baremetal", "VirtualMachine", "BaremetalGroup", "Tenant", "K8sCluster"）         |
 | resource_id     | UUID/Integer  | 資源的識別碼（依各資源 PK 型態而定）                                                    |
 | maintainer_type | String        | 維護者類型： "individual" 或 "group"                                                   |
 | maintainer_id   | UUID          | 若 `maintainer_type` 為 "individual"，參考 Maintainer.id；若為 "group"，參考 MaintainerGroup.id |
@@ -82,9 +82,9 @@
 
 ---
 
-## 2. 實體機器表（Host）
+## 2. 實體機器表（Baremetal）
 **用途：**  
-儲存所有實體機器的硬體資源、狀態以及所在位置資訊，並與實體機群組（HostGroup）建立關聯。  
+儲存所有實體機器的硬體資源、狀態以及所在位置資訊，並與實體機群組（BaremetalGroup）建立關聯。  
 **使用方式：**  
 - 當需要根據資源狀況（CPU、記憶體、儲存空間）或物理位置（region、dc、room、rack）進行虛擬機部署決策時，系統會查詢此表。  
 - 此外，`old_system_id` 用於對應舊系統中的實體機資訊，方便資料遷移與整合。  
@@ -101,7 +101,7 @@
 | available_cpu     | Integer               | 可用 CPU 核心數                                             |
 | available_memory  | Integer               | 可用記憶體（MB）                                             |
 | available_storage | Integer               | 可用儲存空間（GB）                                           |
-| group_id          | ForeignKey (HostGroup)| 所屬資源群組（每台 Host 只能屬於一個群組）                   |
+| group_id          | ForeignKey (BaremetalGroup)| 所屬資源群組（每台 Baremetal 只能屬於一個群組）                   |
 | region            | String                | 工廠區域（例如：北區、南區等）                                |
 | dc                | String                | 資料中心名稱                                               |
 | room              | String                | 資料中心內的房間                                             |
@@ -113,7 +113,7 @@
 
 ---
 
-### 實體機群組表（HostGroup）
+### 實體機群組表（BaremetalGroup）
 **用途：**  
 用來將實體機分組，便於依群組進行資源調度與管理。  
 **使用方式：**  
@@ -135,7 +135,7 @@
 **用途：**  
 記錄系統中不同的使用者或單位，其資源使用管理及權限配置皆以租戶為單位。  
 **使用方式：**  
-- 每個租戶可以對應到一個或多個 k8s 叢集，同時也在 HostGroupTenantQuota 表中配置資源配額。  
+- 每個租戶可以對應到一個或多個 k8s 叢集，同時也在 BaremetalGroupTenantQuota 表中配置資源配額。  
 - 欄位說明如下：
 
 | 欄位名稱   | 型態         | 說明                                |
@@ -153,7 +153,7 @@
 **用途：**  
 記錄所有虛擬機的狀態與配置，並記錄其所屬租戶、所在實體機，以及可能隸屬的 k8s 叢集。  
 **使用方式：**  
-- 在建立虛擬機時，必須指定所屬的租戶與實體機（Host）；若該虛擬機將加入 k8s 叢集，則可選填 `k8s_cluster_id`。  
+- 在建立虛擬機時，必須指定所屬的租戶與實體機（Baremetal）；若該虛擬機將加入 k8s 叢集，則可選填 `k8s_cluster_id`。  
 - 欄位說明如下：
 
 | 欄位名稱           | 型態                           | 說明                                         |
@@ -161,7 +161,7 @@
 | id                 | UUID (PK)                      | 唯一識別碼                                   |
 | name               | String                         | 虛擬機名稱                                   |
 | tenant_id          | ForeignKey (Tenant)            | 關聯租戶                                     |
-| host_id            | ForeignKey (Host)              | 所屬實體機器                                 |
+| host_id            | ForeignKey (Baremetal)              | 所屬實體機器                                 |
 | specification_id   | ForeignKey (VMSpecification)   | VM 規格                                      |
 | k8s_cluster_id     | ForeignKey (K8sCluster)        | 所屬 k8s 叢集（選填）                         |
 | status             | String                         | 虛擬機狀態（例如：建立中、運行中、錯誤）       |
@@ -210,7 +210,7 @@
 
 ---
 
-## 6. 群組租戶授權表（HostGroupTenantQuota）
+## 6. 群組租戶授權表（BaremetalGroupTenantQuota）
 **用途：**  
 記錄每個租戶在各個實體機群組中的資源使用權限或配額比例，用於控制各租戶在群組內能夠使用的資源上限。  
 **使用方式：**  
@@ -220,7 +220,7 @@
 | 欄位名稱             | 型態                    | 說明                                |
 |----------------------|-------------------------|-------------------------------------|
 | id                   | UUID                    | 唯一識別碼                          |
-| group_id             | ForeignKey (HostGroup)  | 關聯群組                            |
+| group_id             | ForeignKey (BaremetalGroup)  | 關聯群組                            |
 | tenant_id            | ForeignKey (Tenant)     | 關聯租戶                            |
 | cpu_quota_percentage | Float                   | CPU 資源配額百分比（例如 40%）        |
 | memory_quota         | Integer                 | 記憶體上限（MB）                    |
@@ -233,15 +233,15 @@
 # 小結
 
 1. **維護者相關：**  
-   - **Maintainer、MaintainerGroup、MaintainerGroupMember 與 ResourceMaintainer** 這四個表負責管理所有資源的維護者資訊。系統中任何資源（例如 Host、VirtualMachine、HostGroup、Tenant、K8sCluster）均可透過 ResourceMaintainer 與相應的維護者（個人或群組）建立關聯。
+   - **Maintainer、MaintainerGroup、MaintainerGroupMember 與 ResourceMaintainer** 這四個表負責管理所有資源的維護者資訊。系統中任何資源（例如 Baremetal、VirtualMachine、BaremetalGroup、Tenant、K8sCluster）均可透過 ResourceMaintainer 與相應的維護者（個人或群組）建立關聯。
 
 2. **實體機管理：**  
-   - **Host** 表記錄所有實體機資訊，包括硬體資源、目前狀態、物理位置（region、dc、room、rack）與舊系統對應 ID。  
-   - **HostGroup** 用於將實體機按需求分組，便於根據資源負載與地理分佈進行管理與調度。
+   - **Baremetal** 表記錄所有實體機資訊，包括硬體資源、目前狀態、物理位置（region、dc、room、rack）與舊系統對應 ID。  
+   - **BaremetalGroup** 用於將實體機按需求分組，便於根據資源負載與地理分佈進行管理與調度。
 
 3. **租戶與授權：**  
    - **Tenant** 表記錄各使用者或單位資訊；  
-   - **HostGroupTenantQuota** 則記錄每個租戶在各群組中的資源使用配額，支援資源調度與權限控管。
+   - **BaremetalGroupTenantQuota** 則記錄每個租戶在各群組中的資源使用配額，支援資源調度與權限控管。
 
 4. **虛擬機與規格：**  
    - **VirtualMachine** 表記錄虛擬機的基本資訊及其關聯（租戶、實體機、VM 規格、k8s 叢集）；  

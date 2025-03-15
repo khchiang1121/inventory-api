@@ -13,21 +13,21 @@ from django.shortcuts import get_object_or_404
 # ----------------------------
 tenant_router = Router(tags=["Tenant"], auth=api_auth)
 
-@tenant_router.get("/", response=list[schemas.TenantSchemaOut])
+@tenant_router.get("/", response=list[schemas.TenantOutSchema])
 def list_tenants(request):
     return models.Tenant.objects.all()
 
-@tenant_router.get("/{tenant_id}", response=schemas.TenantSchemaOut)
+@tenant_router.get("/{tenant_id}", response=schemas.TenantOutSchema)
 def get_tenant(request, tenant_id: UUID):
     return get_object_or_404(models.Tenant, id=tenant_id)
 
-@tenant_router.post("/", response=schemas.TenantSchemaOut)
-def create_tenant(request, payload: schemas.TenantSchemaIn):
+@tenant_router.post("/", response=schemas.TenantOutSchema)
+def create_tenant(request, payload: schemas.TenantCreateSchema):
     tenant = models.Tenant.objects.create(**payload.dict())
     return tenant
 
-@tenant_router.put("/{tenant_id}", response=schemas.TenantSchemaOut)
-def update_tenant(request, tenant_id: UUID, payload: schemas.TenantSchemaIn):
+@tenant_router.put("/{tenant_id}", response=schemas.TenantOutSchema)
+def update_tenant(request, tenant_id: UUID, payload: schemas.TenantUpdateSchema):
     tenant = get_object_or_404(models.Tenant, id=tenant_id)
     for attr, value in payload.dict().items():
         setattr(tenant, attr, value)

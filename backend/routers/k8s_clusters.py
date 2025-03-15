@@ -13,21 +13,21 @@ from django.shortcuts import get_object_or_404
 # ----------------------------
 k8s_cluster_router = Router(tags=["K8sCluster"], auth=api_auth)
 
-@k8s_cluster_router.get("/", response=list[schemas.K8sClusterSchemaOut])
+@k8s_cluster_router.get("/", response=list[schemas.K8sClusterOutSchema])
 def list_k8s_clusters(request):
     return models.K8sCluster.objects.all()
 
-@k8s_cluster_router.get("/{cluster_id}", response=schemas.K8sClusterSchemaOut)
+@k8s_cluster_router.get("/{cluster_id}", response=schemas.K8sClusterOutSchema)
 def get_k8s_cluster(request, cluster_id: UUID):
     return get_object_or_404(models.K8sCluster, id=cluster_id)
 
-@k8s_cluster_router.post("/", response=schemas.K8sClusterSchemaOut)
-def create_k8s_cluster(request, payload: schemas.K8sClusterSchemaIn):
+@k8s_cluster_router.post("/", response=schemas.K8sClusterOutSchema)
+def create_k8s_cluster(request, payload: schemas.K8sClusterCreateSchema):
     cluster = models.K8sCluster.objects.create(**payload.dict())
     return cluster
 
-@k8s_cluster_router.put("/{cluster_id}", response=schemas.K8sClusterSchemaOut)
-def update_k8s_cluster(request, cluster_id: UUID, payload: schemas.K8sClusterSchemaIn):
+@k8s_cluster_router.put("/{cluster_id}", response=schemas.K8sClusterOutSchema)
+def update_k8s_cluster(request, cluster_id: UUID, payload: schemas.K8sClusterUpdateSchema):
     cluster = get_object_or_404(models.K8sCluster, id=cluster_id)
     for attr, value in payload.dict().items():
         setattr(cluster, attr, value)

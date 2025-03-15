@@ -337,7 +337,7 @@
 - **Request：**
   ```json
   {
-    "resource_type": "Host",
+    "resource_type": "Baremetal",
     "resource_id": "550e8400-e29b-41d4-a716-446655440333",
     "maintainer_type": "individual",
     "maintainer_id": "550e8400-e29b-41d4-a716-446655440000"
@@ -347,7 +347,7 @@
   ```json
   {
     "id": "880e8400-e29b-41d4-a716-446655440444",
-    "resource_type": "Host",
+    "resource_type": "Baremetal",
     "resource_id": "550e8400-e29b-41d4-a716-446655440333",
     "maintainer_type": "individual",
     "maintainer_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -366,7 +366,7 @@
     "resource_maintainers": [
       {
         "id": "880e8400-e29b-41d4-a716-446655440444",
-        "resource_type": "Host",
+        "resource_type": "Baremetal",
         "resource_id": "550e8400-e29b-41d4-a716-446655440333",
         "maintainer_type": "individual",
         "maintainer_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -385,7 +385,7 @@
   ```json
   {
     "id": "880e8400-e29b-41d4-a716-446655440444",
-    "resource_type": "Host",
+    "resource_type": "Baremetal",
     "resource_id": "550e8400-e29b-41d4-a716-446655440333",
     "maintainer_type": "individual",
     "maintainer_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -401,7 +401,7 @@
 - **Request：**
   ```json
   {
-    "resource_type": "Host",
+    "resource_type": "Baremetal",
     "resource_id": "550e8400-e29b-41d4-a716-446655440333",
     "maintainer_type": "individual",
     "maintainer_id": "550e8400-e29b-41d4-a716-446655440000"
@@ -411,7 +411,7 @@
   ```json
   {
     "id": "880e8400-e29b-41d4-a716-446655440444",
-    "resource_type": "Host",
+    "resource_type": "Baremetal",
     "resource_id": "550e8400-e29b-41d4-a716-446655440333",
     "maintainer_type": "individual",
     "maintainer_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -434,7 +434,7 @@
 
 ---
 
-### 4.5 實體機（Host）
+### 4.5 實體機（Baremetal）
 
 #### 4.5.1 建立實體機
 - **HTTP 方法：** POST  
@@ -592,14 +592,14 @@
 - **Response：**
   ```json
   {
-    "message": "Host deleted successfully"
+    "message": "Baremetal deleted successfully"
   }
   ```
 - **狀態碼：** 200 OK 或 204 No Content
 
 ---
 
-### 4.6 實體機群組（HostGroup）
+### 4.6 實體機群組（BaremetalGroup）
 
 #### 4.6.1 建立實體機群組
 - **HTTP 方法：** POST  
@@ -691,7 +691,7 @@
 - **Response：**
   ```json
   {
-    "message": "Host group deleted successfully"
+    "message": "Baremetal group deleted successfully"
   }
   ```
 - **狀態碼：** 200 OK 或 204 No Content
@@ -1124,7 +1124,7 @@
 
 ---
 
-### 4.11 群組租戶授權（HostGroupTenantQuota）
+### 4.11 群組租戶授權（BaremetalGroupTenantQuota）
 
 #### 4.11.1 建立群組租戶授權
 - **HTTP 方法：** POST  
@@ -1228,7 +1228,7 @@
 - **Response：**
   ```json
   {
-    "message": "Host group tenant quota deleted successfully"
+    "message": "Baremetal group tenant quota deleted successfully"
   }
   ```
 - **狀態碼：** 200 OK 或 204 No Content

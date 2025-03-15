@@ -54,10 +54,10 @@ class Command(BaseCommand):
             )
         self.stdout.write("Created resource maintainers.")
 
-        # Create Host Groups
+        # Create Baremetal Groups
         host_groups = []
         for _ in range(3):
-            hg = models.HostGroup.objects.create(
+            hg = models.BaremetalGroup.objects.create(
                 name=fake.word().capitalize(),
                 description=fake.text(max_nb_chars=150),
                 status=random.choice(['active', 'inactive']),
@@ -65,10 +65,10 @@ class Command(BaseCommand):
             host_groups.append(hg)
         self.stdout.write("Created host groups.")
 
-        # Create Hosts
+        # Create Baremetals
         hosts = []
         for _ in range(10):
-            host = models.Host.objects.create(
+            host = models.Baremetal.objects.create(
                 name=fake.domain_word(),
                 status=random.choice(['active', 'inactive']),
                 total_cpu=random.randint(4, 32),
@@ -135,9 +135,9 @@ class Command(BaseCommand):
             )
         self.stdout.write("Created virtual machines.")
 
-        # Create Host Group Tenant Quotas
+        # Create Baremetal Group Tenant Quotas
         for _ in range(5):
-            models.HostGroupTenantQuota.objects.create(
+            models.BaremetalGroupTenantQuota.objects.create(
                 group=random.choice(host_groups),
                 tenant=random.choice(tenants),
                 cpu_quota_percentage=round(random.uniform(0.1, 1.0), 2),
