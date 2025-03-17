@@ -167,6 +167,7 @@ class K8sCluster(models.Model):
     name: models.CharField = models.CharField(max_length=255, help_text="Cluster name")
     version: models.CharField = models.CharField(max_length=255, help_text="Kubernetes version")
     tenant: models.ForeignKey = models.ForeignKey("Tenant",on_delete=models.CASCADE,related_name="k8s_clusters",help_text="Tenant that owns the cluster")
+    scheduling_mode:models.CharField = models.CharField(max_length=50, choices=[("spread_rack", "SpreadByRack"), ("spread_resource", "SpreadByResource"), ("balanced", "Balanced"), ("simple", "Simple")], default="balanced", help_text="VM scheduling strategy for this cluster")
     description: models.TextField= models.TextField(blank=True, help_text="Cluster description")
     status: models.CharField = models.CharField(max_length=50, help_text="Cluster status")
     created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)

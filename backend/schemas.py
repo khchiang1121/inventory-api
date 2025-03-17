@@ -324,6 +324,7 @@ class K8sClusterCreateSchema(Schema):
     name: str
     version: str
     tenant: UUID  # tenant's UUID
+    scheduling_mode: str
     description: Optional[str] = None
     status: str
 
@@ -331,6 +332,7 @@ class K8sClusterUpdateSchema(Schema):
     name: Optional[str] = None
     version: Optional[str] = None
     tenant: Optional[UUID] = None
+    scheduling_mode: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
 
@@ -339,6 +341,7 @@ class K8sClusterOutSchema(Schema):
     name: str
     version: str
     tenant: TenantOutSchema  # nested tenant details
+    scheduling_mode: Optional[str] = None
     description: Optional[str] = None
     status: str
     created_at: datetime

@@ -140,6 +140,7 @@ class Command(BaseCommand):
                 name=fake.word().capitalize(),
                 version=fake.word(),
                 tenant=random.choice(tenants),
+                scheduling_mode=random.choice(['spread_rack', 'balanced', 'spread_resource', 'simple']),
                 description=fake.text(max_nb_chars=200),
                 status=random.choice(['active', 'inactive']),
             )
