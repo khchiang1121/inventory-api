@@ -10,3 +10,5 @@ django-stubs
 sqlalchemy
 python-dotenv
 faker
+django-stubs
+django-stubs-ext

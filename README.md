@@ -167,3 +167,8 @@ API
 http://localhost:8000/api/v1/
 文件
 http://localhost:8000/api/v1/docs
+
+
+
+how to set static
+python manage.py collectstatic

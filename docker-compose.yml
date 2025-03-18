@@ -42,3 +42,4 @@ services:
   #     - DATABASE_USER=${POSTGRES_USER}
   #     - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
   #     - DATABASE_HOST=postgres
+  

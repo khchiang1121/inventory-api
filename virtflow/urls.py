@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
+from virtflow import settings
 from virtflow.api_v1 import api as api_v1
 # from virtflow.api_v1 import api2 as api_v2
 
@@ -23,4 +25,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', api_v1.urls),
     # path('api/v2/', api_v2.urls),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

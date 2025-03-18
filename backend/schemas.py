@@ -454,11 +454,11 @@ class ServiceMeshOutSchema(Schema):
 class VirtualMachineCreateSchema(Schema):
     name: str
     tenant: UUID
-    baremetal: UUID  # now references a Baremetal server
+    baremetal: Optional[UUID] = None  # now references a Baremetal server
     specification: UUID
     k8s_cluster: Optional[UUID] = None
     type: str  # e.g., "control-plane", "worker", "management", "other"
-    status: str
+    status: Optional[str] = None
 
 class VirtualMachineUpdateSchema(Schema):
     name: Optional[str] = None
