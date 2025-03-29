@@ -140,4 +140,5 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 pgadmin4/.pgpass
-backend/migrations
+virtflow/api/migrations/*
+backend/migrations/*

@@ -1,6 +1,5 @@
 Django>=4.2
-djangorestframework
-django-ninja
+djangorestframework>=3.14.0
 pydantic
 uvicorn
 psycopg2-binary
@@ -12,3 +11,6 @@ python-dotenv
 faker
 django-stubs
 django-stubs-ext
+django-extensions
+drf-spectacular
+drf-spectacular-sidecar

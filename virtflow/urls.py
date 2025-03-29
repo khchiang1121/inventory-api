@@ -15,14 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from virtflow import settings
-from virtflow.api_v1 import api as api_v1
-# from virtflow.api_v1 import api2 as api_v2
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
-    path('api/v1/', api_v1.urls),
-    # path('api/v2/', api_v2.urls),
+
+    # Schema
+    path("api/v1/schema/json/", SpectacularJSONAPIView.as_view(), name="json"),
+    path("api/v1/schema/yaml/", SpectacularYAMLAPIView.as_view(), name="yaml"),
+    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/v1/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    # API
+    re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,0 +1,293 @@
+from rest_framework import serializers
+from .. import models
+from uuid import UUID
+from datetime import datetime
+
+# Maintainer Serializers
+class MaintainerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Maintainer
+        fields = ['id', 'name', 'account', 'email', 'status', 'created_at', 'updated_at']
+
+class MaintainerCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Maintainer
+        fields = ['name', 'account', 'email', 'status']
+
+class MaintainerUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Maintainer
+        fields = ['name', 'account', 'email', 'status']
+
+# Maintainer Group Serializers
+class MaintainerGroupSerializer(serializers.ModelSerializer):
+    group_manager = MaintainerSerializer(read_only=True)
+    
+    class Meta:
+        model = models.MaintainerGroup
+        fields = ['id', 'name', 'group_manager', 'description', 'status', 'created_at', 'updated_at']
+
+class MaintainerGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MaintainerGroup
+        fields = ['name', 'group_manager', 'description', 'status']
+
+class MaintainerGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MaintainerGroup
+        fields = ['name', 'group_manager', 'description', 'status']
+
+# Maintainer Group Member Serializers
+class MaintainerToMaintainerGroupSerializer(serializers.ModelSerializer):
+    maintainer_group = MaintainerGroupSerializer(read_only=True)
+    maintainer = MaintainerSerializer(read_only=True)
+    
+    class Meta:
+        model = models.MaintainerToMaintainerGroup
+        fields = ['id', 'maintainer_group', 'maintainer', 'created_at', 'updated_at']
+
+class MaintainerToMaintainerGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MaintainerToMaintainerGroup
+        fields = ['maintainer_group', 'maintainer']
+
+class MaintainerToMaintainerGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MaintainerToMaintainerGroup
+        fields = ['maintainer_group', 'maintainer']
+
+# Resource Maintainer Serializers
+class ResourceMaintainerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ResourceMaintainer
+        fields = ['id', 'resource_type', 'resource_id', 'maintainer_type', 'maintainer_id', 'created_at', 'updated_at']
+
+class ResourceMaintainerCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ResourceMaintainer
+        fields = ['resource_type', 'resource_id', 'maintainer_type', 'maintainer_id']
+
+class ResourceMaintainerUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ResourceMaintainer
+        fields = ['resource_type', 'resource_id', 'maintainer_type', 'maintainer_id']
+
+# Rack Serializers
+class RackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = ['id', 'name', 'bgp_number', 'as_number', 'old_system_id', 'created_at', 'updated_at']
+
+class RackCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
+
+class RackUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
+
+# Baremetal Group Serializers
+class BaremetalGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroup
+        fields = ['id', 'name', 'description', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'status', 
+                 'created_at', 'updated_at']
+
+class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroup
+        fields = ['name', 'description', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'status']
+
+class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroup
+        fields = ['name', 'description', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'status']
+
+# Baremetal Serializers
+class BaremetalSerializer(serializers.ModelSerializer):
+    rack = RackSerializer(read_only=True)
+    group = BaremetalGroupSerializer(read_only=True)
+    
+    class Meta:
+        model = models.Baremetal
+        fields = ['id', 'name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
+                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'group', 
+                 'old_system_id', 'created_at', 'updated_at']
+
+class BaremetalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Baremetal
+        fields = ['name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
+                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'group', 
+                 'old_system_id']
+
+class BaremetalUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Baremetal
+        fields = ['name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
+                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
+                 'available_cpu', 'available_memory', 'available_storage', 'group', 
+                 'old_system_id']
+
+# Baremetal Group Tenant Quota Serializers
+class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = ['id', 'group', 'tenant', 'cpu_quota_percentage', 'memory_quota', 
+                 'storage_quota', 'created_at', 'updated_at']
+
+class BaremetalGroupTenantQuotaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = ['group', 'tenant', 'cpu_quota_percentage', 'memory_quota', 'storage_quota']
+
+class BaremetalGroupTenantQuotaUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = ['group', 'tenant', 'cpu_quota_percentage', 'memory_quota', 'storage_quota']
+
+# Tenant Serializers
+class TenantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ['id', 'name', 'description', 'status', 'created_at', 'updated_at']
+
+class TenantCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ['name', 'description', 'status']
+
+class TenantUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ['name', 'description', 'status']
+
+# Virtual Machine Specification Serializers
+class VirtualMachineSpecificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = ['id', 'name', 'generation', 'required_cpu', 'required_memory', 
+                 'required_storage', 'created_at', 'updated_at']
+
+class VirtualMachineSpecificationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = ['name', 'generation', 'required_cpu', 'required_memory', 'required_storage']
+
+class VirtualMachineSpecificationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = ['name', 'generation', 'required_cpu', 'required_memory', 'required_storage']
+
+# K8s Cluster Serializers
+class K8sClusterSerializer(serializers.ModelSerializer):
+    tenant = TenantSerializer(read_only=True)
+    
+    class Meta:
+        model = models.K8sCluster
+        fields = ['id', 'name', 'version', 'tenant', 'scheduling_mode', 'description', 
+                 'status', 'created_at', 'updated_at']
+
+class K8sClusterCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sCluster
+        fields = ['name', 'version', 'tenant', 'scheduling_mode', 'description', 'status']
+
+class K8sClusterUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sCluster
+        fields = ['name', 'version', 'tenant', 'scheduling_mode', 'description', 'status']
+
+# K8s Cluster Plugin Serializers
+class K8sClusterPluginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterPlugin
+        fields = ['id', 'cluster', 'name', 'version', 'status', 'additional_info', 
+                 'created_at', 'updated_at']
+
+class K8sClusterPluginCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterPlugin
+        fields = ['cluster', 'name', 'version', 'status', 'additional_info']
+
+class K8sClusterPluginUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterPlugin
+        fields = ['cluster', 'name', 'version', 'status', 'additional_info']
+
+# Bastion Cluster Association Serializers
+class BastionClusterAssociationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ['id', 'bastion', 'k8s_cluster', 'created_at', 'updated_at']
+
+class BastionClusterAssociationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ['bastion', 'k8s_cluster']
+
+class BastionClusterAssociationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ['bastion', 'k8s_cluster']
+
+# K8s Cluster To Service Mesh Serializers
+class K8sClusterToServiceMeshSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterToServiceMesh
+        fields = ['id', 'cluster', 'service_mesh', 'role', 'created_at', 'updated_at']
+
+class K8sClusterToServiceMeshCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterToServiceMesh
+        fields = ['cluster', 'service_mesh', 'role']
+
+class K8sClusterToServiceMeshUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.K8sClusterToServiceMesh
+        fields = ['cluster', 'service_mesh', 'role']
+
+# Service Mesh Serializers
+class ServiceMeshSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServiceMesh
+        fields = ['id', 'name', 'type', 'description', 'status', 'created_at', 'updated_at']
+
+class ServiceMeshCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServiceMesh
+        fields = ['name', 'type', 'description', 'status']
+
+class ServiceMeshUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServiceMesh
+        fields = ['name', 'type', 'description', 'status']
+
+# Virtual Machine Serializers
+class VirtualMachineSerializer(serializers.ModelSerializer):
+    tenant = TenantSerializer(read_only=True)
+    baremetal = BaremetalSerializer(read_only=True)
+    specification = VirtualMachineSpecificationSerializer(read_only=True)
+    k8s_cluster = K8sClusterSerializer(read_only=True)
+    
+    class Meta:
+        model = models.VirtualMachine
+        fields = ['id', 'name', 'tenant', 'baremetal', 'specification', 'k8s_cluster', 
+                 'type', 'status', 'created_at', 'updated_at']
+
+class VirtualMachineCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachine
+        fields = ['name', 'tenant', 'baremetal', 'specification', 'k8s_cluster', 'type', 'status']
+
+class VirtualMachineUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachine
+        fields = ['name', 'tenant', 'baremetal', 'specification', 'k8s_cluster', 'type', 'status'] 

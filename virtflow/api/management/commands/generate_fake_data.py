@@ -2,7 +2,7 @@ import random
 from uuid import UUID
 from django.core.management.base import BaseCommand
 from faker import Faker
-from backend import models
+from virtflow.api import models
 
 class Command(BaseCommand):
     help = "Generate fake data for the Django Ninja project"
