@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from virtflow import settings
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView, RedirectView
 
 urlpatterns = [
     # Admin
@@ -34,4 +34,6 @@ urlpatterns = [
 
     # API
     re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
+] 
+# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

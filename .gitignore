@@ -1,4 +1,3 @@
-static/
 backend/tests
 
 # Django #
@@ -142,3 +141,5 @@ GitHub.sublime-settings
 pgadmin4/.pgpass
 virtflow/api/migrations/*
 backend/migrations/*
+.vscode/settings.json
+staticfiles
