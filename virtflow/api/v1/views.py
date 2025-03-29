@@ -3,16 +3,15 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .. import models
 from . import serializers
-from ..authentication import CustomTokenAuthentication, TokenPermission
+from ..authentication import TokenPermission
 from rest_framework.authentication import TokenAuthentication
 class BaseViewSet(viewsets.ModelViewSet):
-    # authentication_classes = [CustomTokenAuthentication]
     authentication_classes = [TokenAuthentication]
     permission_classes = [TokenPermission]
 
 # Maintainer ViewSet
 class MaintainerViewSet(BaseViewSet):
-    queryset = models.Maintainer.objects.all()
+    queryset = models.Maintainer.objects.all().order_by('id')
     serializer_class = serializers.MaintainerSerializer
     
     def get_serializer_class(self):
@@ -24,7 +23,7 @@ class MaintainerViewSet(BaseViewSet):
 
 # Maintainer Group ViewSet
 class MaintainerGroupViewSet(BaseViewSet):
-    queryset = models.MaintainerGroup.objects.all()
+    queryset = models.MaintainerGroup.objects.all().order_by('id')
     serializer_class = serializers.MaintainerGroupSerializer
     
     def get_serializer_class(self):
@@ -36,7 +35,7 @@ class MaintainerGroupViewSet(BaseViewSet):
 
 # Maintainer Group Member ViewSet
 class MaintainerToMaintainerGroupViewSet(BaseViewSet):
-    queryset = models.MaintainerToMaintainerGroup.objects.all()
+    queryset = models.MaintainerToMaintainerGroup.objects.all().order_by('id')
     serializer_class = serializers.MaintainerToMaintainerGroupSerializer
     
     def get_serializer_class(self):
@@ -48,7 +47,7 @@ class MaintainerToMaintainerGroupViewSet(BaseViewSet):
 
 # Resource Maintainer ViewSet
 class ResourceMaintainerViewSet(BaseViewSet):
-    queryset = models.ResourceMaintainer.objects.all()
+    queryset = models.ResourceMaintainer.objects.all().order_by('id')
     serializer_class = serializers.ResourceMaintainerSerializer
     
     def get_serializer_class(self):
@@ -60,7 +59,7 @@ class ResourceMaintainerViewSet(BaseViewSet):
 
 # Rack ViewSet
 class RackViewSet(BaseViewSet):
-    queryset = models.Rack.objects.all()
+    queryset = models.Rack.objects.all().order_by('id')
     serializer_class = serializers.RackSerializer
     
     def get_serializer_class(self):
@@ -72,7 +71,7 @@ class RackViewSet(BaseViewSet):
 
 # Baremetal Group ViewSet
 class BaremetalGroupViewSet(BaseViewSet):
-    queryset = models.BaremetalGroup.objects.all()
+    queryset = models.BaremetalGroup.objects.all().order_by('id')
     serializer_class = serializers.BaremetalGroupSerializer
     
     def get_serializer_class(self):
@@ -84,7 +83,7 @@ class BaremetalGroupViewSet(BaseViewSet):
 
 # Baremetal ViewSet
 class BaremetalViewSet(BaseViewSet):
-    queryset = models.Baremetal.objects.all()
+    queryset = models.Baremetal.objects.all().order_by('id')
     serializer_class = serializers.BaremetalSerializer
     
     def get_serializer_class(self):
@@ -96,7 +95,7 @@ class BaremetalViewSet(BaseViewSet):
 
 # Baremetal Group Tenant Quota ViewSet
 class BaremetalGroupTenantQuotaViewSet(BaseViewSet):
-    queryset = models.BaremetalGroupTenantQuota.objects.all()
+    queryset = models.BaremetalGroupTenantQuota.objects.all().order_by('id')
     serializer_class = serializers.BaremetalGroupTenantQuotaSerializer
     
     def get_serializer_class(self):
@@ -108,7 +107,7 @@ class BaremetalGroupTenantQuotaViewSet(BaseViewSet):
 
 # Tenant ViewSet
 class TenantViewSet(BaseViewSet):
-    queryset = models.Tenant.objects.all()
+    queryset = models.Tenant.objects.all().order_by('id')
     serializer_class = serializers.TenantSerializer
     
     def get_serializer_class(self):
@@ -120,7 +119,7 @@ class TenantViewSet(BaseViewSet):
 
 # Virtual Machine Specification ViewSet
 class VirtualMachineSpecificationViewSet(BaseViewSet):
-    queryset = models.VirtualMachineSpecification.objects.all()
+    queryset = models.VirtualMachineSpecification.objects.all().order_by('id')
     serializer_class = serializers.VirtualMachineSpecificationSerializer
     
     def get_serializer_class(self):
@@ -132,7 +131,7 @@ class VirtualMachineSpecificationViewSet(BaseViewSet):
 
 # K8s Cluster ViewSet
 class K8sClusterViewSet(BaseViewSet):
-    queryset = models.K8sCluster.objects.all()
+    queryset = models.K8sCluster.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterSerializer
     
     def get_serializer_class(self):
@@ -144,7 +143,7 @@ class K8sClusterViewSet(BaseViewSet):
 
 # K8s Cluster Plugin ViewSet
 class K8sClusterPluginViewSet(BaseViewSet):
-    queryset = models.K8sClusterPlugin.objects.all()
+    queryset = models.K8sClusterPlugin.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterPluginSerializer
     
     def get_serializer_class(self):
@@ -156,7 +155,7 @@ class K8sClusterPluginViewSet(BaseViewSet):
 
 # Bastion Cluster Association ViewSet
 class BastionClusterAssociationViewSet(BaseViewSet):
-    queryset = models.BastionClusterAssociation.objects.all()
+    queryset = models.BastionClusterAssociation.objects.all().order_by('id')
     serializer_class = serializers.BastionClusterAssociationSerializer
     
     def get_serializer_class(self):
@@ -168,7 +167,7 @@ class BastionClusterAssociationViewSet(BaseViewSet):
 
 # K8s Cluster To Service Mesh ViewSet
 class K8sClusterToServiceMeshViewSet(BaseViewSet):
-    queryset = models.K8sClusterToServiceMesh.objects.all()
+    queryset = models.K8sClusterToServiceMesh.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterToServiceMeshSerializer
     
     def get_serializer_class(self):
@@ -180,7 +179,7 @@ class K8sClusterToServiceMeshViewSet(BaseViewSet):
 
 # Service Mesh ViewSet
 class ServiceMeshViewSet(BaseViewSet):
-    queryset = models.ServiceMesh.objects.all()
+    queryset = models.ServiceMesh.objects.all().order_by('id')
     serializer_class = serializers.ServiceMeshSerializer
     
     def get_serializer_class(self):
@@ -192,7 +191,7 @@ class ServiceMeshViewSet(BaseViewSet):
 
 # Virtual Machine ViewSet
 class VirtualMachineViewSet(BaseViewSet):
-    queryset = models.VirtualMachine.objects.all()
+    queryset = models.VirtualMachine.objects.all().order_by('id')
     serializer_class = serializers.VirtualMachineSerializer
     
     def get_serializer_class(self):

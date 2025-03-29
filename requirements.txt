@@ -16,3 +16,4 @@ drf-spectacular
 drf-spectacular-sidecar
 gunicorn
 whitenoise
+djangorestframework-stubs

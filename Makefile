@@ -1,3 +1,6 @@
+install-mamba:
+	mamba install --yes --file requirements.txt
+
 migrations:
 	python manage.py makemigrations api
 
@@ -12,6 +15,9 @@ run:
 
 production:
 	uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8000
+
+production-gunicorn:
+	gunicorn virtflow.wsgi:application --bind 0.0.0.0:8002
 
 stage:
 	python manage.py runserver 0.0.0.0:8001
