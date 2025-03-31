@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from virtflow import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView, RedirectView
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     # Admin
@@ -35,5 +36,6 @@ urlpatterns = [
     # API
     re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
+    path('api/token/', obtain_auth_token, name='api_token_auth'),
 ] 
 # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

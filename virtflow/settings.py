@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar', 
     'rest_framework',
     'rest_framework.authtoken',
+    'guardian',
     'virtflow.api',
 ]
 
@@ -149,19 +150,28 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'api.CustomUser'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # 原本的
+    'guardian.backends.ObjectPermissionBackend',  # 加上這個
+)
+ANONYMOUS_USER_ID = -1
+GUARDIAN_MONKEY_PATCH = False
+APPEND_SLASH = False  # 取消自動補 /，避免重導向錯誤
+
 
 # Django REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        # 'virtflow.api.authentication.CustomTokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'virtflow.api.authentication.TokenPermission',
+        'virtflow.api.permissions.HasPermissionForObject',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
@@ -172,7 +182,6 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ],
     'UNAUTHENTICATED_USER': None,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SPECTACULAR_SETTINGS = {

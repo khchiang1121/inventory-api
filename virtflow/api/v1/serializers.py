@@ -3,74 +3,12 @@ from .. import models
 from uuid import UUID
 from datetime import datetime
 
-# Maintainer Serializers
-class MaintainerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Maintainer
-        fields = ['id', 'name', 'account', 'email', 'status', 'created_at', 'updated_at']
+from rest_framework import serializers
 
-class MaintainerCreateSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Maintainer
-        fields = ['name', 'account', 'email', 'status']
-
-class MaintainerUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Maintainer
-        fields = ['name', 'account', 'email', 'status']
-
-# Maintainer Group Serializers
-class MaintainerGroupSerializer(serializers.ModelSerializer):
-    group_manager = MaintainerSerializer(read_only=True)
-    
-    class Meta:
-        model = models.MaintainerGroup
-        fields = ['id', 'name', 'group_manager', 'description', 'status', 'created_at', 'updated_at']
-
-class MaintainerGroupCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MaintainerGroup
-        fields = ['name', 'group_manager', 'description', 'status']
-
-class MaintainerGroupUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MaintainerGroup
-        fields = ['name', 'group_manager', 'description', 'status']
-
-# Maintainer Group Member Serializers
-class MaintainerToMaintainerGroupSerializer(serializers.ModelSerializer):
-    maintainer_group = MaintainerGroupSerializer(read_only=True)
-    maintainer = MaintainerSerializer(read_only=True)
-    
-    class Meta:
-        model = models.MaintainerToMaintainerGroup
-        fields = ['id', 'maintainer_group', 'maintainer', 'created_at', 'updated_at']
-
-class MaintainerToMaintainerGroupCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MaintainerToMaintainerGroup
-        fields = ['maintainer_group', 'maintainer']
-
-class MaintainerToMaintainerGroupUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.MaintainerToMaintainerGroup
-        fields = ['maintainer_group', 'maintainer']
-
-# Resource Maintainer Serializers
-class ResourceMaintainerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ResourceMaintainer
-        fields = ['id', 'resource_type', 'resource_id', 'maintainer_type', 'maintainer_id', 'created_at', 'updated_at']
-
-class ResourceMaintainerCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ResourceMaintainer
-        fields = ['resource_type', 'resource_id', 'maintainer_type', 'maintainer_id']
-
-class ResourceMaintainerUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ResourceMaintainer
-        fields = ['resource_type', 'resource_id', 'maintainer_type', 'maintainer_id']
+        model = models.CustomUser
+        fields = ['id', 'username', 'password', 'email','account', 'status']
 
 # Rack Serializers
 class RackSerializer(serializers.ModelSerializer):
