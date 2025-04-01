@@ -5,6 +5,8 @@ from .. import models
 from . import serializers
 from rest_framework import viewsets
 from .serializers import CustomUserSerializer
+from typing import Type
+from rest_framework.serializers import BaseSerializer
 
 # ------------------------------------------------------------------------------
 # User ViewSets
@@ -14,13 +16,75 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     serializer_class = CustomUserSerializer
 
 # ------------------------------------------------------------------------------
+# Infrastructure ViewSets
+# ------------------------------------------------------------------------------
+class FabricationViewSet(viewsets.ModelViewSet):
+    queryset = models.Fabrication.objects.all().order_by('id')
+    serializer_class = serializers.FabricationSerializer
+
+class PhaseViewSet(viewsets.ModelViewSet):
+    queryset = models.Phase.objects.all().order_by('id')
+    serializer_class = serializers.PhaseSerializer
+
+class DataCenterViewSet(viewsets.ModelViewSet):
+    queryset = models.DataCenter.objects.all().order_by('id')
+    serializer_class = serializers.DataCenterSerializer
+
+class RoomViewSet(viewsets.ModelViewSet):
+    queryset = models.Room.objects.all().order_by('id')
+    serializer_class = serializers.RoomSerializer
+
+# ------------------------------------------------------------------------------
+# Network ViewSets
+# ------------------------------------------------------------------------------
+class VLANViewSet(viewsets.ModelViewSet):
+    queryset = models.VLAN.objects.all().order_by('id')
+    serializer_class = serializers.VLANSerializer
+
+class VRFViewSet(viewsets.ModelViewSet):
+    queryset = models.VRF.objects.all().order_by('id')
+    serializer_class = serializers.VRFSerializer
+
+class BGPConfigViewSet(viewsets.ModelViewSet):
+    queryset = models.BGPConfig.objects.all().order_by('id')
+    serializer_class = serializers.BGPConfigSerializer
+
+class NetworkInterfaceViewSet(viewsets.ModelViewSet):
+    queryset = models.NetworkInterface.objects.all().order_by('id')
+    serializer_class = serializers.NetworkInterfaceSerializer
+
+# ------------------------------------------------------------------------------
+# Purchase ViewSets
+# ------------------------------------------------------------------------------
+class PurchaseRequisitionViewSet(viewsets.ModelViewSet):
+    queryset = models.PurchaseRequisition.objects.all().order_by('id')
+    serializer_class = serializers.PurchaseRequisitionSerializer
+
+class PurchaseOrderViewSet(viewsets.ModelViewSet):
+    queryset = models.PurchaseOrder.objects.all().order_by('id')
+    serializer_class = serializers.PurchaseOrderSerializer
+
+# ------------------------------------------------------------------------------
+# Baremetal ViewSets
+# ------------------------------------------------------------------------------
+class BrandViewSet(viewsets.ModelViewSet):
+    queryset = models.Brand.objects.all().order_by('id')
+    serializer_class = serializers.BrandSerializer
+
+class BaremetalModelViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalModel.objects.all().order_by('id')
+    serializer_class = serializers.BaremetalModelSerializer
+
+# ------------------------------------------------------------------------------
 # Physical Infrastructure ViewSets
 # ------------------------------------------------------------------------------
 class RackViewSet(viewsets.ModelViewSet):
     queryset = models.Rack.objects.all().order_by('id')
     serializer_class = serializers.RackSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        # return serializers.RackSerializer
+
         if self.action == 'create':
             return serializers.RackCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -32,7 +96,7 @@ class BaremetalGroupViewSet(viewsets.ModelViewSet):
     queryset = models.BaremetalGroup.objects.all().order_by('id')
     serializer_class = serializers.BaremetalGroupSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.BaremetalGroupCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -44,7 +108,7 @@ class BaremetalViewSet(viewsets.ModelViewSet):
     queryset = models.Baremetal.objects.all().order_by('id')
     serializer_class = serializers.BaremetalSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.BaremetalCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -56,7 +120,7 @@ class BaremetalGroupTenantQuotaViewSet(viewsets.ModelViewSet):
     queryset = models.BaremetalGroupTenantQuota.objects.all().order_by('id')
     serializer_class = serializers.BaremetalGroupTenantQuotaSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.BaremetalGroupTenantQuotaCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -68,7 +132,7 @@ class TenantViewSet(viewsets.ModelViewSet):
     queryset = models.Tenant.objects.all().order_by('id')
     serializer_class = serializers.TenantSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.TenantCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -80,7 +144,7 @@ class VirtualMachineSpecificationViewSet(viewsets.ModelViewSet):
     queryset = models.VirtualMachineSpecification.objects.all().order_by('id')
     serializer_class = serializers.VirtualMachineSpecificationSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.VirtualMachineSpecificationCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -92,7 +156,7 @@ class K8sClusterViewSet(viewsets.ModelViewSet):
     queryset = models.K8sCluster.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.K8sClusterCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -104,7 +168,7 @@ class K8sClusterPluginViewSet(viewsets.ModelViewSet):
     queryset = models.K8sClusterPlugin.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterPluginSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.K8sClusterPluginCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -116,7 +180,7 @@ class BastionClusterAssociationViewSet(viewsets.ModelViewSet):
     queryset = models.BastionClusterAssociation.objects.all().order_by('id')
     serializer_class = serializers.BastionClusterAssociationSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.BastionClusterAssociationCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -128,7 +192,7 @@ class K8sClusterToServiceMeshViewSet(viewsets.ModelViewSet):
     queryset = models.K8sClusterToServiceMesh.objects.all().order_by('id')
     serializer_class = serializers.K8sClusterToServiceMeshSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.K8sClusterToServiceMeshCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -140,7 +204,7 @@ class ServiceMeshViewSet(viewsets.ModelViewSet):
     queryset = models.ServiceMesh.objects.all().order_by('id')
     serializer_class = serializers.ServiceMeshSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.ServiceMeshCreateSerializer
         elif self.action in ['update', 'partial_update']:
@@ -152,7 +216,7 @@ class VirtualMachineViewSet(viewsets.ModelViewSet):
     queryset = models.VirtualMachine.objects.all().order_by('id')
     serializer_class = serializers.VirtualMachineSerializer
     
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == 'create':
             return serializers.VirtualMachineCreateSerializer
         elif self.action in ['update', 'partial_update']:

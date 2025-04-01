@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .. import models
 from uuid import UUID
 from datetime import datetime
+from django.contrib.contenttypes.models import ContentType
 
 from rest_framework import serializers
 
@@ -9,6 +10,69 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
         fields = ['id', 'username', 'password', 'email','account', 'status']
+
+# ------------------------------------------------------------------------------
+# Infrastructure Serializers
+# ------------------------------------------------------------------------------
+class FabricationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Fabrication
+        fields = ['id', 'name', 'old_system_id', 'created_at', 'updated_at']
+
+class PhaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Phase
+        fields = ['id', 'name', 'old_system_id', 'created_at', 'updated_at']
+
+class DataCenterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DataCenter
+        fields = ['id', 'name', 'old_system_id', 'created_at', 'updated_at']
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Room
+        fields = ['id', 'name', 'old_system_id', 'created_at', 'updated_at']
+
+# ------------------------------------------------------------------------------
+# Network Serializers
+# ------------------------------------------------------------------------------
+class VLANSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VLAN
+        fields = ['id', 'vlan_id', 'name', 'created_at', 'updated_at']
+
+class VRFSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VRF
+        fields = ['id', 'name', 'route_distinguisher', 'created_at', 'updated_at']
+
+class BGPConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BGPConfig
+        fields = ['id', 'asn', 'peer_ip', 'local_ip', 'password', 'created_at', 'updated_at']
+
+class ResourceRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        return {
+            'id': str(value.id),
+            'type': value._meta.model_name,
+            'name': value.name
+        }
+
+class NetworkInterfaceSerializer(serializers.ModelSerializer):
+    vlan = VLANSerializer(read_only=True)
+    vrf = VRFSerializer(read_only=True)
+    bgp_config = BGPConfigSerializer(read_only=True)
+    resource = ResourceRelatedField(read_only=True)
+    content_type = serializers.PrimaryKeyRelatedField(queryset=ContentType.objects.all(), write_only=True)
+    object_id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        model = models.NetworkInterface
+        fields = ['id', 'resource', 'content_type', 'object_id', 'name', 'mac_address', 
+                 'is_primary', 'ipv4_address', 'ipv4_netmask', 'ipv6_address', 'ipv6_netmask', 
+                 'gateway', 'dns_servers', 'vlan', 'vrf', 'bgp_config', 'created_at', 'updated_at']
 
 # Rack Serializers
 class RackSerializer(serializers.ModelSerializer):
@@ -19,7 +83,9 @@ class RackSerializer(serializers.ModelSerializer):
 class RackCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Rack
-        fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
+        # fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
+        fields = ['id', 'name', 'bgp_number', 'as_number', 'old_system_id', 'created_at', 'updated_at']
+
 
 class RackUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,33 +112,63 @@ class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
         fields = ['name', 'description', 'total_cpu', 'total_memory', 'total_storage', 
                  'available_cpu', 'available_memory', 'available_storage', 'status']
 
+# ------------------------------------------------------------------------------
+# Purchase Serializers
+# ------------------------------------------------------------------------------
+class PurchaseRequisitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseRequisition
+        fields = ['id', 'pr_number', 'requested_by', 'department', 'reason', 'submit_date', 'created_at', 'updated_at']
+
+class PurchaseOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseOrder
+        fields = ['id', 'po_number', 'vendor_name', 'payment_terms', 'delivery_date', 'issued_by', 'created_at', 'updated_at']
+
+# ------------------------------------------------------------------------------
+# Baremetal Serializers
+# ------------------------------------------------------------------------------
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Brand
+        fields = ['id', 'name', 'created_at', 'updated_at']
+
+class BaremetalModelSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer(read_only=True)
+    
+    class Meta:
+        model = models.BaremetalModel
+        fields = ['id', 'name', 'brand', 'total_cpu', 'total_memory', 'total_storage', 'created_at', 'updated_at'] 
 # Baremetal Serializers
 class BaremetalSerializer(serializers.ModelSerializer):
     rack = RackSerializer(read_only=True)
     group = BaremetalGroupSerializer(read_only=True)
+    model = BaremetalModelSerializer(read_only=True)
+    fabrication = FabricationSerializer(read_only=True)
+    phase = PhaseSerializer(read_only=True)
+    data_center = DataCenterSerializer(read_only=True)
+    pr = PurchaseRequisitionSerializer(read_only=True)
+    po = PurchaseOrderSerializer(read_only=True)
     
     class Meta:
         model = models.Baremetal
-        fields = ['id', 'name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
-                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
-                 'available_cpu', 'available_memory', 'available_storage', 'group', 
-                 'old_system_id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'serial_number', 'model', 'fabrication', 'phase', 'data_center', 
+                 'room', 'rack', 'unit', 'status', 'available_cpu', 'available_memory', 
+                 'available_storage', 'group', 'pr', 'po', 'old_system_id', 'created_at', 'updated_at']
 
 class BaremetalCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Baremetal
-        fields = ['name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
-                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
-                 'available_cpu', 'available_memory', 'available_storage', 'group', 
-                 'old_system_id']
+        fields = ['name', 'serial_number', 'model', 'fabrication', 'phase', 'data_center', 
+                 'room', 'rack', 'unit', 'status', 'available_cpu', 'available_memory', 
+                 'available_storage', 'group', 'old_system_id']
 
 class BaremetalUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Baremetal
-        fields = ['name', 'serial_number', 'region', 'fab', 'phase', 'dc', 'room', 
-                 'rack', 'unit', 'status', 'total_cpu', 'total_memory', 'total_storage', 
-                 'available_cpu', 'available_memory', 'available_storage', 'group', 
-                 'old_system_id']
+        fields = ['name', 'serial_number', 'model', 'fabrication', 'phase', 'data_center', 
+                 'room', 'rack', 'unit', 'status', 'available_cpu', 'available_memory', 
+                 'available_storage', 'group', 'old_system_id']
 
 # Baremetal Group Tenant Quota Serializers
 class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
@@ -228,4 +324,14 @@ class VirtualMachineCreateSerializer(serializers.ModelSerializer):
 class VirtualMachineUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VirtualMachine
-        fields = ['name', 'tenant', 'baremetal', 'specification', 'k8s_cluster', 'type', 'status'] 
+        fields = ['name', 'tenant', 'baremetal', 'specification', 'k8s_cluster', 'type', 'status']
+
+# ------------------------------------------------------------------------------
+# Permission Serializers
+# ------------------------------------------------------------------------------
+class ObjectPermissionSerializer(serializers.Serializer):
+    model_name = serializers.CharField()
+    object_id = serializers.CharField()
+    user_id = serializers.CharField(required=False)
+    group_id = serializers.CharField(required=False)
+    permission = serializers.CharField()
