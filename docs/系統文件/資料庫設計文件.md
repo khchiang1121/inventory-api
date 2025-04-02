@@ -1,0 +1,425 @@
+# 資料庫設計文件
+
+**版本：** 2.0.0
+**更新日期：** 2025-03-15
+
+本文件描述系統中各主要資源（例如實體機、虛擬機、群組、租戶、k8s 叢集等）的資料表設計，並詳細說明各表之間的關聯與使用方式。
+
+## 整體概觀
+此版本定義了 **16** 張主要資料表（Model）以管理實體機（Baremetal）、虛擬機（VirtualMachine）、維護者資訊（Maintainer）、K8s 叢集（K8sCluster）與其他週邊資源。它們大致可分為以下幾大類：
+
+1. **維護者相關**  
+   - Maintainer  
+   - MaintainerGroup  
+   - MaintainerToMaintainerGroup  
+   - ResourceMaintainer  
+
+2. **實體機與機架相關**  
+   - Rack  
+   - BaremetalGroup  
+   - Baremetal  
+   - BaremetalGroupTenantQuota  
+
+3. **租戶與虛擬資源**  
+   - Tenant  
+   - VirtualMachineSpecification  
+   - VirtualMachine  
+
+4. **K8s 叢集及其相關**  
+   - K8sCluster  
+   - K8sClusterPlugin  
+   - BastionClusterAssociation  
+   - K8sClusterToServiceMesh  
+   - ServiceMesh  
+
+## 1. 維護者相關
+
+### 1.1 Maintainer
+
+**用途：**  
+- 用來記錄「個人」維護者（維運人員）的資訊，如姓名、帳號、信箱等。  
+- 其他資源若需要指定「單一個人」作為維護者，可透過此表找出相應的 `Maintainer` 紀錄。
+
+**使用方式：**  
+- 在建立資源時，如果需要指派某一個人來負責管理或維運，系統就會參考此表的紀錄。
+
+| 欄位名稱 | 型態            | 說明                                                          |
+|----------|-----------------|---------------------------------------------------------------|
+| id       | UUID (PK)      | 唯一識別碼                                                    |
+| name     | CharField      | 維護者名稱（可視為人員的真實姓名）                            |
+| account  | CharField      | 唯一的帳號名稱（例如員工工號或使用者帳號），系統內不可重複    |
+| email    | EmailField     | 聯絡信箱（可選填）                                            |
+| status   | CharField      | 狀態：active / inactive                                       |
+| created_at | DateTimeField| 建立時間                                                      |
+| updated_at | DateTimeField| 更新時間                                                      |
+
+---
+
+### 1.2 MaintainerGroup
+
+**用途：**  
+- 用來紀錄維護者「群組」的資訊，一個群組可包含多位個人維護者 (`Maintainer`)。  
+- 也可以指定一位群組管理者 (`group_manager`)。
+
+**使用方式：**  
+- 若某些維護任務需由一整個團隊一起承擔，可以把該團隊定義成一個 `MaintainerGroup`，並在其中設定「群組管理者」。
+
+| 欄位名稱   | 型態             | 說明                                                                 |
+|------------|------------------|----------------------------------------------------------------------|
+| id         | UUID (PK)       | 群組唯一識別碼                                                        |
+| name       | CharField       | 群組名稱                                                              |
+| group_manager | ForeignKey   | 指向 `Maintainer`，表示誰是此群組的管理者                             |
+| description| TextField       | 群組用途或描述（選填）                                                |
+| status     | CharField       | 群組狀態：active / inactive                                           |
+| members    | ManyToManyField | 透過 `MaintainerToMaintainerGroup` 連接一組 `Maintainer`（群組成員）   |
+| created_at | DateTimeField   | 建立時間                                                              |
+| updated_at | DateTimeField   | 更新時間                                                              |
+
+> **注意：** 雖然程式碼中以 `ManyToManyField` 的方式定義群組成員，但實際管理上由 `MaintainerToMaintainerGroup` 這張中介表協助完成多對多的關係。
+
+---
+
+### 1.3 MaintainerToMaintainerGroup
+
+**用途：**  
+- 作為 `Maintainer` 與 `MaintainerGroup` 的中介表（through model），用來維護「一個人是否屬於某個群組」的紀錄。  
+
+**使用方式：**  
+- 若某個 `Maintainer` 加入了某個 `MaintainerGroup`，系統會在此表中產生一筆紀錄。  
+- 透過此表可以查詢某群組下有哪些成員，也能查詢某位維護者加入了哪些群組。
+
+| 欄位名稱         | 型態          | 說明                                                               |
+|------------------|---------------|--------------------------------------------------------------------|
+| id               | UUID (PK)     | 唯一識別碼                                                         |
+| maintainer_group | ForeignKey    | 指向 `MaintainerGroup`                                             |
+| maintainer       | ForeignKey    | 指向 `Maintainer`                                                  |
+| created_at       | DateTimeField | 建立時間                                                           |
+| updated_at       | DateTimeField | 更新時間                                                           |
+
+---
+
+### 1.4 ResourceMaintainer
+
+**用途：**  
+- 以多型關聯（Polymorphic Association）的方式，連結「任意一種資源」與「維護者（個人或群組）」之間的對應關係。  
+- 例如 `Baremetal`, `VirtualMachine`, `K8sCluster` 等，都可能指派給某個 `Maintainer` 或 `MaintainerGroup` 來維護。
+
+**使用方式：**  
+- 查詢一個資源的所有維護者，或反向查詢某個維護者或群組維護了哪些資源，都透過此表進行。
+
+| 欄位名稱       | 型態      | 說明                                                                                           |
+|----------------|-----------|------------------------------------------------------------------------------------------------|
+| id             | UUID (PK) | 唯一識別碼                                                                                     |
+| resource_type  | CharField | 資源類型（例如：`Baremetal`, `VirtualMachine`, `K8sCluster` 等）                                |
+| resource_id    | UUIDField | 對應資源的主鍵（實際型態根據資源而定，程式中以 UUID 為主）                                       |
+| maintainer_type| CharField | 維護者類型： `maintainer` (個人) / `maintainer_group` (群組)                                   |
+| maintainer_id  | UUIDField | 對應維護者的主鍵 (若為個人則對應 `Maintainer.id`；若為群組則對應 `MaintainerGroup.id`)          |
+| created_at     | DateTimeField | 建立時間                                                                                   |
+| updated_at     | DateTimeField | 更新時間                                                                                   |
+
+---
+
+## 2. 實體機與機架相關
+
+### 2.1 Rack
+
+**用途：**  
+- 紀錄資料中心中的「機架」(Rack) 資訊，例如機架名稱、編號，以及網路相關的 BGP/AS 編號等。  
+- 為了在各種網路調度環境下能快速查詢機架資訊，提供了對應的欄位。
+
+**使用方式：**  
+- 於 `Baremetal` 表中以 ForeignKey 方式連結 `Rack`，使得每台實體機可以知道自己座落在哪個機架。
+
+| 欄位名稱    | 型態          | 說明                                                      |
+|-------------|---------------|-----------------------------------------------------------|
+| id          | UUID (PK)     | 唯一識別碼                                               |
+| name        | CharField     | 機架名稱或代號                                           |
+| bgp_number  | CharField     | BGP 編號                                                 |
+| as_number   | CharField     | AS 編號                                                  |
+| old_system_id | CharField   | 舊系統對應到的機架 ID（若有）                            |
+| created_at  | DateTimeField | 建立時間                                                 |
+| updated_at  | DateTimeField | 更新時間                                                 |
+
+---
+
+### 2.2 BaremetalGroup
+
+**用途：**  
+- 用來將實體機分組，稱作「Baremetal Group」，方便依照某些條件（如地理位置、負載情況等）做批次管理或資源分配。  
+- 每個群組可自行定義可使用的總 CPU、記憶體、儲存空間以及目前可用量。
+
+**使用方式：**  
+- 在建立或維護實體機資料時，可以將多台 `Baremetal` 歸屬於同一個 `BaremetalGroup`。  
+- 若租戶有針對某群組的配額限制（quota），就會在 `BaremetalGroupTenantQuota` 中設定。
+
+| 欄位名稱         | 型態          | 說明                                                                |
+|------------------|---------------|---------------------------------------------------------------------|
+| id               | UUID (PK)     | 唯一識別碼                                                          |
+| name             | CharField     | 群組名稱                                                            |
+| description      | TextField     | 群組用途描述（選填）                                                |
+| total_cpu        | IntegerField  | 群組總 CPU 容量                                                     |
+| total_memory     | IntegerField  | 群組總記憶體容量                                                    |
+| total_storage    | IntegerField  | 群組總儲存空間                                                      |
+| available_cpu    | IntegerField  | 群組目前可用 CPU                                                    |
+| available_memory | IntegerField  | 群組目前可用記憶體                                                  |
+| available_storage| IntegerField  | 群組目前可用儲存空間                                                |
+| status           | CharField     | 狀態：active / inactive                                             |
+| created_at       | DateTimeField | 建立時間                                                            |
+| updated_at       | DateTimeField | 更新時間                                                            |
+
+---
+
+### 2.3 Baremetal
+
+**用途：**  
+- 紀錄實體機（Baremetal）的詳細資訊，例如序號、所在機架、資源容量，以及是否對應舊系統 ID 等。  
+- 在新版設計中，用 `Baremetal` 替代了先前文件裡的 `Host`。
+
+**使用方式：**  
+- 租戶若要在某台實體機上部署虛擬機（VirtualMachine），會需要查詢此表中該實體機的可用容量。  
+- 同時記錄了區域（region）、資料中心（dc）等，方便地理或環境分散部署。
+
+| 欄位名稱         | 型態          | 說明                                                             |
+|------------------|---------------|------------------------------------------------------------------|
+| id               | UUID (PK)     | 唯一識別碼                                                       |
+| name             | CharField     | 實體機名稱                                                       |
+| serial_number    | CharField     | 唯一序號，用以識別此機器                                         |
+| region           | CharField     | 地理區域資訊（選填）                                             |
+| fab             | CharField      | Fabrication / 製程階段等資訊（選填）                              |
+| phase            | CharField     | 部署階段資訊（選填）                                             |
+| dc               | CharField     | 資料中心代號（選填）                                             |
+| room             | CharField     | 資料中心房間號（選填）                                           |
+| rack             | ForeignKey    | 指向 `Rack`，表示此實體機在哪個機架                              |
+| unit             | CharField     | 機架內單位（選填）                                               |
+| status           | CharField     | 狀態：active / inactive                                          |
+| total_cpu        | IntegerField  | 總 CPU 核心數                                                    |
+| total_memory     | IntegerField  | 總記憶體容量                                                     |
+| total_storage    | IntegerField  | 總儲存空間                                                       |
+| available_cpu    | IntegerField  | 可用 CPU                                                         |
+| available_memory | IntegerField  | 可用記憶體                                                       |
+| available_storage| IntegerField  | 可用儲存空間                                                     |
+| group            | ForeignKey    | 指向 `BaremetalGroup`，每台實體機必須隸屬於一個群組              |
+| old_system_id    | CharField     | 舊系統中對應的實體機編號（選填）                                 |
+| created_at       | DateTimeField | 建立時間                                                         |
+| updated_at       | DateTimeField | 更新時間                                                         |
+
+---
+
+### 2.4 BaremetalGroupTenantQuota
+
+**用途：**  
+- 為了限制（或分配）租戶在某個 `BaremetalGroup` 裡可使用的資源量，而設置的配額管理表。  
+
+**使用方式：**  
+- 當租戶要在某個群組內建立虛擬機時，系統會參考此表瞭解該租戶尚可使用的資源上限（CPU、記憶體、儲存空間）。  
+- 若該租戶的使用量超過此表設定的配額，就無法再於該群組新增更多虛擬機。
+
+| 欄位名稱             | 型態          | 說明                                              |
+|----------------------|---------------|---------------------------------------------------|
+| id                   | UUID (PK)     | 唯一識別碼                                        |
+| group                | ForeignKey    | 指向 `BaremetalGroup`，表示此配額針對哪個群組     |
+| tenant               | ForeignKey    | 指向 `Tenant`，表示配額屬於哪個租戶               |
+| cpu_quota_percentage | FloatField    | CPU 資源配額的百分比                               |
+| memory_quota         | IntegerField  | 記憶體上限（MB）                                  |
+| storage_quota        | IntegerField  | 儲存空間上限（GB）                                |
+| created_at           | DateTimeField | 建立時間                                          |
+| updated_at           | DateTimeField | 更新時間                                          |
+
+---
+
+## 3. 租戶與虛擬資源
+
+### 3.1 Tenant
+
+**用途：**  
+- 紀錄系統裡的「租戶」資訊，通常代表一個使用者或部門單位。
+
+**使用方式：**  
+- `Tenant` 可以與 `BaremetalGroup` 之間有配額限制，並在 `VirtualMachine` 或 `K8sCluster` 等表裡關聯此租戶。  
+
+| 欄位名稱   | 型態          | 說明                                                      |
+|------------|---------------|-----------------------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                               |
+| name       | CharField     | 租戶名稱                                                 |
+| description| TextField     | 租戶描述（選填）                                         |
+| status     | CharField     | 狀態：active / inactive                                  |
+| created_at | DateTimeField | 建立時間                                                 |
+| updated_at | DateTimeField | 更新時間                                                 |
+
+---
+
+### 3.2 VirtualMachineSpecification
+
+**用途：**  
+- 定義「虛擬機」所需的各種資源配置模板（CPU、記憶體、儲存空間等），並可以用版本或世代區分 (`generation`)。
+
+**使用方式：**  
+- 當用戶要建立 `VirtualMachine` 時，可以選擇此表裡預先定義的規格，系統就能依此檢查並分配所需資源。
+
+| 欄位名稱         | 型態          | 說明                             |
+|------------------|---------------|----------------------------------|
+| id               | UUID (PK)     | 唯一識別碼                       |
+| name             | CharField     | 規格名稱                         |
+| generation       | CharField     | 規格版本或世代編號               |
+| required_cpu     | IntegerField  | CPU 需求（核心數）               |
+| required_memory  | IntegerField  | 記憶體需求                        |
+| required_storage | IntegerField  | 儲存空間需求（GB）               |
+| created_at       | DateTimeField | 建立時間                         |
+| updated_at       | DateTimeField | 更新時間                         |
+
+---
+
+### 3.3 VirtualMachine
+
+**用途：**  
+- 紀錄所有「虛擬機」的資訊，包括：  
+  - 隸屬哪個租戶 (`tenant`)  
+  - 部署在哪台實體機上 (`baremetal`)  
+  - 採用哪種 VM 規格 (`specification`)  
+  - 是否隸屬某個 K8s 叢集 (`k8s_cluster`)  
+  - VM 的類型（control-plane/worker/management/other）  
+  - 目前狀態  
+
+**使用方式：**  
+- 系統在建立虛擬機時，會參考此表並寫入相應欄位。  
+- 可透過其外鍵與 `Baremetal`、`Tenant`、`K8sCluster` 等表做關聯查詢。
+
+| 欄位名稱   | 型態          | 說明                                                                 |
+|------------|---------------|----------------------------------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                                           |
+| name       | CharField     | 虛擬機名稱                                                           |
+| tenant     | ForeignKey    | 指向 `Tenant`，表示此虛擬機屬於哪個租戶                              |
+| baremetal  | ForeignKey    | 指向 `Baremetal`，表示此虛擬機所部署的實體機                         |
+| specification| ForeignKey  | 指向 `VirtualMachineSpecification`，表示此 VM 採用的硬體規格         |
+| k8s_cluster| ForeignKey    | 指向 `K8sCluster` (可為 null)，若此 VM 屬於某個 K8s 叢集              |
+| type       | CharField     | 虛擬機類型：control-plane、worker、management、或 other              |
+| status     | CharField     | 虛擬機狀態（例如：active, inactive, error 等）                       |
+| created_at | DateTimeField | 建立時間                                                             |
+| updated_at | DateTimeField | 更新時間                                                             |
+
+---
+
+## 4. K8s 叢集及其相關
+
+### 4.1 K8sCluster
+
+**用途：**  
+- 記錄 Kubernetes 叢集的基本資訊，例如叢集名稱、版本、隸屬租戶，以及整體狀態。
+
+**使用方式：**  
+- 每個租戶可擁有多個 K8s 叢集，所以這裡是一對多的關係（`Tenant` → `K8sCluster`）。  
+- 與 `VirtualMachine`、`K8sClusterPlugin` 等表相互關聯，形成整個叢集管理環境。
+
+| 欄位名稱   | 型態          | 說明                                                                   |
+|------------|---------------|------------------------------------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                                             |
+| name       | CharField     | 叢集名稱                                                               |
+| version    | CharField     | Kubernetes 版本                                                        |
+| tenant          | ForeignKey    | 指向 `Tenant`，表示此叢集歸屬於哪個租戶                                 |
+| scheduling_mode | CharField    | 虛擬機的部署策略                                 |
+| description| TextField     | 叢集描述（選填）                                                       |
+| status     | CharField     | 叢集狀態，例如 active / maintenance / offline / error 等                |
+| created_at | DateTimeField | 建立時間                                                               |
+| updated_at | DateTimeField | 更新時間                                                               |
+
+---
+
+### 4.2 K8sClusterPlugin
+
+**用途：**  
+- 記錄安裝在某個 K8s 叢集上的外掛（Plugin）資訊，如網路外掛、監控外掛、其他功能模組等。  
+- 也可追蹤它的版本與目前狀態。
+
+**使用方式：**  
+- 若系統對 K8s 叢集安裝了任何外掛，會在此表建立一筆紀錄，方便查詢並進行版本管理或故障排查。
+
+| 欄位名稱     | 型態           | 說明                                                |
+|--------------|----------------|-----------------------------------------------------|
+| id           | UUID (PK)      | 唯一識別碼                                          |
+| cluster      | ForeignKey     | 指向 `K8sCluster`，表示此外掛安裝在哪個叢集          |
+| name         | CharField      | 外掛名稱                                            |
+| version      | CharField      | 外掛版本                                            |
+| status       | CharField      | 外掛狀態：active / inactive / error                 |
+| additional_info | JSONField   | 其他額外資訊（選填），可用 JSON 形式儲存            |
+| created_at   | DateTimeField  | 建立時間                                            |
+| updated_at   | DateTimeField  | 更新時間                                            |
+
+---
+
+### 4.3 BastionClusterAssociation
+
+**用途：**  
+- 建立「堡壘機」(Bastion VM) 與 K8s 叢集間的關聯。  
+- 例如，某個 VM 可能是作為該叢集的堡壘機，用來管控存取或作為跳板主機。
+
+**使用方式：**  
+- 查詢某個叢集對應的堡壘機，或反向查詢某個堡壘機對應的叢集，都可透過此表實現。
+
+| 欄位名稱   | 型態          | 說明                                               |
+|------------|---------------|----------------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                         |
+| bastion    | ForeignKey    | 指向 `VirtualMachine`，表示這台 VM 是堡壘機         |
+| k8s_cluster| ForeignKey    | 指向 `K8sCluster`，表示這台堡壘機管理哪個叢集       |
+| created_at | DateTimeField | 建立時間                                           |
+| updated_at | DateTimeField | 更新時間                                           |
+
+---
+
+### 4.4 K8sClusterToServiceMesh
+
+**用途：**  
+- 紀錄 K8s 叢集與 Service Mesh 之間的關聯。  
+- 同時可定義該 Service Mesh 在叢集中的角色（primary / secondary），以便多叢集或多 Service Mesh 配置。
+
+**使用方式：**  
+- 若某個 `K8sCluster` 要使用特定的 Service Mesh（如 Istio 或 Cilium），會在此表生成一筆紀錄。
+
+| 欄位名稱   | 型態          | 說明                                                        |
+|------------|---------------|-------------------------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                                  |
+| cluster    | ForeignKey    | 指向 `K8sCluster`，表示此關聯屬於哪個叢集                  |
+| service_mesh | ForeignKey  | 指向 `ServiceMesh`，表示此叢集所使用的 Service Mesh         |
+| role       | CharField     | 此 Service Mesh 在叢集中的角色：primary / secondary        |
+| created_at | DateTimeField | 建立時間                                                    |
+| updated_at | DateTimeField | 更新時間                                                    |
+
+---
+
+### 4.5 ServiceMesh
+
+**用途：**  
+- 定義 Service Mesh 本身的資訊，如 Cilium、Istio 或其他廠商的 Mesh。  
+- 可以記錄 Service Mesh 的狀態（active/inactive/error）以及其他描述。
+
+**使用方式：**  
+- 若某 K8sCluster 安裝/使用該 Service Mesh，就會透過 `K8sClusterToServiceMesh` 來做關聯。
+
+| 欄位名稱   | 型態          | 說明                                      |
+|------------|---------------|-------------------------------------------|
+| id         | UUID (PK)     | 唯一識別碼                                |
+| name       | CharField     | Service Mesh 名稱                         |
+| type       | CharField     | Service Mesh 類型：cilium / istio / other |
+| description| TextField     | 文字說明（選填）                           |
+| status     | CharField     | 狀態：active / inactive / error           |
+| created_at | DateTimeField | 建立時間                                  |
+| updated_at | DateTimeField | 更新時間                                  |
+
+---
+
+## 小結
+
+- **維護者管理相關：**  
+  - **Maintainer, MaintainerGroup, MaintainerToMaintainerGroup, ResourceMaintainer**  
+  這四張表協助我們管理「個人維護者」或「群組維護者」與各種資源的關係。任何資源只要在 `ResourceMaintainer` 中加入一筆紀錄，即可綁定給某個個人或群組。
+
+- **實體機與機架：**  
+  - **Rack, BaremetalGroup, Baremetal, BaremetalGroupTenantQuota**  
+  用於管理實體機所屬的機架、分組，以及租戶在該組別內可使用的配額。
+
+- **租戶與虛擬機：**  
+  - **Tenant, VirtualMachineSpecification, VirtualMachine**  
+  租戶可以擁有多台虛擬機，也能選擇對應的虛擬機規格；系統會依照這些資訊進行資源調度。
+
+- **K8s 叢集及週邊：**  
+  - **K8sCluster, K8sClusterPlugin, BastionClusterAssociation, K8sClusterToServiceMesh, ServiceMesh**  
+  讓 Kubernetes 叢集與相應的 Plug-in、堡壘機以及 Service Mesh 建立關聯，提供完整的叢集管理能力。
