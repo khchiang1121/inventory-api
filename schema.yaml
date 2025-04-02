@@ -1,0 +1,7392 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/token/:
+    post:
+      operationId: token_create
+      tags:
+      - token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/v1/baremetal-group-tenant-quotas:
+    get:
+      operationId: v1_baremetal_group_tenant_quotas_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaremetalGroupTenantQuotaList'
+          description: ''
+    post:
+      operationId: v1_baremetal_group_tenant_quotas_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupTenantQuotaCreate'
+          description: ''
+  /api/v1/baremetal-group-tenant-quotas/{id}:
+    get:
+      operationId: v1_baremetal_group_tenant_quotas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group tenant quota.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupTenantQuota'
+          description: ''
+    put:
+      operationId: v1_baremetal_group_tenant_quotas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group tenant quota.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupTenantQuotaUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupTenantQuotaUpdate'
+          description: ''
+    patch:
+      operationId: v1_baremetal_group_tenant_quotas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group tenant quota.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupTenantQuotaUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupTenantQuotaUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupTenantQuotaUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupTenantQuotaUpdate'
+          description: ''
+    delete:
+      operationId: v1_baremetal_group_tenant_quotas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group tenant quota.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/baremetal-groups:
+    get:
+      operationId: v1_baremetal_groups_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaremetalGroupList'
+          description: ''
+    post:
+      operationId: v1_baremetal_groups_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupCreate'
+          description: ''
+  /api/v1/baremetal-groups/{id}:
+    get:
+      operationId: v1_baremetal_groups_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroup'
+          description: ''
+    put:
+      operationId: v1_baremetal_groups_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalGroupUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupUpdate'
+          description: ''
+    patch:
+      operationId: v1_baremetal_groups_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalGroupUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalGroupUpdate'
+          description: ''
+    delete:
+      operationId: v1_baremetal_groups_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal group.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/baremetal-models:
+    get:
+      operationId: v1_baremetal_models_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaremetalModelList'
+          description: ''
+    post:
+      operationId: v1_baremetal_models_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalModel'
+          description: ''
+  /api/v1/baremetal-models/{id}:
+    get:
+      operationId: v1_baremetal_models_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal model.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalModel'
+          description: ''
+    put:
+      operationId: v1_baremetal_models_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal model.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalModel'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalModel'
+          description: ''
+    patch:
+      operationId: v1_baremetal_models_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal model.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalModel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalModel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalModel'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalModel'
+          description: ''
+    delete:
+      operationId: v1_baremetal_models_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal model.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/baremetals:
+    get:
+      operationId: v1_baremetals_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaremetalList'
+          description: ''
+    post:
+      operationId: v1_baremetals_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalCreate'
+          description: ''
+  /api/v1/baremetals/{id}:
+    get:
+      operationId: v1_baremetals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Baremetal'
+          description: ''
+    put:
+      operationId: v1_baremetals_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaremetalUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaremetalUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaremetalUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalUpdate'
+          description: ''
+    patch:
+      operationId: v1_baremetals_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaremetalUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaremetalUpdate'
+          description: ''
+    delete:
+      operationId: v1_baremetals_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this baremetal.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bastion-cluster-associations:
+    get:
+      operationId: v1_bastion_cluster_associations_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBastionClusterAssociationList'
+          description: ''
+    post:
+      operationId: v1_bastion_cluster_associations_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BastionClusterAssociationCreate'
+          description: ''
+  /api/v1/bastion-cluster-associations/{id}:
+    get:
+      operationId: v1_bastion_cluster_associations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bastion cluster association.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BastionClusterAssociation'
+          description: ''
+    put:
+      operationId: v1_bastion_cluster_associations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bastion cluster association.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BastionClusterAssociationUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BastionClusterAssociationUpdate'
+          description: ''
+    patch:
+      operationId: v1_bastion_cluster_associations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bastion cluster association.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBastionClusterAssociationUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBastionClusterAssociationUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBastionClusterAssociationUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BastionClusterAssociationUpdate'
+          description: ''
+    delete:
+      operationId: v1_bastion_cluster_associations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bastion cluster association.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/bgp-configs:
+    get:
+      operationId: v1_bgp_configs_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBGPConfigList'
+          description: ''
+    post:
+      operationId: v1_bgp_configs_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BGPConfig'
+          description: ''
+  /api/v1/bgp-configs/{id}:
+    get:
+      operationId: v1_bgp_configs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bgp config.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BGPConfig'
+          description: ''
+    put:
+      operationId: v1_bgp_configs_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bgp config.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BGPConfig'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BGPConfig'
+          description: ''
+    patch:
+      operationId: v1_bgp_configs_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bgp config.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBGPConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBGPConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBGPConfig'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BGPConfig'
+          description: ''
+    delete:
+      operationId: v1_bgp_configs_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bgp config.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/brands:
+    get:
+      operationId: v1_brands_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBrandList'
+          description: ''
+    post:
+      operationId: v1_brands_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+  /api/v1/brands/{id}:
+    get:
+      operationId: v1_brands_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this brand.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    put:
+      operationId: v1_brands_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this brand.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    patch:
+      operationId: v1_brands_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this brand.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    delete:
+      operationId: v1_brands_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this brand.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/data-centers:
+    get:
+      operationId: v1_data_centers_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDataCenterList'
+          description: ''
+    post:
+      operationId: v1_data_centers_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCenter'
+          description: ''
+  /api/v1/data-centers/{id}:
+    get:
+      operationId: v1_data_centers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data center.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCenter'
+          description: ''
+    put:
+      operationId: v1_data_centers_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data center.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DataCenter'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCenter'
+          description: ''
+    patch:
+      operationId: v1_data_centers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data center.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDataCenter'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDataCenter'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDataCenter'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCenter'
+          description: ''
+    delete:
+      operationId: v1_data_centers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this data center.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fabrications:
+    get:
+      operationId: v1_fabrications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFabricationList'
+          description: ''
+    post:
+      operationId: v1_fabrications_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fabrication'
+          description: ''
+  /api/v1/fabrications/{id}:
+    get:
+      operationId: v1_fabrications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fabrication.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fabrication'
+          description: ''
+    put:
+      operationId: v1_fabrications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fabrication.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Fabrication'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fabrication'
+          description: ''
+    patch:
+      operationId: v1_fabrications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fabrication.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFabrication'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFabrication'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFabrication'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fabrication'
+          description: ''
+    delete:
+      operationId: v1_fabrications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fabrication.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/k8s-cluster-plugins:
+    get:
+      operationId: v1_k8s_cluster_plugins_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedK8sClusterPluginList'
+          description: ''
+    post:
+      operationId: v1_k8s_cluster_plugins_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterPluginCreate'
+          description: ''
+  /api/v1/k8s-cluster-plugins/{id}:
+    get:
+      operationId: v1_k8s_cluster_plugins_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster plugin.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterPlugin'
+          description: ''
+    put:
+      operationId: v1_k8s_cluster_plugins_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster plugin.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterPluginUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterPluginUpdate'
+          description: ''
+    patch:
+      operationId: v1_k8s_cluster_plugins_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster plugin.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterPluginUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterPluginUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterPluginUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterPluginUpdate'
+          description: ''
+    delete:
+      operationId: v1_k8s_cluster_plugins_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster plugin.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/k8s-cluster-service-meshes:
+    get:
+      operationId: v1_k8s_cluster_service_meshes_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedK8sClusterToServiceMeshList'
+          description: ''
+    post:
+      operationId: v1_k8s_cluster_service_meshes_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterToServiceMeshCreate'
+          description: ''
+  /api/v1/k8s-cluster-service-meshes/{id}:
+    get:
+      operationId: v1_k8s_cluster_service_meshes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster to service mesh.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterToServiceMesh'
+          description: ''
+    put:
+      operationId: v1_k8s_cluster_service_meshes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster to service mesh.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterToServiceMeshUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterToServiceMeshUpdate'
+          description: ''
+    patch:
+      operationId: v1_k8s_cluster_service_meshes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster to service mesh.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterToServiceMeshUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterToServiceMeshUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterToServiceMeshUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterToServiceMeshUpdate'
+          description: ''
+    delete:
+      operationId: v1_k8s_cluster_service_meshes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster to service mesh.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/k8s-clusters:
+    get:
+      operationId: v1_k8s_clusters_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedK8sClusterList'
+          description: ''
+    post:
+      operationId: v1_k8s_clusters_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterCreate'
+          description: ''
+  /api/v1/k8s-clusters/{id}:
+    get:
+      operationId: v1_k8s_clusters_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sCluster'
+          description: ''
+    put:
+      operationId: v1_k8s_clusters_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/K8sClusterUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/K8sClusterUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/K8sClusterUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterUpdate'
+          description: ''
+    patch:
+      operationId: v1_k8s_clusters_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedK8sClusterUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/K8sClusterUpdate'
+          description: ''
+    delete:
+      operationId: v1_k8s_clusters_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this k8s cluster.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/network-interfaces:
+    get:
+      operationId: v1_network_interfaces_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNetworkInterfaceList'
+          description: ''
+    post:
+      operationId: v1_network_interfaces_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInterface'
+          description: ''
+  /api/v1/network-interfaces/{id}:
+    get:
+      operationId: v1_network_interfaces_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this network interface.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInterface'
+          description: ''
+    put:
+      operationId: v1_network_interfaces_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this network interface.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetworkInterface'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInterface'
+          description: ''
+    patch:
+      operationId: v1_network_interfaces_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this network interface.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNetworkInterface'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNetworkInterface'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNetworkInterface'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInterface'
+          description: ''
+    delete:
+      operationId: v1_network_interfaces_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this network interface.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/permissions/assign_group_permission:
+    post:
+      operationId: v1_permissions_assign_group_permission_create
+      description: |-
+        Assign permission to a group for a specific object.
+
+        Required data:
+        - model_name: string (e.g., 'api.tenant')
+        - object_id: UUID
+        - group_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/permissions/assign_user_permission:
+    post:
+      operationId: v1_permissions_assign_user_permission_create
+      description: |-
+        Assign permission to a user for a specific object.
+
+        Required data:
+        - model_name: string (e.g., 'api.tenant')
+        - object_id: UUID
+        - user_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/permissions/get_group_objects:
+    get:
+      operationId: v1_permissions_get_group_objects_retrieve
+      description: |-
+        Get all objects of a model that a group has specific permission for.
+
+        Required query params:
+        - model_name: string (e.g., 'api.tenant')
+        - group_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/permissions/get_user_objects:
+    get:
+      operationId: v1_permissions_get_user_objects_retrieve
+      description: |-
+        Get all objects of a model that a user has specific permission for.
+
+        Required query params:
+        - model_name: string (e.g., 'api.tenant')
+        - user_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/permissions/remove_group_permission:
+    post:
+      operationId: v1_permissions_remove_group_permission_create
+      description: |-
+        Remove permission from a group for a specific object.
+
+        Required data:
+        - model_name: string (e.g., 'api.tenant')
+        - object_id: UUID
+        - group_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/permissions/remove_user_permission:
+    post:
+      operationId: v1_permissions_remove_user_permission_create
+      description: |-
+        Remove permission from a user for a specific object.
+
+        Required data:
+        - model_name: string (e.g., 'api.tenant')
+        - object_id: UUID
+        - user_id: UUID
+        - permission: string (e.g., 'view_tenant')
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ObjectPermission'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectPermission'
+          description: ''
+  /api/v1/phases:
+    get:
+      operationId: v1_phases_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPhaseList'
+          description: ''
+    post:
+      operationId: v1_phases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Phase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Phase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Phase'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phase'
+          description: ''
+  /api/v1/phases/{id}:
+    get:
+      operationId: v1_phases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this phase.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phase'
+          description: ''
+    put:
+      operationId: v1_phases_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this phase.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Phase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Phase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Phase'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phase'
+          description: ''
+    patch:
+      operationId: v1_phases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this phase.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPhase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPhase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPhase'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phase'
+          description: ''
+    delete:
+      operationId: v1_phases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this phase.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/purchase-orders:
+    get:
+      operationId: v1_purchase_orders_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPurchaseOrderList'
+          description: ''
+    post:
+      operationId: v1_purchase_orders_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+          description: ''
+  /api/v1/purchase-orders/{id}:
+    get:
+      operationId: v1_purchase_orders_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase order.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+          description: ''
+    put:
+      operationId: v1_purchase_orders_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase order.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrder'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+          description: ''
+    patch:
+      operationId: v1_purchase_orders_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase order.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseOrder'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+          description: ''
+    delete:
+      operationId: v1_purchase_orders_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase order.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/purchase-requisitions:
+    get:
+      operationId: v1_purchase_requisitions_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPurchaseRequisitionList'
+          description: ''
+    post:
+      operationId: v1_purchase_requisitions_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+          description: ''
+  /api/v1/purchase-requisitions/{id}:
+    get:
+      operationId: v1_purchase_requisitions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase requisition.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+          description: ''
+    put:
+      operationId: v1_purchase_requisitions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase requisition.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PurchaseRequisition'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+          description: ''
+    patch:
+      operationId: v1_purchase_requisitions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase requisition.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseRequisition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseRequisition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPurchaseRequisition'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+          description: ''
+    delete:
+      operationId: v1_purchase_requisitions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this purchase requisition.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/racks:
+    get:
+      operationId: v1_racks_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRackList'
+          description: ''
+    post:
+      operationId: v1_racks_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RackCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RackCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RackCreate'
+          description: ''
+  /api/v1/racks/{id}:
+    get:
+      operationId: v1_racks_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this rack.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rack'
+          description: ''
+    put:
+      operationId: v1_racks_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this rack.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RackUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RackUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RackUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RackUpdate'
+          description: ''
+    patch:
+      operationId: v1_racks_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this rack.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRackUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRackUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRackUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RackUpdate'
+          description: ''
+    delete:
+      operationId: v1_racks_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this rack.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/rooms:
+    get:
+      operationId: v1_rooms_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoomList'
+          description: ''
+    post:
+      operationId: v1_rooms_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Room'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+          description: ''
+  /api/v1/rooms/{id}:
+    get:
+      operationId: v1_rooms_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+          description: ''
+    put:
+      operationId: v1_rooms_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Room'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+          description: ''
+    patch:
+      operationId: v1_rooms_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoom'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoom'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoom'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+          description: ''
+    delete:
+      operationId: v1_rooms_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/schema/:
+    get:
+      operationId: v1_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/schema/json/:
+    get:
+      operationId: v1_schema_json_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/schema/yaml/:
+    get:
+      operationId: v1_schema_yaml_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/service-meshes:
+    get:
+      operationId: v1_service_meshes_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServiceMeshList'
+          description: ''
+    post:
+      operationId: v1_service_meshes_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMeshCreate'
+          description: ''
+  /api/v1/service-meshes/{id}:
+    get:
+      operationId: v1_service_meshes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service mesh.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMesh'
+          description: ''
+    put:
+      operationId: v1_service_meshes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service mesh.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceMeshUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMeshUpdate'
+          description: ''
+    patch:
+      operationId: v1_service_meshes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service mesh.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceMeshUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceMeshUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceMeshUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMeshUpdate'
+          description: ''
+    delete:
+      operationId: v1_service_meshes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this service mesh.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/tenants:
+    get:
+      operationId: v1_tenants_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTenantList'
+          description: ''
+    post:
+      operationId: v1_tenants_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantCreate'
+          description: ''
+  /api/v1/tenants/{id}:
+    get:
+      operationId: v1_tenants_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: ''
+    put:
+      operationId: v1_tenants_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantUpdate'
+          description: ''
+    patch:
+      operationId: v1_tenants_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTenantUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTenantUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTenantUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantUpdate'
+          description: ''
+    delete:
+      operationId: v1_tenants_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users:
+    get:
+      operationId: v1_users_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomUserList'
+          description: ''
+    post:
+      operationId: v1_users_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomUser'
+          description: ''
+  /api/v1/users/{id}:
+    get:
+      operationId: v1_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomUser'
+          description: ''
+    put:
+      operationId: v1_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomUser'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomUser'
+          description: ''
+    patch:
+      operationId: v1_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomUser'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomUser'
+          description: ''
+    delete:
+      operationId: v1_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/virtual-machines:
+    get:
+      operationId: v1_virtual_machines_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVirtualMachineList'
+          description: ''
+    post:
+      operationId: v1_virtual_machines_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineCreate'
+          description: ''
+  /api/v1/virtual-machines/{id}:
+    get:
+      operationId: v1_virtual_machines_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachine'
+          description: ''
+    put:
+      operationId: v1_virtual_machines_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineUpdate'
+          description: ''
+    patch:
+      operationId: v1_virtual_machines_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineUpdate'
+          description: ''
+    delete:
+      operationId: v1_virtual_machines_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vlans:
+    get:
+      operationId: v1_vlans_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVLANList'
+          description: ''
+    post:
+      operationId: v1_vlans_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VLAN'
+          description: ''
+  /api/v1/vlans/{id}:
+    get:
+      operationId: v1_vlans_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vlan.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VLAN'
+          description: ''
+    put:
+      operationId: v1_vlans_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vlan.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VLAN'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VLAN'
+          description: ''
+    patch:
+      operationId: v1_vlans_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vlan.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVLAN'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVLAN'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVLAN'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VLAN'
+          description: ''
+    delete:
+      operationId: v1_vlans_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vlan.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vm-specifications:
+    get:
+      operationId: v1_vm_specifications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVirtualMachineSpecificationList'
+          description: ''
+    post:
+      operationId: v1_vm_specifications_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineSpecificationCreate'
+          description: ''
+  /api/v1/vm-specifications/{id}:
+    get:
+      operationId: v1_vm_specifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine specification.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineSpecification'
+          description: ''
+    put:
+      operationId: v1_vm_specifications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine specification.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VirtualMachineSpecificationUpdate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineSpecificationUpdate'
+          description: ''
+    patch:
+      operationId: v1_vm_specifications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine specification.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineSpecificationUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineSpecificationUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVirtualMachineSpecificationUpdate'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VirtualMachineSpecificationUpdate'
+          description: ''
+    delete:
+      operationId: v1_vm_specifications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this virtual machine specification.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vrfs:
+    get:
+      operationId: v1_vrfs_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVRFList'
+          description: ''
+    post:
+      operationId: v1_vrfs_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VRF'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VRF'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VRF'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRF'
+          description: ''
+  /api/v1/vrfs/{id}:
+    get:
+      operationId: v1_vrfs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vrf.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRF'
+          description: ''
+    put:
+      operationId: v1_vrfs_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vrf.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VRF'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VRF'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VRF'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRF'
+          description: ''
+    patch:
+      operationId: v1_vrfs_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vrf.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVRF'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVRF'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVRF'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRF'
+          description: ''
+    delete:
+      operationId: v1_vrfs_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vrf.
+        required: true
+      tags:
+      - v1
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    BGPConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        asn:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        peer_ip:
+          type: string
+          description: BGP peer IP
+        local_ip:
+          type: string
+          description: Local BGP IP
+        password:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - asn
+      - created_at
+      - id
+      - local_ip
+      - peer_ip
+      - updated_at
+    Baremetal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Server name
+          maxLength: 255
+        serial_number:
+          type: string
+          description: Unique serial number
+          maxLength: 255
+        model:
+          allOf:
+          - $ref: '#/components/schemas/BaremetalModel'
+          readOnly: true
+        fabrication:
+          allOf:
+          - $ref: '#/components/schemas/Fabrication'
+          readOnly: true
+        phase:
+          allOf:
+          - $ref: '#/components/schemas/Phase'
+          readOnly: true
+        data_center:
+          allOf:
+          - $ref: '#/components/schemas/DataCenter'
+          readOnly: true
+        room:
+          type: string
+          maxLength: 32
+        rack:
+          allOf:
+          - $ref: '#/components/schemas/Rack'
+          readOnly: true
+        unit:
+          type: string
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/Status472Enum'
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        group:
+          allOf:
+          - $ref: '#/components/schemas/BaremetalGroup'
+          readOnly: true
+        pr:
+          allOf:
+          - $ref: '#/components/schemas/PurchaseRequisition'
+          readOnly: true
+        po:
+          allOf:
+          - $ref: '#/components/schemas/PurchaseOrder'
+          readOnly: true
+        old_system_id:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - created_at
+      - data_center
+      - fabrication
+      - group
+      - id
+      - model
+      - name
+      - phase
+      - po
+      - pr
+      - rack
+      - serial_number
+      - status
+      - updated_at
+    BaremetalCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Server name
+          maxLength: 255
+        serial_number:
+          type: string
+          description: Unique serial number
+          maxLength: 255
+        model:
+          type: string
+          format: uuid
+        fabrication:
+          type: string
+          format: uuid
+          nullable: true
+        phase:
+          type: string
+          format: uuid
+          nullable: true
+        data_center:
+          type: string
+          format: uuid
+          nullable: true
+        room:
+          type: string
+          maxLength: 32
+        rack:
+          type: string
+          format: uuid
+          nullable: true
+        unit:
+          type: string
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/Status472Enum'
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        group:
+          type: string
+          format: uuid
+        old_system_id:
+          type: string
+          maxLength: 100
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - group
+      - model
+      - name
+      - serial_number
+      - status
+    BaremetalGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Name of the baremetal group
+          maxLength: 255
+        description:
+          type: string
+          description: Description of the group
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available CPU capacity
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available memory capacity
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available storage capacity
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Group status
+
+            * `active` - Active
+            * `inactive` - Inactive
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - created_at
+      - id
+      - name
+      - status
+      - total_cpu
+      - total_memory
+      - total_storage
+      - updated_at
+    BaremetalGroupCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the baremetal group
+          maxLength: 255
+        description:
+          type: string
+          description: Description of the group
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available CPU capacity
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available memory capacity
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available storage capacity
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Group status
+
+            * `active` - Active
+            * `inactive` - Inactive
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - name
+      - status
+      - total_cpu
+      - total_memory
+      - total_storage
+    BaremetalGroupTenantQuota:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+          format: uuid
+        cpu_quota_percentage:
+          type: number
+          format: double
+        memory_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        storage_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cpu_quota_percentage
+      - created_at
+      - group
+      - id
+      - memory_quota
+      - storage_quota
+      - tenant
+      - updated_at
+    BaremetalGroupTenantQuotaCreate:
+      type: object
+      properties:
+        group:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+          format: uuid
+        cpu_quota_percentage:
+          type: number
+          format: double
+        memory_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        storage_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - cpu_quota_percentage
+      - group
+      - memory_quota
+      - storage_quota
+      - tenant
+    BaremetalGroupTenantQuotaUpdate:
+      type: object
+      properties:
+        group:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+          format: uuid
+        cpu_quota_percentage:
+          type: number
+          format: double
+        memory_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        storage_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - cpu_quota_percentage
+      - group
+      - memory_quota
+      - storage_quota
+      - tenant
+    BaremetalGroupUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the baremetal group
+          maxLength: 255
+        description:
+          type: string
+          description: Description of the group
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available CPU capacity
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available memory capacity
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available storage capacity
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Group status
+
+            * `active` - Active
+            * `inactive` - Inactive
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - name
+      - status
+      - total_cpu
+      - total_memory
+      - total_storage
+    BaremetalModel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Model name, e.g., PowerEdge R740
+          maxLength: 100
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand
+      - created_at
+      - id
+      - name
+      - total_cpu
+      - total_memory
+      - total_storage
+      - updated_at
+    BaremetalUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Server name
+          maxLength: 255
+        serial_number:
+          type: string
+          description: Unique serial number
+          maxLength: 255
+        model:
+          type: string
+          format: uuid
+        fabrication:
+          type: string
+          format: uuid
+          nullable: true
+        phase:
+          type: string
+          format: uuid
+          nullable: true
+        data_center:
+          type: string
+          format: uuid
+          nullable: true
+        room:
+          type: string
+          maxLength: 32
+        rack:
+          type: string
+          format: uuid
+          nullable: true
+        unit:
+          type: string
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/Status472Enum'
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        group:
+          type: string
+          format: uuid
+        old_system_id:
+          type: string
+          maxLength: 100
+      required:
+      - available_cpu
+      - available_memory
+      - available_storage
+      - group
+      - model
+      - name
+      - serial_number
+      - status
+    BastionClusterAssociation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        bastion:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bastion
+      - created_at
+      - id
+      - k8s_cluster
+      - updated_at
+    BastionClusterAssociationCreate:
+      type: object
+      properties:
+        bastion:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+      required:
+      - bastion
+      - k8s_cluster
+    BastionClusterAssociationUpdate:
+      type: object
+      properties:
+        bastion:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+      required:
+      - bastion
+      - k8s_cluster
+    Brand:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Vendor brand, e.g., Dell, HPE, etc.
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    CustomUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          maxLength: 128
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        account:
+          type: string
+          nullable: true
+          description: Unique account identifier
+          maxLength: 32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Account status
+
+            * `active` - Active
+            * `inactive` - Inactive
+      required:
+      - id
+      - password
+      - status
+      - username
+    DataCenter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Data center identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    Fabrication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Fabrication identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    K8sCluster:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        tenant:
+          allOf:
+          - $ref: '#/components/schemas/Tenant'
+          readOnly: true
+        scheduling_mode:
+          $ref: '#/components/schemas/SchedulingModeEnum'
+        description:
+          type: string
+        status:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - status
+      - tenant
+      - updated_at
+      - version
+    K8sClusterCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        scheduling_mode:
+          $ref: '#/components/schemas/SchedulingModeEnum'
+        description:
+          type: string
+        status:
+          type: string
+          maxLength: 50
+      required:
+      - name
+      - status
+      - tenant
+      - version
+    K8sClusterPlugin:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cluster:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+        additional_info:
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cluster
+      - created_at
+      - id
+      - name
+      - status
+      - updated_at
+      - version
+    K8sClusterPluginCreate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+        additional_info:
+          nullable: true
+      required:
+      - cluster
+      - name
+      - status
+      - version
+    K8sClusterPluginUpdate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+        additional_info:
+          nullable: true
+      required:
+      - cluster
+      - name
+      - status
+      - version
+    K8sClusterToServiceMesh:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        cluster:
+          type: string
+          format: uuid
+        service_mesh:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cluster
+      - created_at
+      - id
+      - role
+      - service_mesh
+      - updated_at
+    K8sClusterToServiceMeshCreate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        service_mesh:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - cluster
+      - role
+      - service_mesh
+    K8sClusterToServiceMeshUpdate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        service_mesh:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - cluster
+      - role
+      - service_mesh
+    K8sClusterUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        scheduling_mode:
+          $ref: '#/components/schemas/SchedulingModeEnum'
+        description:
+          type: string
+        status:
+          type: string
+          maxLength: 50
+      required:
+      - name
+      - status
+      - tenant
+      - version
+    NetworkInterface:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        resource:
+          type: string
+          readOnly: true
+        content_type:
+          type: integer
+          writeOnly: true
+        object_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        name:
+          type: string
+          description: Interface name, e.g., eth0
+          maxLength: 64
+        mac_address:
+          type: string
+          description: MAC address
+          maxLength: 32
+        is_primary:
+          type: boolean
+          description: Marks primary interface
+        ipv4_address:
+          type: string
+          nullable: true
+        ipv4_netmask:
+          type: string
+          nullable: true
+          description: IPv4 netmask
+        ipv6_address:
+          type: string
+          nullable: true
+          description: IPv6 address
+        ipv6_netmask:
+          type: string
+          nullable: true
+          description: IPv6 netmask
+        gateway:
+          type: string
+          nullable: true
+          description: Default gateway
+        dns_servers:
+          type: string
+          description: Comma-separated list of DNS servers
+          maxLength: 255
+        vlan:
+          allOf:
+          - $ref: '#/components/schemas/VLAN'
+          readOnly: true
+        vrf:
+          allOf:
+          - $ref: '#/components/schemas/VRF'
+          readOnly: true
+        bgp_config:
+          allOf:
+          - $ref: '#/components/schemas/BGPConfig'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bgp_config
+      - content_type
+      - created_at
+      - id
+      - mac_address
+      - name
+      - object_id
+      - resource
+      - updated_at
+      - vlan
+      - vrf
+    ObjectPermission:
+      type: object
+      properties:
+        model_name:
+          type: string
+        object_id:
+          type: string
+        user_id:
+          type: string
+        group_id:
+          type: string
+        permission:
+          type: string
+      required:
+      - model_name
+      - object_id
+      - permission
+    PaginatedBGPConfigList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BGPConfig'
+    PaginatedBaremetalGroupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaremetalGroup'
+    PaginatedBaremetalGroupTenantQuotaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaremetalGroupTenantQuota'
+    PaginatedBaremetalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Baremetal'
+    PaginatedBaremetalModelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaremetalModel'
+    PaginatedBastionClusterAssociationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BastionClusterAssociation'
+    PaginatedBrandList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Brand'
+    PaginatedCustomUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomUser'
+    PaginatedDataCenterList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataCenter'
+    PaginatedFabricationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fabrication'
+    PaginatedK8sClusterList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/K8sCluster'
+    PaginatedK8sClusterPluginList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/K8sClusterPlugin'
+    PaginatedK8sClusterToServiceMeshList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/K8sClusterToServiceMesh'
+    PaginatedNetworkInterfaceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkInterface'
+    PaginatedPhaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Phase'
+    PaginatedPurchaseOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrder'
+    PaginatedPurchaseRequisitionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseRequisition'
+    PaginatedRackList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rack'
+    PaginatedRoomList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+    PaginatedServiceMeshList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceMesh'
+    PaginatedTenantList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tenant'
+    PaginatedVLANList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VLAN'
+    PaginatedVRFList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VRF'
+    PaginatedVirtualMachineList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VirtualMachine'
+    PaginatedVirtualMachineSpecificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VirtualMachineSpecification'
+    PatchedBGPConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        asn:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        peer_ip:
+          type: string
+          description: BGP peer IP
+        local_ip:
+          type: string
+          description: Local BGP IP
+        password:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBaremetalGroupTenantQuotaUpdate:
+      type: object
+      properties:
+        group:
+          type: string
+          format: uuid
+        tenant:
+          type: string
+          format: uuid
+        cpu_quota_percentage:
+          type: number
+          format: double
+        memory_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        storage_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+    PatchedBaremetalGroupUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the baremetal group
+          maxLength: 255
+        description:
+          type: string
+          description: Description of the group
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available CPU capacity
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available memory capacity
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Available storage capacity
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Group status
+
+            * `active` - Active
+            * `inactive` - Inactive
+    PatchedBaremetalModel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Model name, e.g., PowerEdge R740
+          maxLength: 100
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        total_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total CPU capacity
+        total_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total memory capacity
+        total_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Total storage capacity
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBaremetalUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Server name
+          maxLength: 255
+        serial_number:
+          type: string
+          description: Unique serial number
+          maxLength: 255
+        model:
+          type: string
+          format: uuid
+        fabrication:
+          type: string
+          format: uuid
+          nullable: true
+        phase:
+          type: string
+          format: uuid
+          nullable: true
+        data_center:
+          type: string
+          format: uuid
+          nullable: true
+        room:
+          type: string
+          maxLength: 32
+        rack:
+          type: string
+          format: uuid
+          nullable: true
+        unit:
+          type: string
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/Status472Enum'
+        available_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        available_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        group:
+          type: string
+          format: uuid
+        old_system_id:
+          type: string
+          maxLength: 100
+    PatchedBastionClusterAssociationUpdate:
+      type: object
+      properties:
+        bastion:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+    PatchedBrand:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Vendor brand, e.g., Dell, HPE, etc.
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCustomUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          maxLength: 128
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        account:
+          type: string
+          nullable: true
+          description: Unique account identifier
+          maxLength: 32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA3eEnum'
+          description: |-
+            Account status
+
+            * `active` - Active
+            * `inactive` - Inactive
+    PatchedDataCenter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Data center identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFabrication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Fabrication identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedK8sClusterPluginUpdate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+        additional_info:
+          nullable: true
+    PatchedK8sClusterToServiceMeshUpdate:
+      type: object
+      properties:
+        cluster:
+          type: string
+          format: uuid
+        service_mesh:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+    PatchedK8sClusterUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        version:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        scheduling_mode:
+          $ref: '#/components/schemas/SchedulingModeEnum'
+        description:
+          type: string
+        status:
+          type: string
+          maxLength: 50
+    PatchedNetworkInterface:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        resource:
+          type: string
+          readOnly: true
+        content_type:
+          type: integer
+          writeOnly: true
+        object_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        name:
+          type: string
+          description: Interface name, e.g., eth0
+          maxLength: 64
+        mac_address:
+          type: string
+          description: MAC address
+          maxLength: 32
+        is_primary:
+          type: boolean
+          description: Marks primary interface
+        ipv4_address:
+          type: string
+          nullable: true
+        ipv4_netmask:
+          type: string
+          nullable: true
+          description: IPv4 netmask
+        ipv6_address:
+          type: string
+          nullable: true
+          description: IPv6 address
+        ipv6_netmask:
+          type: string
+          nullable: true
+          description: IPv6 netmask
+        gateway:
+          type: string
+          nullable: true
+          description: Default gateway
+        dns_servers:
+          type: string
+          description: Comma-separated list of DNS servers
+          maxLength: 255
+        vlan:
+          allOf:
+          - $ref: '#/components/schemas/VLAN'
+          readOnly: true
+        vrf:
+          allOf:
+          - $ref: '#/components/schemas/VRF'
+          readOnly: true
+        bgp_config:
+          allOf:
+          - $ref: '#/components/schemas/BGPConfig'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPhase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Phase identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPurchaseOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        po_number:
+          type: string
+          description: PO number
+          maxLength: 64
+        vendor_name:
+          type: string
+          description: Vendor name
+          maxLength: 255
+        payment_terms:
+          type: string
+          description: Payment terms
+          maxLength: 128
+        delivery_date:
+          type: string
+          format: date
+          nullable: true
+        issued_by:
+          type: string
+          description: Procurement staff name or ID
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPurchaseRequisition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        pr_number:
+          type: string
+          description: PR number
+          maxLength: 64
+        requested_by:
+          type: string
+          description: Requester name or ID
+          maxLength: 100
+        department:
+          type: string
+          description: Requesting department
+          maxLength: 100
+        reason:
+          type: string
+          description: Purpose or justification for the requisition
+        submit_date:
+          type: string
+          format: date
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedRackUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Rack identifier
+          maxLength: 32
+        bgp_number:
+          type: string
+          description: Associated BGP number
+          maxLength: 20
+        as_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+    PatchedRoom:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Room identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedServiceMeshUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/Type273Enum'
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+    PatchedTenantUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+    PatchedVLAN:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vlan_id:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        name:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedVRF:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+        route_distinguisher:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedVirtualMachineSpecificationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        generation:
+          type: string
+          maxLength: 32
+        required_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+    PatchedVirtualMachineUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        baremetal:
+          type: string
+          format: uuid
+          nullable: true
+        specification:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          $ref: '#/components/schemas/TypeD0eEnum'
+        status:
+          type: string
+          maxLength: 50
+    Phase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Phase identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    PurchaseOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        po_number:
+          type: string
+          description: PO number
+          maxLength: 64
+        vendor_name:
+          type: string
+          description: Vendor name
+          maxLength: 255
+        payment_terms:
+          type: string
+          description: Payment terms
+          maxLength: 128
+        delivery_date:
+          type: string
+          format: date
+          nullable: true
+        issued_by:
+          type: string
+          description: Procurement staff name or ID
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - po_number
+      - updated_at
+      - vendor_name
+    PurchaseRequisition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        pr_number:
+          type: string
+          description: PR number
+          maxLength: 64
+        requested_by:
+          type: string
+          description: Requester name or ID
+          maxLength: 100
+        department:
+          type: string
+          description: Requesting department
+          maxLength: 100
+        reason:
+          type: string
+          description: Purpose or justification for the requisition
+        submit_date:
+          type: string
+          format: date
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - pr_number
+      - requested_by
+      - submit_date
+      - updated_at
+    Rack:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Rack identifier
+          maxLength: 32
+        bgp_number:
+          type: string
+          description: Associated BGP number
+          maxLength: 20
+        as_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - as_number
+      - bgp_number
+      - created_at
+      - id
+      - name
+      - updated_at
+    RackCreate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Rack identifier
+          maxLength: 32
+        bgp_number:
+          type: string
+          description: Associated BGP number
+          maxLength: 20
+        as_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - as_number
+      - bgp_number
+      - created_at
+      - id
+      - name
+      - updated_at
+    RackUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Rack identifier
+          maxLength: 32
+        bgp_number:
+          type: string
+          description: Associated BGP number
+          maxLength: 20
+        as_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Autonomous System Number
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+      required:
+      - as_number
+      - bgp_number
+      - name
+    RoleEnum:
+      enum:
+      - primary
+      - secondary
+      type: string
+      description: |-
+        * `primary` - Primary
+        * `secondary` - Secondary
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Room identifier
+          maxLength: 32
+        old_system_id:
+          type: string
+          description: Identifier from legacy system
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    SchedulingModeEnum:
+      enum:
+      - spread_rack
+      - spread_resource
+      - balanced
+      - default
+      type: string
+      description: |-
+        * `spread_rack` - SpreadByRack
+        * `spread_resource` - SpreadByResource
+        * `balanced` - Balanced
+        * `default` - Default
+    ServiceMesh:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/Type273Enum'
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - status
+      - type
+      - updated_at
+    ServiceMeshCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/Type273Enum'
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+      required:
+      - name
+      - status
+      - type
+    ServiceMeshUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/Type273Enum'
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status2d2Enum'
+      required:
+      - name
+      - status
+      - type
+    Status2d2Enum:
+      enum:
+      - active
+      - inactive
+      - error
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+        * `error` - Error
+    Status472Enum:
+      enum:
+      - active
+      - inactive
+      - pending
+      - retired
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+        * `pending` - Pending
+        * `retired` - Retired
+    StatusA3eEnum:
+      enum:
+      - active
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - status
+      - updated_at
+    TenantCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+      required:
+      - name
+      - status
+    TenantUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+      required:
+      - name
+      - status
+    Type273Enum:
+      enum:
+      - cilium
+      - istio
+      - other
+      type: string
+      description: |-
+        * `cilium` - Cilium
+        * `istio` - Istio
+        * `other` - Other
+    TypeD0eEnum:
+      enum:
+      - control-plane
+      - worker
+      - management
+      - other
+      type: string
+      description: |-
+        * `control-plane` - K8s Control Plane
+        * `worker` - K8s Worker
+        * `management` - Management
+        * `other` - Other
+    VLAN:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        vlan_id:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        name:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+      - vlan_id
+    VRF:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+        route_distinguisher:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - route_distinguisher
+      - updated_at
+    VirtualMachine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        tenant:
+          allOf:
+          - $ref: '#/components/schemas/Tenant'
+          readOnly: true
+        baremetal:
+          allOf:
+          - $ref: '#/components/schemas/Baremetal'
+          readOnly: true
+        specification:
+          allOf:
+          - $ref: '#/components/schemas/VirtualMachineSpecification'
+          readOnly: true
+        k8s_cluster:
+          allOf:
+          - $ref: '#/components/schemas/K8sCluster'
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TypeD0eEnum'
+        status:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - baremetal
+      - created_at
+      - id
+      - k8s_cluster
+      - name
+      - specification
+      - status
+      - tenant
+      - updated_at
+    VirtualMachineCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        baremetal:
+          type: string
+          format: uuid
+          nullable: true
+        specification:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          $ref: '#/components/schemas/TypeD0eEnum'
+        status:
+          type: string
+          maxLength: 50
+      required:
+      - name
+      - specification
+      - status
+      - tenant
+    VirtualMachineSpecification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        generation:
+          type: string
+          maxLength: 32
+        required_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - generation
+      - id
+      - name
+      - required_cpu
+      - required_memory
+      - required_storage
+      - updated_at
+    VirtualMachineSpecificationCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        generation:
+          type: string
+          maxLength: 32
+        required_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - generation
+      - name
+      - required_cpu
+      - required_memory
+      - required_storage
+    VirtualMachineSpecificationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        generation:
+          type: string
+          maxLength: 32
+        required_cpu:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_memory:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        required_storage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - generation
+      - name
+      - required_cpu
+      - required_memory
+      - required_storage
+    VirtualMachineUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        tenant:
+          type: string
+          format: uuid
+        baremetal:
+          type: string
+          format: uuid
+          nullable: true
+        specification:
+          type: string
+          format: uuid
+        k8s_cluster:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          $ref: '#/components/schemas/TypeD0eEnum'
+        status:
+          type: string
+          maxLength: 50
+      required:
+      - name
+      - specification
+      - status
+      - tenant
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
