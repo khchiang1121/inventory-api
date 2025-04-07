@@ -29,9 +29,9 @@ urlpatterns = [
     path("api/v1/schema/json/", SpectacularJSONAPIView.as_view(), name="json"),
     path("api/v1/schema/yaml/", SpectacularYAMLAPIView.as_view(), name="yaml"),
     path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/v1/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/v1/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/v1/swagger-ui', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/docs', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/redoc', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # API
     re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
