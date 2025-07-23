@@ -1,174 +1,201 @@
-# django_ninja_backend/README.md
+# VirtFlow
 
-# Django Ninja Backend
+VirtFlow 是一個基於 Django REST framework 開發的虛擬化資源管理系統，提供完整的 API 介面來管理虛擬化資源。本系統專注於提供高效、靈活且可擴展的資源管理解決方案，支援多租戶環境下的虛擬化資源調度與管理。
 
-This project is a Django application that utilizes Django Ninja for building APIs. It is structured to support a variety of resources and includes Docker support for easy deployment.
+## 核心功能
 
-## Project Structure
+### 1. 資源管理
 
-The project is organized as follows:
+- **實體機管理**
+  - 完整的實體機生命週期管理
+  - 詳細的硬體規格追蹤
+  - 機架與位置管理
+  - 資源使用量監控
 
+- **虛擬機管理**
+  - 虛擬機規格定義與管理
+  - 自動化資源調度
+  - 多類型虛擬機支援（Control Plane、Worker Node、Management Node）
+  - 即時狀態監控
+
+- **Kubernetes 叢集管理**
+  - 叢集建立與配置
+  - 外掛管理系統
+  - Service Mesh 整合
+  - Bastion Host 關聯設定
+
+### 2. 多租戶支援
+
+- 租戶資源配額管理
+- 獨立資源隔離
+- 彈性配額調整
+- 資源使用追蹤
+
+### 3. 維護管理
+
+- 個人維護者指派
+- 維護者群組管理
+- 資源維運責任劃分
+- 維運記錄追蹤
+
+## 專案架構
+
+```text
+virtflow/
+├── docs/                  # 專案文件
+│   ├── 設計文件/          # 系統設計相關文件
+│   ├── 開發日誌/          # 開發過程記錄
+│   ├── 系統文件/          # 系統配置和說明文件
+│   ├── API說明文件.md     # API 使用說明
+│   ├── database.md        # 資料庫設計文件
+│   ├── api.md            # API 詳細文件
+│   └── structure.md      # 系統結構說明
+├── static/                 # 靜態文件
+├── staticfiles/           # 收集的靜態文件
+├── virtflow/              # Django 專案配置
+│   ├── api/              # API 應用程式
+│   │   ├── v1/          # API v1 版本
+│   │   │   ├── views.py        # 視圖邏輯
+│   │   │   ├── serializers.py  # 序列化器
+│   │   │   ├── permissions.py  # 權限控制
+│   │   │   └── urls.py         # URL 路由
+│   │   ├── models.py    # 資料模型
+│   │   ├── permissions.py  # 權限定義
+│   │   ├── authentication.py  # 認證機制
+│   │   └── management/   # 管理命令
+│   ├── settings.py      # 專案設置
+│   ├── urls.py          # 主 URL 配置
+│   ├── schema.py        # API 規範配置
+│   └── wsgi.py          # WSGI 配置
+├── .env                   # 環境變數配置
+├── docker-compose.yml     # Docker 容器配置
+├── Dockerfile            # Docker 映像檔配置
+├── manage.py             # Django 管理腳本
+├── requirements.txt      # Python 依賴包
+└── schema.yaml          # API 規範文件
 ```
-django_ninja_backend/
-├── Dockerfile
-├── docker-compose.yml
-├── manage.py
-├── requirements.txt
-├── README.md
-├── project/
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-└── backend/
-    ├── __init__.py
-    ├── admin.py
-    ├── apps.py
-    ├── dependencies.py
-    ├── models.py
-    ├── schemas.py
-    └── routers/
-        ├── __init__.py
-        ├── maintainers.py
-        ├── maintainer_groups.py
-        ├── maintainer_group_members.py
-        ├── resource_maintainers.py
-        ├── hosts.py
-        ├── host_groups.py
-        ├── tenants.py
-        ├── virtual_machines.py
-        ├── vm_specifications.py
-        ├── k8s_clusters.py
-        └── host_group_tenant_quotas.py
+
+### 核心模組說明
+
+1. **API 模組 (virtflow/api/)**
+   - 實現核心業務邏輯
+   - 包含資料模型定義
+   - 權限控制系統
+   - 認證機制實現
+
+2. **API v1 版本 (virtflow/api/v1/)**
+   - 視圖邏輯處理
+   - 資料序列化
+   - 權限驗證
+   - URL 路由配置
+
+3. **文件系統 (docs/)**
+   - 系統設計文件
+   - API 使用說明
+   - 資料庫設計文件
+   - 開發日誌
+   - 系統配置說明
+
+4. **專案配置 (virtflow/)**
+   - Django 專案設定
+   - URL 路由配置
+   - API 規範配置
+   - WSGI/ASGI 配置
+
+## 使用技術
+
+- **後端框架**: Django 4.2+
+- **API 框架**: Django REST framework 3.14+
+- **資料庫**: PostgreSQL
+- **API 文件**: drf-spectacular
+- **認證**: Django Guardian
+- **開發工具**:
+  - Docker & Docker Compose
+  - PgAdmin4 (資料庫管理工具)
+  - pytest (測試框架)
+  - mypy (型別檢查)
+
+## 主要功能
+
+- RESTful API 介面
+- 完整的 API 文件
+- 資料庫管理介面
+- 權限管理系統
+- 虛擬化資源管理
+
+## 開發環境設置
+
+1. 將專案 clone 到本地
+
+```bash
+git clone [repository-url]
+cd virtflow
 ```
 
-## Setup Instructions
+2. 設置環境變數
 
-1. **Clone the repository:**
-   ```
-   git clone <repository-url>
-   cd django_ninja_backend
-   ```
+```bash
+cp .env.example .env
+# 編輯 .env 文件以設定必要的環境變數
+```
 
-2. **Build the Docker image:**
-   ```
-   docker build -t django_ninja_backend .
-   ```
+3. 啟動開發環境
 
-3. **Run the application using Docker Compose:**
-   ```
-   docker-compose up
-   ```
-
-4. **Access the application:**
-   Open your web browser and go to `http://localhost:8000`.
-
-## Usage
-
-- Use `manage.py` to run server commands, apply migrations, and create new applications.
-- The API endpoints are defined in the `backend/routers` directory, where you can find CRUD operations for various resources.
-
-## Requirements
-
-Make sure to install the required Python packages listed in `requirements.txt` if you are running the application outside of Docker.
-
-## Contributing
-
-Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-django-admin startproject virtflow
-mamba install --yes --file requirements.txt
-python manage.py showmigrations
-python manage.py migrate --plan
-python manage.py sqlmigrate app1 0002_add_new_field
- python manage.py createsuperuser
-
-
-python manage.py makemigrations backend
-python manage.py migrate
-python manage.py runserver
-python manage.py collectstatic
-
-5️⃣ 測試模型是否能正常使用
-如果你成功遷移，但仍然出錯，可以試試 Django shell：
-
-bash
-複製
-編輯
-python manage.py shell
-然後：
-
-python
-複製
-編輯
-from backend.models import Baremetal
-Baremetal.objects.create(name="test_host")
-print(Baremetal.objects.all())
-如果這時候仍然報錯 relation "backend_host" does not exist，那麼可能是資料庫的問題，請重新檢查 migration。
-
-uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8000
-
-
-
-pip uninstall ninja
-mamba install --yes --file requirements.txt
-
-conda create --name virtflow python=3.13 "mamba>=0.22.1"
-source ~/anaconda3/etc/profile.d/conda.sh
-conda activate virtflow
-
-
-export DJANGO_SETTINGS_MODULE=virtflow.settings
-
-
-
-
-
-
-
-
-
-
-
-
-# 正確從0啟動流程
-create .env
-create pgadmin4/.pgpass
-source .env
+```bash
 docker compose up -d
-make migrations
-make migrate
-python manage.py createsuperuser
-make stage
+```
 
-登入
-http://localhost:8000/admin/
-API
-http://localhost:8000/api/v1/
-文件
-http://localhost:8000/api/v1/docs
+1. 安裝依賴
 
+```bash
+pip install -r requirements.txt
+```
 
+1. 執行資料庫遷移
 
-how to set static
-python manage.py collectstatic
+```bash
+python manage.py migrate
+```
+
+1. 啟動開發伺服器
+
+```bash
+python manage.py runserver
+```
+
+## API 文件
+
+API 文件可以通過以下方式存取：
+
+- Swagger UI: `/api/schema/swagger-ui/`
+- ReDoc: `/api/schema/redoc/`
+
+## 測試
+
+執行測試：
+
+```bash
+pytest
+```
+
+## 部署
+
+專案使用 Docker 進行容器化部署，可以通過以下命令啟動：
+
+```bash
+docker-compose up -d
+```
+
+## 開發指南
+
+1. 遵循 PEP 8 編碼規範
+2. 使用 mypy 進行型別檢查
+3. 撰寫單元測試
+4. 更新 API 文件
+
+## 貢獻指南
+
+1. Fork 專案
+2. 創建 Feature Branch
+3. 提交變更
+4. 發起 Pull Request

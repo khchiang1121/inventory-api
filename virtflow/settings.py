@@ -157,7 +157,9 @@ AUTHENTICATION_BACKENDS = (
     'guardian.backends.ObjectPermissionBackend',  # 加上這個
 )
 ANONYMOUS_USER_ID = -1
-GUARDIAN_MONKEY_PATCH = False
+# GUARDIAN_MONKEY_PATCH = False
+# [dockerfile-image] django.core.exceptions.ImproperlyConfigured: GUARDIAN_MONKEY_PATCH is deprecated. Use GUARDIAN_MONKEY_PATCH_USER instead.
+GUARDIAN_MONKEY_PATCH_USER = False
 APPEND_SLASH = False  # 取消自動補 /，避免重導向錯誤
 
 

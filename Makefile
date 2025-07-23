@@ -13,16 +13,16 @@ test:
 	python manage.py test virtflow.api.tests
 
 run:
-	python manage.py runserver 0.0.0.0:8001
+	python manage.py runserver 0.0.0.0:8201
 
 production:
-	uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8000
+	uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8200
 
 production-gunicorn:
-	gunicorn virtflow.wsgi:application --bind 0.0.0.0:8000
+	gunicorn virtflow.wsgi:application --bind 0.0.0.0:8200
 
 stage:
-	python manage.py runserver 0.0.0.0:8001
+	python manage.py runserver 0.0.0.0:8201
 
 fake:
 	python manage.py generate_fake_data

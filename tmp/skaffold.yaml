@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: virtflow
+build:
+  artifacts:
+    - image: dockerfile-image
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - deployment.yaml
+portForward:
+  - resourceType: service
+    resourceName: dockerfile-image
+    port: 8201

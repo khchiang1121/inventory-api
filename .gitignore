@@ -1,4 +1,6 @@
 backend/tests
+postgres_data
+pgadmin4
 
 # Django #
 *.log
