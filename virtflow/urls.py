@@ -20,6 +20,41 @@ from django.conf.urls.static import static
 from virtflow import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView, RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from virtflow.api.v1.serializers import CustomUserSerializer
+from rest_framework.request import Request
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me_view(request: Request) -> Response:
+    """Get current user information"""
+    serializer = CustomUserSerializer(request.user)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request: Request) -> Response:
+    """Logout current user"""
+    # In a real implementation, you might want to invalidate the token
+    # For now, we'll just return a success response
+    return Response({'message': 'Successfully logged out'})
+
+@api_view(['POST'])
+def refresh_view(request: Request) -> Response:
+    """Refresh authentication token"""
+    # For now, we'll return a mock response
+    # In a real implementation, you'd validate the refresh token and issue a new access token
+    return Response({'access': 'new-access-token'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password_view(request: Request) -> Response:
+    """Change user password"""
+    # For now, we'll return a success response
+    # In a real implementation, you'd validate the old password and update to the new password
+    return Response({'message': 'Password changed successfully'})
 
 urlpatterns = [
     # Admin
@@ -37,6 +72,11 @@ urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
     # path('api/token/', obtain_auth_token, name='api_token_auth'),
     path('api/v1/auth/login/', obtain_auth_token, name='api_token_auth'),
+    path('api/v1/auth/logout/', logout_view, name='auth_logout'),
+    path('api/v1/auth/refresh/', refresh_view, name='auth_refresh'),
+    path('api/v1/auth/change-password/', change_password_view, name='auth_change_password'),
+    path('api/v1/auth/me/', me_view, name='auth_me'),
+    # add a me path to the api
     re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
 
 ] 

@@ -1,5 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .. import models
 from . import serializers
@@ -222,3 +224,63 @@ class VirtualMachineViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update']:
             return serializers.VirtualMachineUpdateSerializer
         return serializers.VirtualMachineSerializer 
+
+# ------------------------------------------------------------------------------
+# Ansible ViewSets
+# ------------------------------------------------------------------------------
+class AnsibleGroupViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroup.objects.all().order_by('name')
+    serializer_class = serializers.AnsibleGroupSerializer
+    
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == 'create':
+            return serializers.AnsibleGroupCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return serializers.AnsibleGroupUpdateSerializer
+        return serializers.AnsibleGroupSerializer
+    
+    @action(detail=True, methods=['get'])
+    def variables(self, request, pk=None):
+        """Get all variables for a group including inherited ones"""
+        group = self.get_object()
+        return Response(group.all_variables)
+    
+    @action(detail=True, methods=['get'])
+    def hosts(self, request, pk=None):
+        """Get all hosts in a group including child groups"""
+        group = self.get_object()
+        hosts = group.all_hosts
+        return Response([{'id': str(host.id), 'name': getattr(host, 'name', str(host)), 'type': host._meta.model_name} for host in hosts])
+
+class AnsibleGroupVariableViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroupVariable.objects.all().order_by('group__name', 'key')
+    serializer_class = serializers.AnsibleGroupVariableSerializer
+    
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == 'create':
+            return serializers.AnsibleGroupVariableCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return serializers.AnsibleGroupVariableUpdateSerializer
+        return serializers.AnsibleGroupVariableSerializer
+
+class AnsibleGroupRelationshipViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroupRelationship.objects.all().order_by('parent_group__name', 'child_group__name')
+    serializer_class = serializers.AnsibleGroupRelationshipSerializer
+    
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == 'create':
+            return serializers.AnsibleGroupRelationshipCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return serializers.AnsibleGroupRelationshipUpdateSerializer
+        return serializers.AnsibleGroupRelationshipSerializer
+
+class AnsibleHostViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleHost.objects.all().order_by('group__name')
+    serializer_class = serializers.AnsibleHostSerializer
+    
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == 'create':
+            return serializers.AnsibleHostCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return serializers.AnsibleHostUpdateSerializer
+        return serializers.AnsibleHostSerializer 

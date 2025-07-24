@@ -251,4 +251,203 @@ class Command(BaseCommand):
             )
         self.stdout.write("✔️ Created Bastion -> K8s associations")
 
+        # Create Ansible Groups
+        ansible_groups = []
+        
+        # Create special groups
+        all_group = models.AnsibleGroup.objects.create(
+            name="all",
+            description="All hosts",
+            is_special=True,
+            status="active"
+        )
+        ansible_groups.append(all_group)
+        
+        ungrouped_group = models.AnsibleGroup.objects.create(
+            name="ungrouped",
+            description="Hosts not in any group",
+            is_special=True,
+            status="active"
+        )
+        ansible_groups.append(ungrouped_group)
+        
+        # Create regular groups
+        group_names = [
+            "webservers", "dbservers", "appservers", "monitoring", 
+            "loadbalancers", "bastion", "k8s_control_plane", "k8s_workers",
+            "production", "staging", "development", "management"
+        ]
+        
+        for group_name in group_names:
+            group = models.AnsibleGroup.objects.create(
+                name=group_name,
+                description=fake.text(max_nb_chars=100),
+                is_special=False,
+                status=random.choice(['active', 'inactive'])
+            )
+            ansible_groups.append(group)
+        
+        self.stdout.write("✔️ Created Ansible groups")
+
+        # Create group variables
+        common_vars = {
+            "webservers": {
+                "http_port": 80,
+                "max_clients": 200,
+                "nginx_version": "1.18.0"
+            },
+            "dbservers": {
+                "db_port": 5432,
+                "max_connections": 100,
+                "postgres_version": "13.4"
+            },
+            "production": {
+                "environment": "production",
+                "backup_enabled": True,
+                "monitoring_level": "high"
+            },
+            "staging": {
+                "environment": "staging",
+                "backup_enabled": False,
+                "monitoring_level": "medium"
+            },
+            "k8s_control_plane": {
+                "kubernetes_version": "1.24.0",
+                "control_plane_endpoint": "10.0.0.10:6443",
+                "pod_network_cidr": "10.244.0.0/16"
+            },
+            "k8s_workers": {
+                "kubernetes_version": "1.24.0",
+                "container_runtime": "containerd",
+                "node_labels": ["worker", "compute"]
+            }
+        }
+        
+        for group_name, vars_dict in common_vars.items():
+            try:
+                group = models.AnsibleGroup.objects.get(name=group_name)
+                for key, value in vars_dict.items():
+                    value_type = 'string'
+                    if isinstance(value, bool):
+                        value_type = 'boolean'
+                    elif isinstance(value, int):
+                        value_type = 'integer'
+                    elif isinstance(value, (list, dict)):
+                        value_type = 'json'
+                        value = str(value)
+                    
+                    models.AnsibleGroupVariable.objects.create(
+                        group=group,
+                        key=key,
+                        value=str(value),
+                        value_type=value_type
+                    )
+            except models.AnsibleGroup.DoesNotExist:
+                continue
+        
+        self.stdout.write("✔️ Created group variables")
+
+        # Create group relationships (parent-child)
+        relationships = [
+            ("production", "webservers"),
+            ("production", "dbservers"),
+            ("production", "loadbalancers"),
+            ("staging", "webservers"),
+            ("staging", "dbservers"),
+            ("management", "bastion"),
+            ("management", "monitoring"),
+            ("k8s_control_plane", "management"),
+            ("k8s_workers", "appservers")
+        ]
+        
+        for parent_name, child_name in relationships:
+            try:
+                parent = models.AnsibleGroup.objects.get(name=parent_name)
+                child = models.AnsibleGroup.objects.get(name=child_name)
+                models.AnsibleGroupRelationship.objects.create(
+                    parent_group=parent,
+                    child_group=child
+                )
+            except models.AnsibleGroup.DoesNotExist:
+                continue
+        
+        self.stdout.write("✔️ Created group relationships")
+
+        # Assign hosts to groups
+        baremetal_content_type = ContentType.objects.get_for_model(models.Baremetal)
+        vm_content_type = ContentType.objects.get_for_model(models.VirtualMachine)
+        
+        # Assign baremetal servers to groups
+        for baremetal in baremetals:
+            # Skip some baremetal servers to simulate ungrouped hosts
+            if random.random() < 0.1:  # 10% chance to be ungrouped
+                continue
+                
+            group = random.choice([g for g in ansible_groups if not g.is_special])
+            
+            # Get primary network interface for ansible_host
+            primary_interface = models.NetworkInterface.objects.filter(
+                content_type=ContentType.objects.get_for_model(baremetal),
+                object_id=baremetal.id,
+                is_primary=True
+            ).first()
+            ansible_host = primary_interface.ipv4_address if primary_interface else None
+            
+            models.AnsibleHost.objects.create(
+                group=group,
+                content_type=baremetal_content_type,
+                object_id=baremetal.id,
+                ansible_host=ansible_host,
+                ansible_port=22,
+                ansible_user='root',
+                host_vars={
+                    'server_type': 'baremetal',
+                    'rack_location': f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
+                    'serial_number': baremetal.serial_number
+                }
+            )
+        
+        # Assign VMs to groups
+        for vm in vms:
+            # Skip some VMs to simulate ungrouped hosts
+            if random.random() < 0.1:  # 10% chance to be ungrouped
+                continue
+                
+            # Assign VMs to appropriate groups based on their type
+            if vm.type == 'control-plane':
+                group = models.AnsibleGroup.objects.get(name='k8s_control_plane')
+            elif vm.type == 'worker':
+                group = models.AnsibleGroup.objects.get(name='k8s_workers')
+            elif vm.type == 'management':
+                group = models.AnsibleGroup.objects.get(name='management')
+            else:
+                group = random.choice([g for g in ansible_groups if not g.is_special])
+            
+            # Get primary network interface for ansible_host
+            primary_interface = None
+            if vm.baremetal:
+                primary_interface = models.NetworkInterface.objects.filter(
+                    content_type=ContentType.objects.get_for_model(vm.baremetal),
+                    object_id=vm.baremetal.id,
+                    is_primary=True
+                ).first()
+            ansible_host = primary_interface.ipv4_address if primary_interface else None
+            
+            models.AnsibleHost.objects.create(
+                group=group,
+                content_type=vm_content_type,
+                object_id=vm.id,
+                ansible_host=ansible_host,
+                ansible_port=22,
+                ansible_user='ubuntu',
+                host_vars={
+                    'server_type': 'virtual_machine',
+                    'vm_type': vm.type,
+                    'tenant': vm.tenant.name,
+                    'k8s_cluster': vm.k8s_cluster.name if vm.k8s_cluster else None
+                }
+            )
+        
+        self.stdout.write("✔️ Assigned hosts to Ansible groups")
+
         self.stdout.write(self.style.SUCCESS("🎉 Fake data generation complete!"))

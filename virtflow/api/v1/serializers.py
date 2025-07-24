@@ -11,6 +11,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = models.CustomUser
         fields = ['id', 'username', 'password', 'email','account', 'status']
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user profile information (excludes sensitive fields)"""
+    class Meta:
+        model = models.CustomUser
+        fields = ['id', 'username', 'email', 'account', 'status']
+
 # ------------------------------------------------------------------------------
 # Infrastructure Serializers
 # ------------------------------------------------------------------------------
@@ -78,19 +84,18 @@ class NetworkInterfaceSerializer(serializers.ModelSerializer):
 class RackSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Rack
-        fields = ['id', 'name', 'bgp_number', 'as_number', 'old_system_id', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'bgp_number', 'as_number', 'old_system_id', 'height_units', 'used_units', 'available_units', 'power_capacity', 'status', 'created_at', 'updated_at']
 
 class RackCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Rack
-        # fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
-        fields = ['id', 'name', 'bgp_number', 'as_number', 'old_system_id', 'created_at', 'updated_at']
+        fields = ['name', 'bgp_number', 'as_number', 'old_system_id', 'height_units', 'power_capacity', 'status']
 
 
 class RackUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Rack
-        fields = ['name', 'bgp_number', 'as_number', 'old_system_id']
+        fields = ['name', 'bgp_number', 'as_number', 'old_system_id', 'height_units', 'power_capacity', 'status']
 
 # Baremetal Group Serializers
 class BaremetalGroupSerializer(serializers.ModelSerializer):
@@ -335,3 +340,99 @@ class ObjectPermissionSerializer(serializers.Serializer):
     user_id = serializers.CharField(required=False)
     group_id = serializers.CharField(required=False)
     permission = serializers.CharField()
+
+# ------------------------------------------------------------------------------
+# Ansible Serializers
+# ------------------------------------------------------------------------------
+class AnsibleGroupVariableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = ['id', 'group', 'key', 'value', 'value_type', 'created_at', 'updated_at']
+
+class AnsibleGroupVariableCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = ['group', 'key', 'value', 'value_type']
+
+class AnsibleGroupVariableUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = ['key', 'value', 'value_type']
+
+class AnsibleGroupRelationshipSerializer(serializers.ModelSerializer):
+    parent_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
+    child_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
+    
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ['id', 'parent_group', 'child_group', 'created_at', 'updated_at']
+
+class AnsibleGroupRelationshipCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ['parent_group', 'child_group']
+
+class AnsibleGroupRelationshipUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ['parent_group', 'child_group']
+
+class AnsibleGroupSerializer(serializers.ModelSerializer):
+    variables = AnsibleGroupVariableSerializer(many=True, read_only=True)
+    child_groups = serializers.SerializerMethodField()
+    parent_groups = serializers.SerializerMethodField()
+    all_variables = serializers.SerializerMethodField()
+    all_hosts = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = models.AnsibleGroup
+        fields = ['id', 'name', 'description', 'is_special', 'status', 'variables', 
+                 'child_groups', 'parent_groups', 'all_variables', 'all_hosts', 
+                 'created_at', 'updated_at']
+    
+    def get_child_groups(self, obj):
+        return [{'id': str(group.id), 'name': group.name} for group in obj.child_groups]
+    
+    def get_parent_groups(self, obj):
+        return [{'id': str(group.id), 'name': group.name} for group in obj.parent_groups]
+    
+    def get_all_variables(self, obj):
+        return obj.all_variables
+    
+    def get_all_hosts(self, obj):
+        hosts = obj.all_hosts
+        return [{'id': str(host.id), 'name': getattr(host, 'name', str(host)), 'type': host._meta.model_name} for host in hosts]
+
+class AnsibleGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroup
+        fields = ['name', 'description', 'is_special', 'status']
+
+class AnsibleGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroup
+        fields = ['name', 'description', 'is_special', 'status']
+
+class AnsibleHostSerializer(serializers.ModelSerializer):
+    group = AnsibleGroupSerializer(read_only=True)
+    host = ResourceRelatedField(read_only=True)
+    content_type = serializers.PrimaryKeyRelatedField(queryset=ContentType.objects.all(), write_only=True)
+    object_id = serializers.UUIDField(write_only=True)
+    
+    class Meta:
+        model = models.AnsibleHost
+        fields = ['id', 'group', 'host', 'content_type', 'object_id', 'host_vars', 
+                 'ansible_host', 'ansible_port', 'ansible_user', 'ansible_ssh_private_key_file', 
+                 'created_at', 'updated_at']
+
+class AnsibleHostCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHost
+        fields = ['group', 'content_type', 'object_id', 'host_vars', 'ansible_host', 
+                 'ansible_port', 'ansible_user', 'ansible_ssh_private_key_file']
+
+class AnsibleHostUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHost
+        fields = ['group', 'host_vars', 'ansible_host', 'ansible_port', 'ansible_user', 
+                 'ansible_ssh_private_key_file']

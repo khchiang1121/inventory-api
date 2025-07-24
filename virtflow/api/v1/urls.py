@@ -43,6 +43,13 @@ router.register(r'bastion-cluster-associations', views.BastionClusterAssociation
 router.register(r'k8s-cluster-service-meshes', views.K8sClusterToServiceMeshViewSet)
 router.register(r'service-meshes', views.ServiceMeshViewSet)
 router.register(r'virtual-machines', views.VirtualMachineViewSet)
+
+# Ansible routes
+router.register(r'ansible-groups', views.AnsibleGroupViewSet)
+router.register(r'ansible-group-variables', views.AnsibleGroupVariableViewSet)
+router.register(r'ansible-group-relationships', views.AnsibleGroupRelationshipViewSet)
+router.register(r'ansible-hosts', views.AnsibleHostViewSet)
+
 router.register(r'permissions', ObjectPermissionViewSet, basename='object-permissions')
 
 urlpatterns = [
