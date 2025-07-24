@@ -18,3 +18,4 @@ gunicorn
 whitenoise
 djangorestframework-stubs
 django-guardian
+django-cors-headers

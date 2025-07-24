@@ -53,10 +53,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'guardian',
+    'corsheaders',
     'virtflow.api',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -197,3 +199,55 @@ SPECTACULAR_SETTINGS = {
     },
     'ENUM_GENERATE_CHOICE_NAMES': True
 }
+
+# CORS Configuration for Development
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins in development
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127.0.0.1:\d+$",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# CSRF Configuration for Development
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
+
+CSRF_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access in development
+CSRF_COOKIE_SAMESITE = 'Lax'  # More permissive for development
