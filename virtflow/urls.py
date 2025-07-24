@@ -34,8 +34,10 @@ urlpatterns = [
     path('api/v1/redoc', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # API
-    re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=False)),
-    path('api/token/', obtain_auth_token, name='api_token_auth'),
+    # path('api/token/', obtain_auth_token, name='api_token_auth'),
+    path('api/v1/auth/login/', obtain_auth_token, name='api_token_auth'),
+    re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
+
 ] 
 # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
