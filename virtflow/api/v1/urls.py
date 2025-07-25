@@ -50,6 +50,9 @@ router.register(r'ansible-group-variables', views.AnsibleGroupVariableViewSet)
 router.register(r'ansible-group-relationships', views.AnsibleGroupRelationshipViewSet)
 router.register(r'ansible-hosts', views.AnsibleHostViewSet)
 
+# System routes
+router.register(r'system-info', views.SystemInfoViewSet, basename='system-info')
+
 router.register(r'permissions', ObjectPermissionViewSet, basename='object-permissions')
 
 urlpatterns = [

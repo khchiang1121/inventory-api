@@ -9,6 +9,12 @@ from rest_framework import viewsets
 from .serializers import CustomUserSerializer
 from typing import Type
 from rest_framework.serializers import BaseSerializer
+import psutil
+import os
+import time
+from django.db import connection
+from django.core.cache import cache
+from django.conf import settings
 
 # ------------------------------------------------------------------------------
 # User ViewSets
@@ -283,4 +289,140 @@ class AnsibleHostViewSet(viewsets.ModelViewSet):
             return serializers.AnsibleHostCreateSerializer
         elif self.action in ['update', 'partial_update']:
             return serializers.AnsibleHostUpdateSerializer
-        return serializers.AnsibleHostSerializer 
+        return serializers.AnsibleHostSerializer
+
+# ------------------------------------------------------------------------------
+# System Info ViewSet
+# ------------------------------------------------------------------------------
+class SystemInfoViewSet(viewsets.ViewSet):
+    """
+    ViewSet for system health monitoring and information.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def list(self, request):
+        """
+        Get system information including health status, resource usage, and uptime.
+        """
+        try:
+            # Get system version (you can customize this based on your needs)
+            version = getattr(settings, 'VERSION', '1.0.0')
+            
+            # Check database status
+            database_status = 'disconnected'
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                    database_status = 'connected'
+            except Exception:
+                database_status = 'disconnected'
+            
+            # Check cache status (Redis/Memcached)
+            cache_status = 'disconnected'
+            try:
+                cache.set('health_check', 'ok', 1)
+                if cache.get('health_check') == 'ok':
+                    cache_status = 'connected'
+            except Exception:
+                cache_status = 'disconnected'
+            
+            # Get disk usage
+            disk_usage = self._get_disk_usage()
+            
+            # Get memory usage
+            memory_usage = self._get_memory_usage()
+            
+            # Get system uptime
+            uptime = self._get_uptime()
+            
+            # Get last backup time (you can customize this based on your backup system)
+            last_backup = self._get_last_backup()
+            
+            return Response({
+                'version': version,
+                'database_status': database_status,
+                'cache_status': cache_status,
+                'disk_usage': disk_usage,
+                'memory_usage': memory_usage,
+                'uptime': uptime,
+                'last_backup': last_backup,
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=500)
+    
+    def _get_disk_usage(self):
+        """Get disk usage information."""
+        try:
+            disk = psutil.disk_usage('/')
+            total = disk.total
+            used = disk.used
+            free = disk.free
+            percentage = (used / total) * 100
+            
+            return {
+                'total': total,
+                'used': used,
+                'free': free,
+                'percentage': round(percentage, 2)
+            }
+        except Exception:
+            return {
+                'total': 0,
+                'used': 0,
+                'free': 0,
+                'percentage': 0
+            }
+    
+    def _get_memory_usage(self):
+        """Get memory usage information."""
+        try:
+            memory = psutil.virtual_memory()
+            total = memory.total
+            used = memory.used
+            free = memory.available
+            percentage = memory.percent
+            
+            return {
+                'total': total,
+                'used': used,
+                'free': free,
+                'percentage': round(percentage, 2)
+            }
+        except Exception:
+            return {
+                'total': 0,
+                'used': 0,
+                'free': 0,
+                'percentage': 0
+            }
+    
+    def _get_uptime(self):
+        """Get system uptime in seconds."""
+        try:
+            return int(time.time() - psutil.boot_time())
+        except Exception:
+            return 0
+    
+    def _get_last_backup(self):
+        """Get last backup timestamp."""
+        # This is a placeholder - you can implement your own backup tracking logic
+        # For example, you could store backup timestamps in a database table
+        # or read from a backup log file
+        try:
+            # Example: Check if there's a backup log file
+            backup_log_path = os.path.join(settings.BASE_DIR, 'backup.log')
+            if os.path.exists(backup_log_path):
+                # Read the last line of the backup log
+                with open(backup_log_path, 'r') as f:
+                    lines = f.readlines()
+                    if lines:
+                        # Assuming the last line contains the backup timestamp
+                        return lines[-1].strip()
+            
+            # If no backup log found, return None
+            return None
+        except Exception:
+            return None 

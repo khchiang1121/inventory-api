@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/virtflow
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/virtflow-api
           tags: |
             type=ref,event=branch
             type=ref,event=pr
