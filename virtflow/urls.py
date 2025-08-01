@@ -21,10 +21,14 @@ from virtflow import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView, SpectacularJSONAPIView, SpectacularYAMLAPIView, RedirectView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from virtflow.api.v1.serializers import CustomUserSerializer
 from rest_framework.request import Request
+from django.db import connection
+from django.core.cache import cache
+import psutil
+import time
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -56,6 +60,59 @@ def change_password_view(request: Request) -> Response:
     # In a real implementation, you'd validate the old password and update to the new password
     return Response({'message': 'Password changed successfully'})
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request: Request) -> Response:
+    """Health check endpoint for Kubernetes liveness and readiness probes"""
+    try:
+        # Check database connection
+        database_status = 'healthy'
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+        except Exception:
+            database_status = 'unhealthy'
+        
+        # Check cache connection (if available)
+        cache_status = 'healthy'
+        try:
+            cache.set('health_check', 'ok', 1)
+            if cache.get('health_check') != 'ok':
+                cache_status = 'unhealthy'
+        except Exception:
+            cache_status = 'unhealthy'
+        
+        # Get basic system info
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        health_data = {
+            'status': 'healthy' if database_status == 'healthy' else 'unhealthy',
+            'timestamp': time.time(),
+            'database': database_status,
+            'cache': cache_status,
+            'memory': {
+                'total': memory.total,
+                'available': memory.available,
+                'percent': memory.percent
+            },
+            'disk': {
+                'total': disk.total,
+                'free': disk.free,
+                'percent': disk.percent
+            }
+        }
+        
+        status_code = 200 if health_data['status'] == 'healthy' else 503
+        return Response(health_data, status=status_code)
+        
+    except Exception as e:
+        return Response({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': time.time()
+        }, status=503)
+
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
@@ -76,6 +133,8 @@ urlpatterns = [
     path('api/v1/auth/refresh/', refresh_view, name='auth_refresh'),
     path('api/v1/auth/change-password/', change_password_view, name='auth_change_password'),
     path('api/v1/auth/me/', me_view, name='auth_me'),
+    # Health check endpoint
+    path('health/', health_check, name='health_check'),
     # add a me path to the api
     re_path(r'^api/v1/', include(('virtflow.api.v1.urls'), namespace='v1')),
 
