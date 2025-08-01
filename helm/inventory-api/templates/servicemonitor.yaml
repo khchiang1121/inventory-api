@@ -2,13 +2,13 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "virtflow-api.fullname" . }}
+  name: {{ include "inventory-api.fullname" . }}
   labels:
-    {{- include "virtflow-api.labels" . | nindent 4 }}
+    {{- include "inventory-api.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "virtflow-api.selectorLabels" . | nindent 6 }}
+      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
   endpoints:
   - port: {{ .Values.serviceMonitor.port }}
     path: {{ .Values.serviceMonitor.path }}

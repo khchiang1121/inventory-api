@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "virtflow-api.name" -}}
+{{- define "inventory-api.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "virtflow-api.fullname" -}}
+{{- define "inventory-api.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "virtflow-api.chart" -}}
+{{- define "inventory-api.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "virtflow-api.labels" -}}
-helm.sh/chart: {{ include "virtflow-api.chart" . }}
-{{ include "virtflow-api.selectorLabels" . }}
+{{- define "inventory-api.labels" -}}
+helm.sh/chart: {{ include "inventory-api.chart" . }}
+{{ include "inventory-api.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "virtflow-api.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "virtflow-api.name" . }}
+{{- define "inventory-api.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "inventory-api.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "virtflow-api.serviceAccountName" -}}
+{{- define "inventory-api.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "virtflow-api.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "inventory-api.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
@@ -64,21 +64,21 @@ Create the name of the service account to use
 {{/*
 Create the name of the config map
 */}}
-{{- define "virtflow-api.configMapName" -}}
-{{- printf "%s-config" (include "virtflow-api.fullname" .) }}
+{{- define "inventory-api.configMapName" -}}
+{{- printf "%s-config" (include "inventory-api.fullname" .) }}
 {{- end }}
 
 {{/*
 Create the name of the secret
 */}}
-{{- define "virtflow-api.secretName" -}}
-{{- printf "%s-secrets" (include "virtflow-api.fullname" .) }}
+{{- define "inventory-api.secretName" -}}
+{{- printf "%s-secrets" (include "inventory-api.fullname" .) }}
 {{- end }}
 
 {{/*
 Get the image name
 */}}
-{{- define "virtflow-api.image" -}}
+{{- define "inventory-api.image" -}}
 {{- $registryName := .Values.image.registry -}}
 {{- $repositoryName := .Values.image.repository -}}
 {{- $tag := .Values.image.tag | toString -}}
@@ -92,7 +92,7 @@ Get the image name
 {{/*
 Generate Django secret key if not provided
 */}}
-{{- define "virtflow-api.secretKey" -}}
+{{- define "inventory-api.secretKey" -}}
 {{- if .Values.secrets.SECRET_KEY }}
 {{- .Values.secrets.SECRET_KEY | b64enc }}
 {{- else }}
@@ -104,7 +104,7 @@ Generate Django secret key if not provided
 {{/*
 Generate environment variables
 */}}
-{{- define "virtflow-api.envVars" -}}
+{{- define "inventory-api.envVars" -}}
 {{- range $key, $value := .Values.env }}
 - name: {{ $key }}
   value: {{ $value | quote }}
@@ -114,25 +114,25 @@ Generate environment variables
 {{/*
 Generate secret environment variables
 */}}
-{{- define "virtflow-api.secretEnvVars" -}}
+{{- define "inventory-api.secretEnvVars" -}}
 - name: SECRET_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ include "virtflow-api.secretName" . }}
+      name: {{ include "inventory-api.secretName" . }}
       key: SECRET_KEY
 - name: DB_USER
   valueFrom:
     secretKeyRef:
-      name: {{ include "virtflow-api.secretName" . }}
+      name: {{ include "inventory-api.secretName" . }}
       key: DB_USER
 - name: DB_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ include "virtflow-api.secretName" . }}
+      name: {{ include "inventory-api.secretName" . }}
       key: DB_PASSWORD
 - name: DJANGO_ADMIN_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ include "virtflow-api.secretName" . }}
+      name: {{ include "inventory-api.secretName" . }}
       key: DJANGO_ADMIN_PASSWORD
 {{- end }} 

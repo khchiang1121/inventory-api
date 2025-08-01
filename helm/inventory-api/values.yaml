@@ -78,7 +78,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: virtflow-api.your-domain.com
+    - host: inventory-api.your-domain.com
       paths:
         - path: /
           pathType: Prefix
@@ -89,7 +89,7 @@ ingress:
   tls:
     - secretName: virtflow-tls
       hosts:
-        - virtflow-api.your-domain.com
+        - inventory-api.your-domain.com
         - virtflow-api-dev.your-domain.com
 
 # Deployment configuration
@@ -194,7 +194,7 @@ affinity: {}
 volumes: []
 # - name: config-volume
 #   configMap:
-#     name: {{ include "virtflow-api.fullname" . }}-config
+#     name: {{ include "inventory-api.fullname" . }}-config
 
 # Additional volume mounts
 volumeMounts: []

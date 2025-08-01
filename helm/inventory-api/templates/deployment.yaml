@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "virtflow-api.fullname" . }}
+  name: {{ include "inventory-api.fullname" . }}
   labels:
-    {{- include "virtflow-api.labels" . | nindent 4 }}
+    {{- include "inventory-api.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.deployment.replicas }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "virtflow-api.selectorLabels" . | nindent 6 }}
+      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
   strategy:
     {{- toYaml .Values.deployment.strategy | nindent 4 }}
   template:
@@ -20,13 +20,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "virtflow-api.selectorLabels" . | nindent 8 }}
+        {{- include "inventory-api.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "virtflow-api.serviceAccountName" . }}
+      serviceAccountName: {{ include "inventory-api.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.nodeSelector }}
@@ -53,7 +53,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ include "virtflow-api.image" . }}"
+          image: "{{ include "inventory-api.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -82,12 +82,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- include "virtflow-api.secretEnvVars" . | nindent 12 }}
+            {{- include "inventory-api.secretEnvVars" . | nindent 12 }}
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "virtflow-api.configMapName" $ }}
+                  name: {{ include "inventory-api.configMapName" $ }}
                   key: {{ $key }}
             {{- end }}
           {{- if .Values.volumeMounts }}

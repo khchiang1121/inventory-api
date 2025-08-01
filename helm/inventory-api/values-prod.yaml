@@ -36,14 +36,14 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: virtflow-api.your-domain.com
+    - host: inventory-api.your-domain.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - secretName: virtflow-tls
       hosts:
-        - virtflow-api.your-domain.com
+        - inventory-api.your-domain.com
 
 # Deployment configuration for production
 deployment:
@@ -100,7 +100,7 @@ env:
   # Django settings
   DJANGO_SETTINGS_MODULE: "virtflow.settings"
   DEBUG: "False"
-  ALLOWED_HOSTS: "virtflow-api.your-domain.com"
+  ALLOWED_HOSTS: "inventory-api.your-domain.com"
   
   # Database settings
   DB_HOST: "postgres-prod-service"
