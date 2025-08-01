@@ -1,0 +1,246 @@
+# Default values for virtflow-api
+# This is a YAML-formatted file.
+
+# Global settings
+global:
+  # Global image registry
+  imageRegistry: ""
+  # Global image pull secrets
+  imagePullSecrets: []
+  # Global storage class
+  storageClass: ""
+
+# Namespace configuration
+namespace:
+  create: false
+  name: ""
+
+# Application name and namespace
+nameOverride: ""
+fullnameOverride: ""
+
+# Image configuration
+image:
+  registry: registry.gitlab.com
+  repository: your-org/virtflow-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  # Override the image registry
+  # registry: ""
+
+# Image pull secrets
+imagePullSecrets:
+  - name: gitlab-registry-secret
+
+# Service account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8201
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: virtflow-api.your-domain.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: virtflow-api-dev.your-domain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: virtflow-tls
+      hosts:
+        - virtflow-api.your-domain.com
+        - virtflow-api-dev.your-domain.com
+
+# Deployment configuration
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+# Resources configuration
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Horizontal Pod Autoscaler
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Autoscaling configuration (for backward compatibility)
+autoscaling:
+  enabled: false
+
+# Pod Disruption Budget
+pdb:
+  enabled: true
+  minAvailable: 2
+
+# Health check configuration
+healthCheck:
+  livenessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Environment configuration
+env:
+  # Django settings
+  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "*"
+  
+  # Database settings
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "virtflow"
+  
+  # Redis settings
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # Application settings
+  APP_PORT: "8201"
+  WORKERS: "4"
+
+# Secrets configuration
+secrets:
+  # Django secret key (will be auto-generated if not provided)
+  SECRET_KEY: ""
+  # Database credentials
+  DB_USER: "virtflow"
+  DB_PASSWORD: "virtflow-password"
+  # Admin password
+  DJANGO_ADMIN_PASSWORD: "admin-password"
+
+# ConfigMap configuration
+configMap:
+  # Additional config data
+  additionalData: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Additional volumes
+volumes: []
+# - name: config-volume
+#   configMap:
+#     name: {{ include "virtflow-api.fullname" . }}-config
+
+# Additional volume mounts
+volumeMounts: []
+# - name: config-volume
+#   mountPath: /app/config
+
+# Init containers
+initContainers: []
+
+# Sidecar containers
+sidecars: []
+
+# Network policy
+networkPolicy:
+  enabled: false
+  ingressRules: []
+  egressRules: []
+
+# Service monitor for Prometheus
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /metrics
+  port: http
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+  maxUnavailable: 1
+
+# Pod security policy
+podSecurityPolicy:
+  enabled: false
+  annotations: {}
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim' 

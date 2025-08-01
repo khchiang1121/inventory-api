@@ -1,0 +1,281 @@
+# Custom environment values for virtflow-api
+# This is an example of how to customize the deployment
+
+# Application name and namespace
+nameOverride: "my-virtflow-api"
+fullnameOverride: "my-virtflow-api"
+
+# Custom image configuration
+image:
+  registry: my-registry.com
+  repository: my-org/virtflow-api
+  tag: "custom-v1.2.3"
+  pullPolicy: IfNotPresent
+
+# Custom image pull secrets
+imagePullSecrets:
+  - name: my-registry-secret
+
+# Service account
+serviceAccount:
+  create: true
+  name: "my-virtflow-api-sa"
+
+# Custom service configuration
+service:
+  type: LoadBalancer  # Changed from ClusterIP
+  port: 8080          # Changed from 80
+  targetPort: 8201
+
+# Custom ingress configuration
+ingress:
+  enabled: true
+  className: "traefik"  # Changed from nginx
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  hosts:
+    - host: api.mycompany.com
+      paths:
+        - path: /
+          pathType: Prefix
+        - path: /api
+          pathType: Prefix
+  tls:
+    - secretName: my-virtflow-tls
+      hosts:
+        - api.mycompany.com
+
+# Custom deployment configuration
+deployment:
+  replicas: 5  # Increased from 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 0
+
+# Custom resources
+resources:
+  limits:
+    cpu: 2000m    # Increased from 500m
+    memory: 2Gi   # Increased from 512Mi
+  requests:
+    cpu: 1000m    # Increased from 250m
+    memory: 1Gi   # Increased from 256Mi
+
+# Custom HPA configuration
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20  # Increased from 10
+  targetCPUUtilizationPercentage: 60  # Lowered from 70
+  targetMemoryUtilizationPercentage: 70  # Lowered from 80
+
+# Custom PDB configuration
+pdb:
+  enabled: true
+  minAvailable: 3  # Increased from 2
+
+# Custom health check configuration
+healthCheck:
+  livenessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 60  # Increased from 30
+    periodSeconds: 15        # Increased from 10
+    timeoutSeconds: 10       # Increased from 5
+    failureThreshold: 5      # Increased from 3
+  readinessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 10  # Increased from 5
+    periodSeconds: 10        # Increased from 5
+    timeoutSeconds: 5        # Increased from 3
+    failureThreshold: 5      # Increased from 3
+
+# Custom environment configuration
+env:
+  # Django settings
+  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "api.mycompany.com"
+  
+  # Custom database settings
+  DB_HOST: "my-postgres-cluster"
+  DB_PORT: "5432"
+  DB_NAME: "virtflow_custom"
+  
+  # Custom Redis settings
+  REDIS_HOST: "my-redis-cluster"
+  REDIS_PORT: "6379"
+  
+  # Custom application settings
+  APP_PORT: "8201"
+  WORKERS: "8"  # Increased from 4
+  
+  # Additional custom environment variables
+  CUSTOM_SETTING: "custom-value"
+  LOG_LEVEL: "DEBUG"
+  CACHE_TIMEOUT: "300"
+
+# Custom secrets configuration
+secrets:
+  SECRET_KEY: "my-custom-secret-key-here"
+  DB_USER: "virtflow_custom"
+  DB_PASSWORD: "my-secure-db-password"
+  DJANGO_ADMIN_PASSWORD: "my-admin-password"
+
+# Custom ConfigMap additional data
+configMap:
+  additionalData:
+    ENVIRONMENT: "custom"
+    LOG_LEVEL: "DEBUG"
+    CUSTOM_CONFIG: "custom-value"
+    FEATURE_FLAGS: "feature1,feature2,feature3"
+
+# Custom node selector
+nodeSelector:
+  node-type: "high-performance"
+  environment: "custom"
+
+# Custom tolerations
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "custom"
+    effect: "NoSchedule"
+
+# Custom affinity (spread pods across availability zones)
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/name
+          operator: In
+          values:
+          - virtflow-api
+      topologyKey: topology.kubernetes.io/zone
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - virtflow-api
+        topologyKey: topology.kubernetes.io/hostname
+
+# Custom volumes
+volumes:
+  - name: config-volume
+    configMap:
+      name: my-virtflow-config
+  - name: logs-volume
+    persistentVolumeClaim:
+      claimName: my-virtflow-logs-pvc
+
+# Custom volume mounts
+volumeMounts:
+  - name: config-volume
+    mountPath: /app/config
+    readOnly: true
+  - name: logs-volume
+    mountPath: /app/logs
+
+# Custom init containers
+initContainers:
+  - name: init-db
+    image: postgres:13
+    command: ['sh', '-c', 'until pg_isready -h my-postgres-cluster; do echo waiting for database; sleep 2; done;']
+    env:
+      - name: PGPASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: my-virtflow-secrets
+            key: DB_PASSWORD
+
+# Custom sidecar containers
+sidecars:
+  - name: nginx-sidecar
+    image: nginx:alpine
+    ports:
+      - name: nginx
+        containerPort: 80
+    volumeMounts:
+      - name: nginx-config
+        mountPath: /etc/nginx/conf.d
+    volumes:
+      - name: nginx-config
+        configMap:
+          name: my-nginx-config
+
+# Custom network policy
+networkPolicy:
+  enabled: true
+  ingressRules:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-traefik
+        - podSelector:
+            matchLabels:
+              app: monitoring
+        - ipBlock:
+            cidr: 10.0.0.0/8
+  egressRules:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+
+# Custom service monitor
+serviceMonitor:
+  enabled: true
+  interval: 15s  # More frequent scraping
+  scrapeTimeout: 5s
+  path: /metrics
+  port: http
+  additionalScrapeConfigs:
+    - job_name: 'custom-metrics'
+      static_configs:
+        - targets: ['localhost:8201']
+
+# Custom pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 3
+  maxUnavailable: 1
+
+# Custom pod security policy
+podSecurityPolicy:
+  enabled: true
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "runtime/default"
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: "runtime/default"
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim' 

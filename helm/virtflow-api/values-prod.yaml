@@ -1,0 +1,218 @@
+# Production environment values for virtflow-api
+
+# Application name and namespace
+nameOverride: "virtflow-api"
+fullnameOverride: "virtflow-api"
+
+# Image configuration for production
+image:
+  registry: registry.gitlab.com
+  repository: your-org/virtflow-api
+  tag: "v1.0.0"
+  pullPolicy: IfNotPresent
+
+# Service account
+serviceAccount:
+  create: true
+  name: "virtflow-api-sa"
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8201
+
+# Ingress configuration for production
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: virtflow-api.your-domain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: virtflow-tls
+      hosts:
+        - virtflow-api.your-domain.com
+
+# Deployment configuration for production
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+# Resources for production (higher than development)
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Horizontal Pod Autoscaler for production
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget for production
+pdb:
+  enabled: true
+  minAvailable: 2
+
+# Health check configuration
+healthCheck:
+  livenessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    enabled: true
+    path: /health/
+    port: 8201
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Environment configuration for production
+env:
+  # Django settings
+  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "virtflow-api.your-domain.com"
+  
+  # Database settings
+  DB_HOST: "postgres-prod-service"
+  DB_PORT: "5432"
+  DB_NAME: "virtflow_prod"
+  
+  # Redis settings
+  REDIS_HOST: "redis-prod-service"
+  REDIS_PORT: "6379"
+  
+  # Application settings
+  APP_PORT: "8201"
+  WORKERS: "4"
+
+# Secrets configuration for production
+secrets:
+  # Django secret key (will be auto-generated if not provided)
+  SECRET_KEY: ""
+  # Database credentials
+  DB_USER: "virtflow_prod"
+  DB_PASSWORD: "prod-secure-password"
+  # Admin password
+  DJANGO_ADMIN_PASSWORD: "prod-admin-password"
+
+# ConfigMap additional data for production
+configMap:
+  additionalData:
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "INFO"
+
+# Node selector for production
+nodeSelector:
+  node-role: "worker"
+
+# Tolerations for production
+tolerations: []
+
+# Affinity for production (spread pods across nodes)
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - virtflow-api
+        topologyKey: kubernetes.io/hostname
+
+# Additional volumes (optional)
+volumes: []
+
+# Additional volume mounts (optional)
+volumeMounts: []
+
+# Init containers (optional)
+initContainers: []
+
+# Sidecar containers (optional)
+sidecars: []
+
+# Network policy for production
+networkPolicy:
+  enabled: true
+  ingressRules:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app: monitoring
+  egressRules:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+
+# Service monitor for production
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /metrics
+  port: http
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+  maxUnavailable: 1
+
+# Pod security policy for production
+podSecurityPolicy:
+  enabled: true
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "runtime/default"
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim' 
