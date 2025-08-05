@@ -5,24 +5,24 @@
         "docker-compose.yml"
     ],
     "service": "app",
-    "workspaceFolder": "/workspace",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
     "shutdownAction": "stopCompose",
     "containerUser": "vscode",
     "remoteUser": "vscode",
-    // "features": {
-    //     "ghcr.io/devcontainers/features/git:1": {},
-    //     "ghcr.io/devcontainers/features/github-cli:1": {},
-    //     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    //     "ghcr.io/devcontainers/features/common-utils:2": {
-    //         "installZsh": true,
-    //         "configureZshAsDefaultShell": true,
-    //         "installOhMyZsh": true,
-    //         "upgradePackages": true,
-    //         "username": "vscode",
-    //         "userUid": "1000",
-    //         "userGid": "1000"
-    //     }
-    // },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "upgradePackages": true,
+            "username": "vscode",
+            "userUid": "1000",
+            "userGid": "1000"
+        }
+    },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -48,10 +48,14 @@
                 "formulahendry.auto-rename-tag",
                 "esbenp.prettier-vscode",
                 "ms-vscode.vscode-typescript-next",
-                "ms-ceintl.vscode-language-pack-zh-hans",
+                "ms-ceintl.vscode-language-pack-zh-hant",
                 "EditorConfig.EditorConfig",
                 "dbaeumer.vscode-eslint",
-                "njpwerner.autodocstring"
+                "njpwerner.autodocstring",
+                "donjayamanne.githistory",
+                "ms-azuretools.vscode-containers",
+                "ms-azuretools.vscode-docker",
+                "mhutchie.git-graph"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/usr/bin/python",
@@ -103,23 +107,25 @@
     },
     // "postCreateCommand": "/workspace/.devcontainer/setup.sh",
     // "postStartCommand": "python manage.py migrate",
-    "containerEnv": {
-        "HOME": "/home/vscode"
-    },
-    "remoteEnv": {
-        "HOME": "/home/vscode",
-        "PYTHONPATH": "/workspace"
-    },
-    "onCreateCommand":[
-        "echo 'Welcome to the Inventory API Development Container!'",
-        "echo 'Make sure to run migrations and start the server after setup.'"
-    ],
+    // "containerEnv": {
+    //     "HOME": "/home/vscode"
+    // },
+    // "remoteEnv": {
+    //     "HOME": "/home/vscode"
+    //     // "PYTHONPATH": "/workspace"
+    // },
+    // "onCreateCommand":[
+    //     "echo 'Welcome to the Inventory API Development Container!'",
+    //     "echo 'Make sure to run migrations and start the server after setup.'"
+    // ]
     // // set the pip index-url to use the local PyPI mirror
-    // "postCreateCommand": [
+    "postCreateCommand": {
+        "init": "./entrypoint.sh",
+        "fake": "make fake"
     //     "pip config set global.trusted-host pypi.local",
     //     "pip config set global.index-url http://pypi.local/simple",
     //     "pip config set global.index http://pypi.local/simple"
-    // ]
+    }
     // "mounts": [
     //     "source=${localWorkspaceFolder}/.devcontainer/env.local,target=/workspace/.env,type=bind,consistency=cached"
     // ]

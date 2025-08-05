@@ -3,16 +3,19 @@ services:
     build: 
       context: .
       dockerfile: .devcontainer/Dockerfile
+      # args:
+      #   BASE_IMAGE: "${BASE_IMAGE}"    # 從本機環境變數
+      #   MY_ARG: "${MY_ARG}"            # 另一個可控參數
     volumes:
-      - ./:/workspace:cached
-      - ~/.gitconfig:/home/vscode/.gitconfig:ro
-      - ~/.ssh:/home/vscode/.ssh:ro
+      - ./:/workspaces/inventory-api:cached
+    #   - ~/.gitconfig:/home/vscode/.gitconfig:ro
+    #   - ~/.ssh:/home/vscode/.ssh:ro
     command: sleep infinity
-    environment:
-      - PYTHONPATH=/workspace
-      - DJANGO_SETTINGS_MODULE=virtflow.settings
-    ports:
-      - "18201:8201"
+    # environment:
+    #   - PYTHONPATH=/workspace
+    #   - DJANGO_SETTINGS_MODULE=virtflow.settings
+    # ports:
+    #   - "18201:8201"
 #     networks:
 #       - inventory-network
 

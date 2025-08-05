@@ -18,7 +18,6 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 8201
 
-# Command to run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8201"]
+ENTRYPOINT ["./entrypoint.sh"]
 
-# CMD ["uvicorn", "project.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
+CMD ["uvicorn", "virtflow.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
