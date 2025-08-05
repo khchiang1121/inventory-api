@@ -1,0 +1,126 @@
+{
+    "name": "Inventory API Development",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "docker-compose.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "shutdownAction": "stopCompose",
+    "containerUser": "vscode",
+    "remoteUser": "vscode",
+    // "features": {
+    //     "ghcr.io/devcontainers/features/git:1": {},
+    //     "ghcr.io/devcontainers/features/github-cli:1": {},
+    //     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    //     "ghcr.io/devcontainers/features/common-utils:2": {
+    //         "installZsh": true,
+    //         "configureZshAsDefaultShell": true,
+    //         "installOhMyZsh": true,
+    //         "upgradePackages": true,
+    //         "username": "vscode",
+    //         "userUid": "1000",
+    //         "userGid": "1000"
+    //     }
+    // },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.flake8",
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.mypy-type-checker",
+                "ms-python.pylint",
+                "bradlc.vscode-tailwindcss",
+                "ms-vscode.vscode-json",
+                "redhat.vscode-yaml",
+                "ms-vscode-remote.remote-containers",
+                "github.copilot",
+                "github.copilot-chat",
+                "ms-vscode.hexeditor",
+                "streetsidesoftware.code-spell-checker",
+                "humao.rest-client",
+                "rangav.vscode-thunder-client",
+                "ckolkman.vscode-postgres",
+                "mtxr.sqltools",
+                "mtxr.sqltools-driver-pg",
+                "formulahendry.auto-rename-tag",
+                "esbenp.prettier-vscode",
+                "ms-vscode.vscode-typescript-next",
+                "ms-ceintl.vscode-language-pack-zh-hans",
+                "EditorConfig.EditorConfig",
+                "dbaeumer.vscode-eslint",
+                "njpwerner.autodocstring"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.formatting.provider": "black",
+                "python.sortImports.path": "isort",
+                "python.analysis.typeCheckingMode": "basic",
+                "python.analysis.autoImportCompletions": true,
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true
+                },
+                "files.exclude": {
+                    "**/__pycache__": true,
+                    "**/*.pyc": true,
+                    "**/.mypy_cache": true
+                },
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "sqltools.connections": [
+                    {
+                        "name": "PostgreSQL Local",
+                        "driver": "PostgreSQL",
+                        "previewLimit": 50,
+                        "server": "postgres",
+                        "port": 5432,
+                        // "database": "${POSTGRES_DB}",
+                        // "username": "${POSTGRES_USER}",
+                        // "password": "${POSTGRES_PASSWORD}"
+                    }
+                ],
+                "http.proxy": "${localEnv:http_proxy}"
+            }
+        }
+    },
+    "forwardPorts": [8201, 5432, 8202],
+    "portsAttributes": {
+        "8201": {
+            "label": "Django API",
+            "onAutoForward": "notify"
+        },
+        "5432": {
+            "label": "PostgreSQL"
+        },
+        "8202": {
+            "label": "pgAdmin"
+        }
+    },
+    // "postCreateCommand": "/workspace/.devcontainer/setup.sh",
+    // "postStartCommand": "python manage.py migrate",
+    "containerEnv": {
+        "HOME": "/home/vscode"
+    },
+    "remoteEnv": {
+        "HOME": "/home/vscode",
+        "PYTHONPATH": "/workspace"
+    },
+    "onCreateCommand":[
+        "echo 'Welcome to the Inventory API Development Container!'",
+        "echo 'Make sure to run migrations and start the server after setup.'"
+    ],
+    // // set the pip index-url to use the local PyPI mirror
+    // "postCreateCommand": [
+    //     "pip config set global.trusted-host pypi.local",
+    //     "pip config set global.index-url http://pypi.local/simple",
+    //     "pip config set global.index http://pypi.local/simple"
+    // ]
+    // "mounts": [
+    //     "source=${localWorkspaceFolder}/.devcontainer/env.local,target=/workspace/.env,type=bind,consistency=cached"
+    // ]
+}
