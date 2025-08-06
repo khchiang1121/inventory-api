@@ -1,4 +1,3 @@
-# Use Python 3.10 as base image
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
 # Set environment variables
@@ -14,18 +13,27 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN [ ! -e /usr/bin/python ] && ln -s /usr/bin/python3 /usr/bin/python || true
 
+#===================================================================================================
 # setup apt sources to use the local mirror
 # Uncomment the following lines to use a local mirror (e.g., Aliyun) for faster package downloads
 # Remove the current sources.list and replace it with the mirror sources
+#===================================================================================================
 
+# 定義 ARG，用於控制是否覆寫 source 以及提供新 sources 內容
+ARG OVERWRITE_APT_SOURCE=false
+ARG APT_SOURCE_CONTENT=""
 
-# RUN rm -f /etc/apt/sources.list.d/*.list && \
-#     && echo "" > /etc/apt/sources.list
+# 設定 shell 為 bash 並開啟 errexit + pipefail
+SHELL ["/bin/bash", "-c"]
 
-# RUN echo "deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list && \
-#     echo "deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-#     echo "deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse" >> /etc/apt/sources.list && \
-#     echo "deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
+# 條件式執行 sources.list 更新
+RUN if [[ "${OVERWRITE_APT_SOURCE}" == "true" ]]; then \
+        echo "Overwriting APT source..." && \
+        rm -f /etc/apt/sources.list.d/*.list && \
+        echo "${APT_SOURCE_CONTENT}" > /etc/apt/sources.list ; \
+    else \
+        echo "Skipping APT source overwrite."; \
+    fi
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -85,13 +93,14 @@ COPY requirements.txt .
 # RUN /usr/local/bin/proxy-config.sh pip
 
 # Setup pip index URL if needed
-# ARG PIP_INDEX_URL
-# RUN if [ -n "$PIP_INDEX_URL" ]; then \
-#         echo "[global]" > /etc/pip.conf && \
-#         echo "trusted-host = $PIP_INDEX_URL" >> /etc/pip.conf && \
-#         echo "index-url = $PIP_INDEX_URL" >> /etc/pip.conf && \
-#         echo "index = $PIP_INDEX_URL" >> /etc/pip.conf
-#     fi
+ARG PIP_INDEX_URL
+ARG PIP_TRUSTED_HOST
+RUN if [ -n "$PIP_INDEX_URL" ]; then \
+        echo "[global]" > /etc/pip.conf && \
+        echo "trusted-host = $PIP_TRUSTED_HOST" >> /etc/pip.conf && \
+        echo "index-url = $PIP_INDEX_URL" >> /etc/pip.conf && \
+        echo "index = $PIP_INDEX_URL" >> /etc/pip.conf; \
+    fi
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt

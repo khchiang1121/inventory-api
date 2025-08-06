@@ -3,55 +3,18 @@ services:
     build: 
       context: .
       dockerfile: .devcontainer/Dockerfile
-      # args:
-      #   BASE_IMAGE: "${BASE_IMAGE}"    # 從本機環境變數
-      #   MY_ARG: "${MY_ARG}"            # 另一個可控參數
+      args:
+        PIP_INDEX_URL: ""
+        PIP_TRUSTED_HOST: ""
+        OVERWRITE_APT_SOURCE: "false"
+        APT_SOURCE_CONTEXT: |
+          deb [trusted=yes] http://
     volumes:
       - ./:/workspaces/inventory-api:cached
-    #   - ~/.gitconfig:/home/vscode/.gitconfig:ro
-    #   - ~/.ssh:/home/vscode/.ssh:ro
+      - ~/.ssh:/home/vscode/.ssh:ro
+      # - ~/.vscode-server:/home/vscode/.vscode-server
+      # - ~/.gitconfig:/home/vscode/.gitconfig:ro
     command: sleep infinity
     # environment:
     #   - PYTHONPATH=/workspace
     #   - DJANGO_SETTINGS_MODULE=virtflow.settings
-    # ports:
-    #   - "18201:8201"
-#     networks:
-#       - inventory-network
-
-#   pgadmin:
-#     image: dpage/pgadmin4:latest
-#     restart: unless-stopped
-#     environment:
-#       PGADMIN_DEFAULT_EMAIL: admin@inventory.local
-#       PGADMIN_DEFAULT_PASSWORD: admin123
-#       PGADMIN_CONFIG_SERVER_MODE: 'False'
-#     ports:
-#       - "15050:80"
-#     volumes:
-#       - ../pgadmin4/.pgpass:/root/.pgpass:ro
-#       - pgadmin-data:/var/lib/pgadmin
-#     networks:
-#       - inventory-network
-    
-#   postgres:
-#     image: postgres:latest
-#     restart: unless-stopped
-#     volumes:
-#       - postgres-data:/var/lib/postgresql/data
-#     ports:
-#     - "15432:5432"
-#     environment:
-#       POSTGRES_PASSWORD: postgres
-#       POSTGRES_USER: postgres
-#       POSTGRES_DB: postgres
-#     networks:
-#       - inventory-network
-
-# volumes:
-#   pgadmin-data:
-#   postgres-data:
-
-# networks:
-#   inventory-network:
-#     driver: bridge 
