@@ -18,7 +18,7 @@ done
 
 echo "PostgreSQL started"
 
-# 套用 migrations（不會重新產生 migration 檔案）
+# 套用 migrations
 echo "📦 Running migrations..."
 python manage.py makemigrations
 python manage.py migrate

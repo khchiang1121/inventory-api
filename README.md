@@ -2,6 +2,25 @@
 
 VirtFlow 是一個基於 Django REST framework 開發的虛擬化資源管理系統，提供完整的 API 介面來管理虛擬化資源。本系統專注於提供高效、靈活且可擴展的資源管理解決方案，支援多租戶環境下的虛擬化資源調度與管理。
 
+## 🚀 Quick Start with Dev Container
+
+The easiest way to get started with VirtFlow is using VS Code Dev Containers:
+
+1. **Prerequisites**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. **Clone and Open**: Clone this repository and open it in VS Code
+
+3. **Configure Environment** (Optional): Create a `.env` file with your preferred apt mirror and proxy settings
+
+4. **Start Dev Container**: Press `Ctrl+Shift+P` and select "Dev Containers: Reopen in Container"
+
+5. **Access Services**:
+   - Django App: <http://localhost:8201>
+   - pgAdmin: <http://localhost:8202>
+   - PostgreSQL: localhost:5432
+
+For detailed setup instructions, see [`.devcontainer/README.md`](.devcontainer/README.md).
+
 ## 核心功能
 
 ### 1. 資源管理

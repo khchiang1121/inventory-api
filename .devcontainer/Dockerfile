@@ -7,10 +7,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# # Create developer user
-# RUN groupadd --gid 1000 developer \
-#     && useradd --uid 1000 --gid developer --shell /bin/bash --create-home developer
-
 RUN [ ! -e /usr/bin/python ] && ln -s /usr/bin/python3 /usr/bin/python || true
 
 #===================================================================================================
@@ -78,19 +74,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Add vscode to sudoers
-# RUN echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# Set working directory
-WORKDIR /workspace/invenroty-api
-
-# # Copy proxy configuration script
-# COPY proxy-config.sh /usr/local/bin/proxy-config.sh
-# RUN chmod +x /usr/local/bin/proxy-config.sh
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-# RUN /usr/local/bin/proxy-config.sh pip
 
 # Setup pip index URL if needed
 ARG PIP_INDEX_URL
@@ -104,12 +91,6 @@ RUN if [ -n "$PIP_INDEX_URL" ]; then \
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
-# # Install additional development tools
-# RUN /usr/local/bin/proxy-config.sh pip
-
-# # Create directories for logs and media
-# RUN mkdir -p /workspace/logs /workspace/media /workspace/static && \
-#     chown -R developer:developer /workspace
 
 # Switch to developer user
 USER vscode
@@ -118,8 +99,6 @@ USER vscode
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
 # Expose the port the app runs on
-EXPOSE 8201
-
-# ENTRYPOINT ["../entrypoint.sh"]
+EXPOSE 8201 8201 5432
 
 CMD ["uvicorn", "virtflow.asgi:application", "--host", "0.0.0.0", "--port", "8201"]

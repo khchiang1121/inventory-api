@@ -8,13 +8,14 @@ services:
         PIP_TRUSTED_HOST: ""
         OVERWRITE_APT_SOURCE: "false"
         APT_SOURCE_CONTEXT: |
-          deb [trusted=yes] http://
+          deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+          deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+          deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+          deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse
+
     volumes:
-      - ./:/workspaces/inventory-api:cached
       - ~/.ssh:/home/vscode/.ssh:ro
       # - ~/.vscode-server:/home/vscode/.vscode-server
+      # - ./:/workspaces/${PROJECT_BASE_DIR}:cached
       # - ~/.gitconfig:/home/vscode/.gitconfig:ro
     command: sleep infinity
-    # environment:
-    #   - PYTHONPATH=/workspace
-    #   - DJANGO_SETTINGS_MODULE=virtflow.settings
