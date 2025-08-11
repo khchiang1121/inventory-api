@@ -7,7 +7,7 @@ services:
         PIP_INDEX_URL: ""
         PIP_TRUSTED_HOST: ""
         OVERWRITE_APT_SOURCE: "false"
-        APT_SOURCE_CONTEXT: |
+        APT_SOURCE_CONTENT: |
           deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
           deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
           deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
