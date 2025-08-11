@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/virtflow-api
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/inventory-api
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -47,3 +47,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max 
+      - name: Pre-build dev container image
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ${{ secrets.DOCKERHUB_USERNAME }}/inventory-api-devcontainer
+          cacheFrom: ${{ secrets.DOCKERHUB_USERNAME }}/inventory-api-devcontainer
+          push: always
