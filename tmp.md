@@ -44,6 +44,7 @@ export DJANGO_SETTINGS_MODULE=virtflow.settings
 create .env
 create pgadmin4/.pgpass
 source .env
+source .venv/bin/activate
 docker compose up -d
 make migrations
 make migrate

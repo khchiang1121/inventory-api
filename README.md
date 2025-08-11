@@ -1,10 +1,10 @@
-# VirtFlow
+# Inventory - API
 
-VirtFlow 是一個基於 Django REST framework 開發的虛擬化資源管理系統，提供完整的 API 介面來管理虛擬化資源。本系統專注於提供高效、靈活且可擴展的資源管理解決方案，支援多租戶環境下的虛擬化資源調度與管理。
+Inventory - API 是一個基於 Django REST framework 開發的虛擬化資源管理系統，提供完整的 API 介面來管理虛擬化資源。本系統專注於提供高效、靈活且可擴展的資源管理解決方案，支援多租戶環境下的虛擬化資源調度與管理。
 
 ## 🚀 Quick Start with Dev Container
 
-The easiest way to get started with VirtFlow is using VS Code Dev Containers:
+The easiest way to get started with Inventory - API is using VS Code Dev Containers:
 
 1. **Prerequisites**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
@@ -60,7 +60,7 @@ For detailed setup instructions, see [`.devcontainer/README.md`](.devcontainer/R
 ## 專案架構
 
 ```text
-virtflow/
+inventory-api/
 ├── docs/                  # 專案文件
 │   ├── 設計文件/          # 系統設計相關文件
 │   ├── 開發日誌/          # 開發過程記錄
@@ -71,7 +71,7 @@ virtflow/
 │   └── structure.md      # 系統結構說明
 ├── static/                 # 靜態文件
 ├── staticfiles/           # 收集的靜態文件
-├── virtflow/              # Django 專案配置
+├── inventory-api/              # Django 專案配置
 │   ├── api/              # API 應用程式
 │   │   ├── v1/          # API v1 版本
 │   │   │   ├── views.py        # 視圖邏輯
@@ -96,13 +96,13 @@ virtflow/
 
 ### 核心模組說明
 
-1. **API 模組 (virtflow/api/)**
+1. **API 模組 (inventory-api/api/)**
    - 實現核心業務邏輯
    - 包含資料模型定義
    - 權限控制系統
    - 認證機制實現
 
-2. **API v1 版本 (virtflow/api/v1/)**
+2. **API v1 版本 (inventory-api/api/v1/)**
    - 視圖邏輯處理
    - 資料序列化
    - 權限驗證
@@ -115,7 +115,7 @@ virtflow/
    - 開發日誌
    - 系統配置說明
 
-4. **專案配置 (virtflow/)**
+4. **專案配置 (inventory-api/)**
    - Django 專案設定
    - URL 路由配置
    - API 規範配置
@@ -148,7 +148,7 @@ virtflow/
 
 ```bash
 git clone [repository-url]
-cd virtflow
+cd inventory-api
 ```
 
 2. 設置環境變數

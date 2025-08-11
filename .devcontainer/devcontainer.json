@@ -12,7 +12,13 @@
     "features": {
         "ghcr.io/devcontainers/features/git:1": {},
         "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {},
+        "ghcr.io/mpriscella/features/kind:1": {},
+        "ghcr.io/dhoeric/features/k9s:1": {},
         "ghcr.io/devcontainers/features/common-utils:2": {
             "installZsh": true,
             "configureZshAsDefaultShell": true,
@@ -107,7 +113,7 @@
     },
     "onCreateCommand": "echo 'Welcome to the Inventory API Development Container!' && echo 'Make sure to run migrations and start the server after setup.'",
     "postCreateCommand": {
-        "init": "./entrypoint.sh && make reset",
+        "init": "./entrypoint.sh && make reset"
     },
     "mounts": [
         "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached"
