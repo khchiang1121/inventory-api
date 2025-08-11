@@ -107,8 +107,7 @@
     },
     "onCreateCommand": "echo 'Welcome to the Inventory API Development Container!' && echo 'Make sure to run migrations and start the server after setup.'",
     "postCreateCommand": {
-        "init": "./entrypoint.sh",
-        "fake": "make fake"
+        "init": "./entrypoint.sh && make reset",
     },
     "mounts": [
         "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached"

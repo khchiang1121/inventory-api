@@ -28,3 +28,4 @@ def auth_client(api_client: APIClient, admin_user) -> APIClient:
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     return api_client
 
+

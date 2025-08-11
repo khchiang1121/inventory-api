@@ -99,6 +99,6 @@ USER vscode
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
 # Expose the port the app runs on
-EXPOSE 8201 8201 5432
+EXPOSE 8201 8202 5432
 
 CMD ["uvicorn", "virtflow.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
