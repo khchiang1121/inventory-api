@@ -1,4 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+# FROM khchiang1121/inventory-api-devcontainer:latest
+
+USER root
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
