@@ -1,69 +1,139 @@
-from rest_framework.test import APITestCase
+from typing import Tuple
+
+import pytest
 from django.contrib.auth import get_user_model
-from ..models import Tenant, Rack, BaremetalGroup, Baremetal, VirtualMachineSpecification
+from rest_framework.test import APIClient, APITestCase
+
+
+@pytest.fixture
+def api_client() -> APIClient:
+    return APIClient()
+
+
+@pytest.fixture
+def admin_user(db):
+    User = get_user_model()
+    user, _ = User.objects.get_or_create(username="admin")
+    if not user.is_staff:
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password("admin")
+        user.save()
+    return user
+
+
+@pytest.fixture
+def auth_client(api_client: APIClient, admin_user) -> APIClient:
+    # Using DRF token auth login endpoint
+    from rest_framework.authtoken.models import Token
+
+    token, _ = Token.objects.get_or_create(user=admin_user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    return api_client
+
+
+from ..models import (
+    Baremetal,
+    BaremetalGroup,
+    BaremetalModel,
+    Brand,
+    DataCenter,
+    Fabrication,
+    Phase,
+    PurchaseOrder,
+    PurchaseRequisition,
+    Rack,
+    Tenant,
+    VirtualMachineSpecification,
+)
 
 User = get_user_model()
 
+
 class APITestSetup(APITestCase):
     """Base test class with common setup methods"""
-    
+
     def setUp(self):
         """Set up test data"""
         # Create test user with superuser privileges
         self.user = User.objects.create_superuser(
-            username='testuser',
-            password='testpass123',
-            account='test_account',
-            status='active'
+            username="testuser",
+            password="testpass123",
+            account="test_account",
+            status="active",
         )
-        
+
         # Create test tenant
         self.tenant = Tenant.objects.create(
-            name='Test Tenant',
-            description='Test Description',
-            status='active'
+            name="Test Tenant", description="Test Description", status="active"
         )
-        
+
         # Create test rack
         self.rack = Rack.objects.create(
-            name='Test Rack',
-            bgp_number='AS12345',
-            as_number='AS67890'
+            name="Test Rack", bgp_number="AS12345", as_number=67890
         )
-        
+
         # Create test baremetal group
         self.baremetal_group = BaremetalGroup.objects.create(
-            name='Test Group',
-            description='Test Description',
+            name="Test Group",
+            description="Test Description",
             total_cpu=100,
             total_memory=1000,
             total_storage=10000,
             available_cpu=100,
             available_memory=1000,
             available_storage=10000,
-            status='active'
+            status="active",
         )
-        
+
+        # Create required related objects for baremetal
+        self.brand = Brand.objects.create(name="Dell")
+        self.baremetal_model = BaremetalModel.objects.create(
+            name="PowerEdge R740",
+            brand=self.brand,
+            total_cpu=64,
+            total_memory=1024,
+            total_storage=10000,
+        )
+        self.fabrication = Fabrication.objects.create(name="FAB1")
+        self.phase = Phase.objects.create(name="PHASE1")
+        self.data_center = DataCenter.objects.create(name="DC1")
+        self.purchase_requisition = PurchaseRequisition.objects.create(
+            pr_number="PR-2024-001",
+            requested_by="John Doe",
+            department="IT",
+            reason="Test server",
+        )
+        self.purchase_order = PurchaseOrder.objects.create(
+            po_number="PO-2024-001",
+            vendor_name="Dell",
+            payment_terms="Net 30",
+            issued_by="Procurement",
+        )
+
         # Create test baremetal
         self.baremetal = Baremetal.objects.create(
-            name='Test Baremetal',
-            serial_number='SN123456',
+            name="Test Baremetal",
+            serial_number="SN123456",
+            model=self.baremetal_model,
+            fabrication=self.fabrication,
+            phase=self.phase,
+            data_center=self.data_center,
             rack=self.rack,
-            status='active',
-            total_cpu=100,
-            total_memory=1000,
-            total_storage=10000,
-            available_cpu=100,
-            available_memory=1000,
+            status="active",
+            available_cpu=64,
+            available_memory=1024,
             available_storage=10000,
-            group=self.baremetal_group
+            group=self.baremetal_group,
+            pr=self.purchase_requisition,
+            po=self.purchase_order,
         )
-        
+
         # Create test VM specification
         self.vm_spec = VirtualMachineSpecification.objects.create(
-            name='Test Spec',
-            generation='v1',
+            name="Test Spec",
+            generation="v1",
             required_cpu=2,
             required_memory=4,
-            required_storage=100
-        ) 
+            required_storage=100,
+        )

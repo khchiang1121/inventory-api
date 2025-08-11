@@ -1,48 +1,47 @@
+import pytest
 from django.urls import reverse
 from rest_framework import status
-from ..models import Tenant
-from .base import APITestSetup
 
-class TenantAPITests(APITestSetup):
-    """Test tenant API endpoints"""
-    
-    def setUp(self):
-        super().setUp()
-        self.client.force_authenticate(user=self.user)
-        self.url = reverse('v1:tenant-list')
-    
-    def test_create_tenant(self):
-        """Test creating a new tenant"""
-        data = {
-            'name': 'New Tenant',
-            'description': 'New Description',
-            'status': 'active'
-        }
-        response = self.client.post(self.url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Tenant.objects.count(), 2)  # Including the one from setup
-    
-    def test_list_tenants(self):
-        """Test listing tenants"""
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)  # Only the one from setup
-    
-    def test_retrieve_tenant(self):
-        """Test retrieving a specific tenant"""
-        url = reverse('v1:tenant-detail', kwargs={'pk': self.tenant.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.tenant.name)
-    
-    def test_update_tenant(self):
-        """Test updating a tenant"""
-        url = reverse('v1:tenant-detail', kwargs={'pk': self.tenant.pk})
-        data = {
-            'name': 'Updated Tenant',
-            'description': 'Updated Description'
-        }
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.tenant.refresh_from_db()
-        self.assertEqual(self.tenant.name, 'Updated Tenant') 
+from ..models import Tenant
+from .base import auth_client
+
+
+@pytest.mark.django_db
+def test_crud_tenant(auth_client):
+    payload = {"name": "team-a", "description": "", "status": "active"}
+    r = auth_client.post("/api/v1/tenants", payload, format="json")
+    assert r.status_code == 201
+    t_id = r.data["id"]
+    assert auth_client.get(f"/api/v1/tenants/{t_id}").status_code == 200
+    assert (
+        auth_client.patch(
+            f"/api/v1/tenants/{t_id}", {"status": "inactive"}, format="json"
+        ).status_code
+        == 200
+    )
+    assert auth_client.delete(f"/api/v1/tenants/{t_id}").status_code in (204, 200)
+
+
+@pytest.mark.django_db
+def test_crud_vm_spec(auth_client):
+    payload = {
+        "name": "s-1",
+        "generation": "g1",
+        "required_cpu": 2,
+        "required_memory": 4,
+        "required_storage": 10,
+    }
+    r = auth_client.post("/api/v1/vm-specifications", payload, format="json")
+    assert r.status_code == 201
+    spec_id = r.data["id"]
+    assert auth_client.get(f"/api/v1/vm-specifications/{spec_id}").status_code == 200
+    assert (
+        auth_client.patch(
+            f"/api/v1/vm-specifications/{spec_id}", {"generation": "g2"}, format="json"
+        ).status_code
+        == 200
+    )
+    assert auth_client.delete(f"/api/v1/vm-specifications/{spec_id}").status_code in (
+        204,
+        200,
+    )

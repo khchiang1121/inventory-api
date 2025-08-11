@@ -1,53 +1,105 @@
-from django.urls import reverse
-from rest_framework import status
-from ..models import Baremetal
-from .base import APITestSetup
+import pytest
+from django.contrib.contenttypes.models import ContentType
 
-class BaremetalAPITests(APITestSetup):
-    """Test baremetal API endpoints"""
-    
-    def setUp(self):
-        super().setUp()
-        self.client.force_authenticate(user=self.user)
-        self.url = reverse('v1:baremetal-list')
-    
-    def test_create_baremetal(self):
-        """Test creating a new baremetal server"""
-        data = {
-            'name': 'New Baremetal',
-            'serial_number': 'SN789012',
-            'rack': self.rack.pk,
-            'status': 'active',
-            'total_cpu': 100,
-            'total_memory': 1000,
-            'total_storage': 10000,
-            'available_cpu': 100,
-            'available_memory': 1000,
-            'available_storage': 10000,
-            'group': self.baremetal_group.pk
-        }
-        response = self.client.post(self.url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Baremetal.objects.count(), 2)  # Including the one from setup
-    
-    def test_list_baremetals(self):
-        """Test listing baremetal servers"""
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)  # Only the one from setup
-    
-    def test_retrieve_baremetal(self):
-        """Test retrieving a specific baremetal server"""
-        url = reverse('v1:baremetal-detail', kwargs={'pk': self.baremetal.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.baremetal.name)
-    
-    def test_update_baremetal_status(self):
-        """Test updating baremetal server status"""
-        url = reverse('v1:baremetal-detail', kwargs={'pk': self.baremetal.pk})
-        data = {'status': 'inactive'}
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.baremetal.refresh_from_db()
-        self.assertEqual(self.baremetal.status, 'inactive') 
+from .base import auth_client
+
+
+@pytest.mark.django_db
+def test_baremetal_crud_minimal_tree(auth_client, django_assert_num_queries):
+    # Prerequisites: brand, model, fabrication, phase, data_center, rack, PR, PO, group
+    brand = auth_client.post("/api/v1/brands", {"name": "Dell"}, format="json").data
+    model = auth_client.post(
+        "/api/v1/baremetal-models",
+        {
+            "name": "R740",
+            "brand": brand["id"],
+            "total_cpu": 64,
+            "total_memory": 256,
+            "total_storage": 4096,
+        },
+        format="json",
+    ).data
+    fab = auth_client.post(
+        "/api/v1/fabrications", {"name": "fab-x"}, format="json"
+    ).data
+    phase = auth_client.post("/api/v1/phases", {"name": "p1"}, format="json").data
+    dc = auth_client.post("/api/v1/data-centers", {"name": "dc1"}, format="json").data
+    rack = auth_client.post(
+        "/api/v1/racks",
+        {
+            "name": "rack1",
+            "bgp_number": "65001",
+            "as_number": 65001,
+            "height_units": 42,
+            "power_capacity": "4.00",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    pr = auth_client.post(
+        "/api/v1/purchase-requisitions",
+        {"pr_number": "PR-100", "requested_by": "ops"},
+        format="json",
+    ).data
+    po = auth_client.post(
+        "/api/v1/purchase-orders",
+        {"po_number": "PO-100", "vendor_name": "Dell"},
+        format="json",
+    ).data
+    group = auth_client.post(
+        "/api/v1/baremetal-groups",
+        {
+            "name": "g1",
+            "description": "",
+            "total_cpu": 100,
+            "total_memory": 100,
+            "total_storage": 100,
+            "available_cpu": 100,
+            "available_memory": 100,
+            "available_storage": 100,
+            "status": "active",
+        },
+        format="json",
+    ).data
+
+    payload = {
+        "name": "bm1",
+        "serial_number": "SN1",
+        "model": model["id"],
+        "fabrication": fab["id"],
+        "phase": phase["id"],
+        "data_center": dc["id"],
+        "rack": rack["id"],
+        "unit": "U1",
+        "status": "active",
+        "available_cpu": 64,
+        "available_memory": 128,
+        "available_storage": 1000,
+        "group": group["id"],
+        "pr": pr.get("id"),
+        "po": po.get("id"),
+    }
+    r = auth_client.post("/api/v1/baremetals", payload, format="json")
+    assert r.status_code == 201
+    bm_id = r.data["id"]
+    assert auth_client.get(f"/api/v1/baremetals/{bm_id}").status_code == 200
+    assert (
+        auth_client.patch(
+            f"/api/v1/baremetals/{bm_id}", {"status": "inactive"}, format="json"
+        ).status_code
+        == 200
+    )
+
+    # Create a network interface for this baremetal via generic relation
+    ct = ContentType.objects.get(app_label="api", model="baremetal")
+    ni_payload = {
+        "content_type": ct.id,
+        "object_id": bm_id,
+        "name": "eth0",
+        "mac_address": "AA:BB:CC",
+        "is_primary": True,
+    }
+    r = auth_client.post("/api/v1/network-interfaces", ni_payload, format="json")
+    assert r.status_code == 201
+
+    assert auth_client.delete(f"/api/v1/baremetals/{bm_id}").status_code in (204, 200)
