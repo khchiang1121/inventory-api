@@ -1,20 +1,20 @@
-# Production environment values for virtflow-api
+# Production environment values for inventory-api
 
 # Application name and namespace
-nameOverride: "virtflow-api"
-fullnameOverride: "virtflow-api"
+nameOverride: "inventory-api"
+fullnameOverride: "inventory-api"
 
 # Image configuration for production
 image:
   registry: registry.gitlab.com
-  repository: your-org/virtflow-api
+  repository: your-org/inventory-api
   tag: "v1.0.0"
   pullPolicy: IfNotPresent
 
 # Service account
 serviceAccount:
   create: true
-  name: "virtflow-api-sa"
+  name: "inventory-api-sa"
 
 # Service configuration
 service:
@@ -41,7 +41,7 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: virtflow-tls
+    - secretName: inventory-api-tls
       hosts:
         - inventory-api.your-domain.com
 
@@ -98,14 +98,14 @@ healthCheck:
 # Environment configuration for production
 env:
   # Django settings
-  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DJANGO_SETTINGS_MODULE: "inventory.settings"
   DEBUG: "False"
   ALLOWED_HOSTS: "inventory-api.your-domain.com"
   
   # Database settings
   DB_HOST: "postgres-prod-service"
   DB_PORT: "5432"
-  DB_NAME: "virtflow_prod"
+  DB_NAME: "inventory_api_prod"
   
   # Redis settings
   REDIS_HOST: "redis-prod-service"
@@ -120,10 +120,10 @@ secrets:
   # Django secret key (will be auto-generated if not provided)
   SECRET_KEY: ""
   # Database credentials
-  DB_USER: "virtflow_prod"
-  DB_PASSWORD: "prod-secure-password"
+  DB_USER: "inventory_api_prod"
+  DB_PASSWORD: ""
   # Admin password
-  DJANGO_ADMIN_PASSWORD: "prod-admin-password"
+  DJANGO_ADMIN_PASSWORD: ""
 
 # ConfigMap additional data for production
 configMap:
@@ -149,7 +149,7 @@ affinity:
           - key: app.kubernetes.io/name
             operator: In
             values:
-            - virtflow-api
+            - inventory-api
         topologyKey: kubernetes.io/hostname
 
 # Additional volumes (optional)
@@ -215,4 +215,54 @@ podSecurityPolicy:
     - 'projected'
     - 'secret'
     - 'downwardAPI'
-    - 'persistentVolumeClaim' 
+    - 'persistentVolumeClaim'
+
+# Istio Gateway configuration for production
+istio:
+  gateway:
+    enabled: true
+    name: "inventory-api-gateway"
+    namespace: "istio-system"
+    hosts:
+      - "inventory-api.your-domain.com"
+    tls:
+      mode: SIMPLE
+      credentialName: "inventory-api-tls-cert"
+    http:
+      redirectToHttps: true
+  
+  virtualService:
+    enabled: true
+    name: "inventory-api-vs"
+    hosts:
+      - "inventory-api.your-domain.com"
+    gateways:
+      - "istio-system/inventory-api-gateway"
+    http:
+      - match:
+          - uri:
+              prefix: "/"
+        route:
+          - destination:
+              host: "inventory-api"
+              port:
+                number: 80
+        timeout: 60s
+        retries:
+          attempts: 3
+          perTryTimeout: 20s
+
+# cert-manager Certificate configuration for production
+certificate:
+  enabled: true
+  name: "inventory-api-tls-cert"
+  namespace: "istio-system"
+  secretName: "inventory-api-tls-cert"
+  issuerRef:
+    name: "letsencrypt-prod"
+    kind: "ClusterIssuer"
+  dnsNames:
+    - "inventory-api.your-domain.com"
+  usages:
+    - digital signature
+    - key encipherment 

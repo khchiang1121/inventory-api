@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ include "inventory-api.fullname" . }}
+  namespace: {{ .Values.networkPolicy.namespace | default .Release.Namespace }}
   labels:
     {{- include "inventory-api.labels" . | nindent 4 }}
 spec:

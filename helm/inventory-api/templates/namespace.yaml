@@ -3,6 +3,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ .Values.namespace.name | default (include "inventory-api.fullname" .) }}
+  annotations:
+    {{- toYaml .Values.namespace.annotations | nindent 4 }}
   labels:
     {{- include "inventory-api.labels" . | nindent 4 }}
     name: {{ .Values.namespace.name | default (include "inventory-api.fullname" .) }}

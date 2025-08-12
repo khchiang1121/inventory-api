@@ -4,12 +4,30 @@ metadata:
   name: {{ include "inventory-api.fullname" . }}
   labels:
     {{- include "inventory-api.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  namespace: {{ .Values.service.namespace | default .Release.Namespace }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type | default "ClusterIP" }}
+
+  {{- $ports := .Values.service.ports -}}
+  {{- if or (not $ports) (eq (len $ports) 0) -}}
+    {{- fail "service.ports must be a non-empty list" -}}
+  {{- end }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+  {{- range $i, $p := $ports }}
+  - name: {{ $p.name | default (printf "port-%d" (int $p.port)) }}
+    port: {{ required (printf "service.ports[%d].port is required" $i) $p.port }}
+    targetPort: {{ $p.targetPort | default ($p.name | default (printf "port-%d" (int $p.port))) }}
+    protocol: {{ $p.protocol | default "TCP" }}
+    {{- if $p.appProtocol }}
+    appProtocol: {{ $p.appProtocol }}
+    {{- end }}
+    {{- if $p.nodePort }}
+    nodePort: {{ $p.nodePort }}
+    {{- end }}
+  {{- end }}
   selector:
-    {{- include "inventory-api.selectorLabels" . | nindent 4 }} 
+    {{- include "inventory-api.selectorLabels" . | nindent 4 }}

@@ -1,4 +1,4 @@
-# Default values for virtflow-api
+# Default values for inventory-api
 # This is a YAML-formatted file.
 
 # Global settings
@@ -12,8 +12,10 @@ global:
 
 # Namespace configuration
 namespace:
-  create: false
+  create: true
   name: ""
+  annotations:
+    istio-injection: enabled
 
 # Application name and namespace
 nameOverride: ""
@@ -22,7 +24,7 @@ fullnameOverride: ""
 # Image configuration
 image:
   registry: registry.gitlab.com
-  repository: your-org/virtflow-api
+  repository: your-org/inventory-api
   tag: "latest"
   pullPolicy: IfNotPresent
   # Override the image registry
@@ -58,11 +60,21 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-# Service configuration
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 8201
+  annotations: {}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      appProtocol: http
 
 # Ingress configuration
 ingress:
@@ -82,15 +94,15 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-    - host: virtflow-api-dev.your-domain.com
+    - host: inventory-api-dev.your-domain.com
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: virtflow-tls
+    - secretName: inventory-api-tls
       hosts:
         - inventory-api.your-domain.com
-        - virtflow-api-dev.your-domain.com
+        - inventory-api-dev.your-domain.com
 
 # Deployment configuration
 deployment:
@@ -149,14 +161,14 @@ healthCheck:
 # Environment configuration
 env:
   # Django settings
-  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DJANGO_SETTINGS_MODULE: "inventory.settings"
   DEBUG: "False"
   ALLOWED_HOSTS: "*"
   
   # Database settings
   DB_HOST: "postgres-service"
   DB_PORT: "5432"
-  DB_NAME: "virtflow"
+  DB_NAME: "inventory_api"
   
   # Redis settings
   REDIS_HOST: "redis-service"
@@ -171,10 +183,10 @@ secrets:
   # Django secret key (will be auto-generated if not provided)
   SECRET_KEY: ""
   # Database credentials
-  DB_USER: "virtflow"
-  DB_PASSWORD: "virtflow-password"
+  DB_USER: "inventory_api"
+  DB_PASSWORD: ""
   # Admin password
-  DJANGO_ADMIN_PASSWORD: "admin-password"
+  DJANGO_ADMIN_PASSWORD: ""
 
 # ConfigMap configuration
 configMap:
@@ -208,9 +220,20 @@ initContainers: []
 sidecars: []
 
 # Network policy
+# Custom network policy
 networkPolicy:
-  enabled: false
-  ingressRules: []
+  enabled: true
+  namespace: "inventory-api-gateway"
+  ingressRules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-traefik
+      - podSelector:
+          matchLabels:
+            app: monitoring
+      - ipBlock:
+          cidr: 10.0.0.0/8
   egressRules: []
 
 # Service monitor for Prometheus
@@ -243,4 +266,96 @@ podSecurityPolicy:
     - 'projected'
     - 'secret'
     - 'downwardAPI'
-    - 'persistentVolumeClaim' 
+    - 'persistentVolumeClaim'
+
+# # Istio Gateway configuration
+# istio:
+#   gateway:
+#     enabled: true
+#     name: "inventory-api-gateway"
+#     namespace: "istio-system"
+#     hosts:
+#       - "inventory-api.your-domain.com"
+#       - "inventory-api-dev.your-domain.com"
+#     tls:
+#       mode: SIMPLE
+#       credentialName: "inventory-api-tls-cert"
+#     http:
+#       redirectToHttps: true
+
+istio:
+  gateway:
+    enabled: true
+    namespace: "inventory-api-gateway"
+    selector:
+      istio: ingressgateway
+    # hosts:
+    #   - "api.example.com"
+    #   - "inventory-api-dev.your-domain.com"
+    servers:
+      - port:
+          number: 80
+          name: http
+          protocol: HTTP
+        hosts:
+          - "api.example.com"
+        tls:
+          httpsRedirect: true
+      - port:
+          number: 443
+          name: https
+          protocol: HTTPS
+        hosts:
+          - "api.example.com"
+        tls:
+          mode: SIMPLE
+          credentialName: wildcard-example-com
+      - port:
+          number: 15443
+          name: tls-passthrough
+          protocol: TLS
+        hosts:
+          - "mtls.example.com"
+        tls:
+          mode: PASSTHROUGH
+
+  virtualService:
+    enabled: true
+    name: "inventory-api-vs"
+    hosts:
+      - "inventory-api.your-domain.com"
+      - "inventory-api-dev.your-domain.com"
+    gateways:
+      - "istio-system/inventory-api-gateway"
+    http:
+      - match:
+          - uri:
+              prefix: "/"
+        route:
+          - destination:
+              host: "inventory-api"
+              port:
+                number: 80
+        timeout: 60s
+        retries:
+          attempts: 3
+          perTryTimeout: 20s
+
+# cert-manager Certificate configuration
+certificate:
+  enabled: true
+  name: "inventory-api-tls-cert"
+  namespace: "istio-system"
+  secretName: "inventory-api-tls-cert"
+  issuerRef:
+    name: "letsencrypt-prod"
+    kind: "ClusterIssuer"
+  privateKey:
+    size: 4096
+  dnsNames:
+    - "inventory-api.your-domain.com"
+    - "inventory-api-dev.your-domain.com"
+  commonName: "inventory-api.your-domain.com"
+  usages:
+    - digital signature
+    - key encipherment 

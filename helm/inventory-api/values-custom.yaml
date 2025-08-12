@@ -1,14 +1,14 @@
-# Custom environment values for virtflow-api
+# Custom environment values for inventory-api
 # This is an example of how to customize the deployment
 
 # Application name and namespace
-nameOverride: "my-virtflow-api"
-fullnameOverride: "my-virtflow-api"
+nameOverride: "my-inventory-api"
+fullnameOverride: "my-inventory-api"
 
 # Custom image configuration
 image:
   registry: my-registry.com
-  repository: my-org/virtflow-api
+  repository: my-org/inventory-api
   tag: "custom-v1.2.3"
   pullPolicy: IfNotPresent
 
@@ -19,7 +19,7 @@ imagePullSecrets:
 # Service account
 serviceAccount:
   create: true
-  name: "my-virtflow-api-sa"
+  name: "my-inventory-api-sa"
 
 # Custom service configuration
 service:
@@ -43,7 +43,7 @@ ingress:
         - path: /api
           pathType: Prefix
   tls:
-    - secretName: my-virtflow-tls
+    - secretName: my-inventory-api-tls
       hosts:
         - api.mycompany.com
 
@@ -100,14 +100,14 @@ healthCheck:
 # Custom environment configuration
 env:
   # Django settings
-  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DJANGO_SETTINGS_MODULE: "inventory.settings"
   DEBUG: "False"
   ALLOWED_HOSTS: "api.mycompany.com"
   
   # Custom database settings
   DB_HOST: "my-postgres-cluster"
   DB_PORT: "5432"
-  DB_NAME: "virtflow_custom"
+  DB_NAME: "inventory_api_custom"
   
   # Custom Redis settings
   REDIS_HOST: "my-redis-cluster"
@@ -125,9 +125,9 @@ env:
 # Custom secrets configuration
 secrets:
   SECRET_KEY: "my-custom-secret-key-here"
-  DB_USER: "virtflow_custom"
-  DB_PASSWORD: "my-secure-db-password"
-  DJANGO_ADMIN_PASSWORD: "my-admin-password"
+  DB_USER: "inventory_api_custom"
+  DB_PASSWORD: ""
+  DJANGO_ADMIN_PASSWORD: ""
 
 # Custom ConfigMap additional data
 configMap:
@@ -158,7 +158,7 @@ affinity:
         - key: app.kubernetes.io/name
           operator: In
           values:
-          - virtflow-api
+          - inventory-api
       topologyKey: topology.kubernetes.io/zone
   podAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -169,17 +169,17 @@ affinity:
           - key: app.kubernetes.io/name
             operator: In
             values:
-            - virtflow-api
+            - inventory-api
         topologyKey: topology.kubernetes.io/hostname
 
 # Custom volumes
 volumes:
   - name: config-volume
     configMap:
-      name: my-virtflow-config
+      name: my-inventory-api-config
   - name: logs-volume
     persistentVolumeClaim:
-      claimName: my-virtflow-logs-pvc
+      claimName: my-inventory-api-logs-pvc
 
 # Custom volume mounts
 volumeMounts:
@@ -198,7 +198,7 @@ initContainers:
       - name: PGPASSWORD
         valueFrom:
           secretKeyRef:
-            name: my-virtflow-secrets
+            name: my-inventory-api-secrets
             key: DB_PASSWORD
 
 # Custom sidecar containers
@@ -278,4 +278,93 @@ podSecurityPolicy:
     - 'projected'
     - 'secret'
     - 'downwardAPI'
-    - 'persistentVolumeClaim' 
+    - 'persistentVolumeClaim'
+
+# Custom Istio Gateway configuration
+istio:
+  gateway:
+    enabled: true
+    name: "my-inventory-api-gateway"
+    namespace: "istio-system"
+    hosts:
+      - "api.mycompany.com"
+      - "*.api.mycompany.com"
+    tls:
+      mode: SIMPLE
+      credentialName: "my-inventory-api-tls-cert"
+    http:
+      redirectToHttps: true
+  
+  virtualService:
+    enabled: true
+    name: "my-inventory-api-vs"
+    hosts:
+      - "api.mycompany.com"
+      - "*.api.mycompany.com"
+    gateways:
+      - "istio-system/my-inventory-api-gateway"
+    http:
+      - match:
+          - uri:
+              prefix: "/api"
+        route:
+          - destination:
+              host: "my-inventory-api"
+              port:
+                number: 8080
+        timeout: 120s  # Increased timeout for custom environment
+        retries:
+          attempts: 5
+          perTryTimeout: 30s
+        headers:
+          request:
+            add:
+              x-custom-header: "inventory-api"
+      - match:
+          - uri:
+              prefix: "/"
+        route:
+          - destination:
+              host: "my-inventory-api"
+              port:
+                number: 8080
+        timeout: 60s
+        retries:
+          attempts: 3
+          perTryTimeout: 20s
+
+# Custom cert-manager Certificate configuration
+certificate:
+  enabled: true
+  name: "my-inventory-api-tls-cert"
+  namespace: "istio-system"
+  secretName: "my-inventory-api-tls-cert"
+  issuerRef:
+    name: "letsencrypt-prod"
+    kind: "ClusterIssuer"
+  dnsNames:
+    - "api.mycompany.com"
+    - "*.api.mycompany.com"
+  commonName: "api.mycompany.com"
+  duration: "2160h"  # 90 days
+  renewBefore: "360h"  # 15 days before expiry
+  subject:
+    organizations:
+      - "MyCompany Inc."
+    countries:
+      - "US"
+    organizationalUnits:
+      - "Engineering"
+    localities:
+      - "San Francisco"
+    provinces:
+      - "CA"
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth 

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "inventory-api.fullname" . }}
+  namespace: {{ .Values.deployment.namespace | default .Release.Namespace }}
   labels:
     {{- include "inventory-api.labels" . | nindent 4 }}
 spec:
@@ -56,9 +57,11 @@ spec:
           image: "{{ include "inventory-api.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: {{ .Values.service.targetPort }}
-              protocol: TCP
+          {{- range .Values.service.ports }}
+            - name: {{ .name }}
+              containerPort: {{ if kindIs "string" .targetPort }}{{ if eq .targetPort "http" }}{{ $.Values.env.APP_PORT | default "8201" }}{{ else if eq .targetPort "grpc" }}50051{{ else if eq .targetPort "metrics" }}9090{{ else }}{{ .port }}{{ end }}{{ else }}{{ .targetPort }}{{ end }}
+              protocol: {{ .protocol | default "TCP" }}
+          {{- end }}
           {{- if .Values.healthCheck.livenessProbe.enabled }}
           livenessProbe:
             httpGet:

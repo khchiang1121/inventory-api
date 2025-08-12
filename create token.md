@@ -85,7 +85,7 @@ Then POST to `/api-token-auth/` with:
 ```json
 {
   "username": "admin",
-  "password": "yourpassword"
+  "password": ""
 }
 ```
 

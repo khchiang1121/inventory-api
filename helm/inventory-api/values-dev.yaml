@@ -1,20 +1,20 @@
-# Development environment values for virtflow-api
+# Development environment values for inventory-api
 
 # Application name and namespace
-nameOverride: "virtflow-api-dev"
-fullnameOverride: "virtflow-api-dev"
+nameOverride: "inventory-api-dev"
+fullnameOverride: "inventory-api-dev"
 
 # Image configuration for development
 image:
   registry: registry.gitlab.com
-  repository: your-org/virtflow-api
+  repository: your-org/inventory-api
   tag: "dev-latest"
   pullPolicy: Always
 
 # Service account
 serviceAccount:
   create: true
-  name: "virtflow-api-dev-sa"
+  name: "inventory-api-dev-sa"
 
 # Service configuration
 service:
@@ -35,7 +35,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
   hosts:
-    - host: virtflow-api-dev.your-domain.com
+    - host: inventory-api-dev.your-domain.com
       paths:
         - path: /
           pathType: Prefix
@@ -94,14 +94,14 @@ healthCheck:
 # Environment configuration for development
 env:
   # Django settings
-  DJANGO_SETTINGS_MODULE: "virtflow.settings"
+  DJANGO_SETTINGS_MODULE: "inventory.settings"
   DEBUG: "True"
   ALLOWED_HOSTS: "*"
   
   # Database settings
   DB_HOST: "postgres-dev-service"
   DB_PORT: "5432"
-  DB_NAME: "virtflow_dev"
+  DB_NAME: "inventory_api_dev"
   
   # Redis settings
   REDIS_HOST: "redis-dev-service"
@@ -116,10 +116,10 @@ secrets:
   # Django secret key (will be auto-generated if not provided)
   SECRET_KEY: ""
   # Database credentials
-  DB_USER: "virtflow_dev"
-  DB_PASSWORD: "dev-password"
+  DB_USER: "inventory_api_dev"
+  DB_PASSWORD: ""
   # Admin password
-  DJANGO_ADMIN_PASSWORD: "dev-admin-password"
+  DJANGO_ADMIN_PASSWORD: ""
 
 # ConfigMap additional data for development
 configMap:
@@ -164,4 +164,54 @@ podDisruptionBudget:
 
 # Pod security policy (disabled for development)
 podSecurityPolicy:
-  enabled: false 
+  enabled: false
+
+# Istio Gateway configuration for development
+istio:
+  gateway:
+    enabled: true
+    name: "inventory-api-dev-gateway"
+    namespace: "istio-system"
+    hosts:
+      - "inventory-api-dev.your-domain.com"
+    tls:
+      mode: SIMPLE
+      credentialName: "inventory-api-dev-tls-cert"
+    http:
+      redirectToHttps: false  # Disabled for development
+  
+  virtualService:
+    enabled: true
+    name: "inventory-api-dev-vs"
+    hosts:
+      - "inventory-api-dev.your-domain.com"
+    gateways:
+      - "istio-system/inventory-api-dev-gateway"
+    http:
+      - match:
+          - uri:
+              prefix: "/"
+        route:
+          - destination:
+              host: "inventory-api-dev"
+              port:
+                number: 80
+        timeout: 60s
+        retries:
+          attempts: 3
+          perTryTimeout: 20s
+
+# cert-manager Certificate configuration for development
+certificate:
+  enabled: false  # Disabled for development, can be enabled if needed
+  name: "inventory-api-dev-tls-cert"
+  namespace: "istio-system"
+  secretName: "inventory-api-dev-tls-cert"
+  issuerRef:
+    name: "letsencrypt-staging"  # Use staging for development
+    kind: "ClusterIssuer"
+  dnsNames:
+    - "inventory-api-dev.your-domain.com"
+  usages:
+    - digital signature
+    - key encipherment 

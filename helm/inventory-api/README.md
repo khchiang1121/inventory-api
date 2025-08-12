@@ -1,6 +1,6 @@
-# VirtFlow API Helm Chart
+# Inventory API Helm Chart
 
-這是一個用於部署 VirtFlow API 到 Kubernetes 集群的 Helm Chart。
+這是一個用於部署 Inventory API 到 Kubernetes 集群的 Helm Chart。
 
 ## 功能特性
 
@@ -12,14 +12,17 @@
 - ⚡ **自動擴展** - 內建 HPA 支援
 - 🛡️ **高可用性** - 支援 Pod Disruption Budget
 - 🔍 **健康檢查** - 完整的 Liveness 和 Readiness 探針
+- 🌐 **Istio 支援** - 內建 Gateway 和 VirtualService 配置
+- 🔐 **自動 SSL 證書** - 支援 cert-manager 自動證書管理
 
 ## 前置需求
 
 - Kubernetes 1.19+
 - Helm 3.0+
 - kubectl 配置到目標集群
-- NGINX Ingress Controller 或 Traefik
-- cert-manager (可選，用於 SSL 證書)
+- NGINX Ingress Controller 或 Traefik (傳統 Ingress 模式)
+- Istio (推薦，用於 Gateway 和 VirtualService)
+- cert-manager (用於自動 SSL 證書管理)
 
 ## 快速開始
 
@@ -27,7 +30,7 @@
 
 ```bash
 # 如果使用 GitLab Container Registry
-helm repo add virtflow https://gitlab.com/api/v4/projects/YOUR_PROJECT_ID/packages/helm/stable
+helm repo add inventory-api https://gitlab.com/api/v4/projects/YOUR_PROJECT_ID/packages/helm/stable
 helm repo update
 ```
 
@@ -36,37 +39,37 @@ helm repo update
 #### 使用預設配置
 
 ```bash
-helm install virtflow-api ./helm/virtflow-api
+helm install inventory-api ./helm/inventory-api
 ```
 
 #### 使用開發環境配置
 
 ```bash
-helm install virtflow-api-dev ./helm/virtflow-api -f ./helm/virtflow-api/values-dev.yaml
+helm install inventory-api-dev ./helm/inventory-api -f ./helm/inventory-api/values-dev.yaml
 ```
 
 #### 使用生產環境配置
 
 ```bash
-helm install virtflow-api-prod ./helm/virtflow-api -f ./helm/virtflow-api/values-prod.yaml
+helm install inventory-api-prod ./helm/inventory-api -f ./helm/inventory-api/values-prod.yaml
 ```
 
 #### 使用自定義配置
 
 ```bash
-helm install my-virtflow-api ./helm/virtflow-api -f ./helm/virtflow-api/values-custom.yaml
+helm install my-inventory-api ./helm/inventory-api -f ./helm/inventory-api/values-custom.yaml
 ```
 
 ### 3. 升級部署
 
 ```bash
-helm upgrade virtflow-api ./helm/virtflow-api
+helm upgrade inventory-api ./helm/inventory-api
 ```
 
 ### 4. 卸載部署
 
 ```bash
-helm uninstall virtflow-api
+helm uninstall inventory-api
 ```
 
 ## 配置選項
@@ -78,7 +81,7 @@ helm uninstall virtflow-api
 | `nameOverride` | 覆蓋應用程式名稱 | `""` |
 | `fullnameOverride` | 覆蓋完整應用程式名稱 | `""` |
 | `image.registry` | Docker 映像註冊表 | `registry.gitlab.com` |
-| `image.repository` | Docker 映像倉庫 | `your-org/virtflow-api` |
+| `image.repository` | Docker 映像倉庫 | `your-org/inventory-api` |
 | `image.tag` | Docker 映像標籤 | `latest` |
 | `image.pullPolicy` | 映像拉取策略 | `IfNotPresent` |
 | `deployment.replicas` | Pod 副本數量 | `3` |
@@ -108,17 +111,38 @@ helm uninstall virtflow-api
 
 | 參數 | 描述 | 預設值 |
 |------|------|--------|
-| `env.DJANGO_SETTINGS_MODULE` | Django 設定模組 | `virtflow.settings` |
+| `env.DJANGO_SETTINGS_MODULE` | Django 設定模組 | `inventory.settings` |
 | `env.DEBUG` | Django 除錯模式 | `False` |
 | `env.DB_HOST` | 資料庫主機 | `postgres-service` |
 | `env.REDIS_HOST` | Redis 主機 | `redis-service` |
+
+### Istio 配置
+
+| 參數 | 描述 | 預設值 |
+|------|------|--------|
+| `istio.gateway.enabled` | 是否啟用 Istio Gateway | `true` |
+| `istio.gateway.name` | Gateway 名稱 | `inventory-api-gateway` |
+| `istio.gateway.namespace` | Gateway 命名空間 | `istio-system` |
+| `istio.gateway.hosts` | Gateway 主機列表 | `["inventory-api.your-domain.com"]` |
+| `istio.virtualService.enabled` | 是否啟用 VirtualService | `true` |
+| `istio.virtualService.name` | VirtualService 名稱 | `inventory-api-vs` |
+
+### cert-manager 配置
+
+| 參數 | 描述 | 預設值 |
+|------|------|--------|
+| `certificate.enabled` | 是否啟用證書管理 | `true` |
+| `certificate.name` | 證書名稱 | `inventory-api-tls-cert` |
+| `certificate.namespace` | 證書命名空間 | `istio-system` |
+| `certificate.issuerRef.name` | 證書發行者 | `letsencrypt-prod` |
+| `certificate.dnsNames` | 證書域名列表 | `["inventory-api.your-domain.com"]` |
 
 ## 環境範例
 
 ### 開發環境
 
 ```bash
-helm install virtflow-dev ./helm/virtflow-api -f values-dev.yaml
+helm install inventory-dev ./helm/inventory-api -f values-dev.yaml
 ```
 
 特點：
@@ -127,11 +151,13 @@ helm install virtflow-dev ./helm/virtflow-api -f values-dev.yaml
 - 啟用除錯模式
 - 較寬鬆的安全設定
 - 較少的副本數
+- 禁用 HTTPS 重定向 (開發環境)
+- 使用 staging 證書發行者
 
 ### 生產環境
 
 ```bash
-helm install virtflow-prod ./helm/virtflow-api -f values-prod.yaml
+helm install inventory-prod ./helm/inventory-api -f values-prod.yaml
 ```
 
 特點：
@@ -140,11 +166,13 @@ helm install virtflow-prod ./helm/virtflow-api -f values-prod.yaml
 - 禁用除錯模式
 - 嚴格的安全設定
 - 較多的副本數和高可用性
+- 啟用 HTTPS 重定向
+- 使用生產證書發行者
 
 ### 自定義環境
 
 ```bash
-helm install my-virtflow ./helm/virtflow-api -f values-custom.yaml
+helm install my-inventory ./helm/inventory-api -f values-custom.yaml
 ```
 
 特點：
@@ -161,9 +189,71 @@ helm install my-virtflow ./helm/virtflow-api -f values-custom.yaml
 ```yaml
 image:
   registry: my-registry.com
-  repository: my-org/virtflow-api
+  repository: my-org/inventory-api
   tag: "v1.2.3"
   pullPolicy: IfNotPresent
+```
+
+### 自定義 Istio Gateway
+
+```yaml
+istio:
+  gateway:
+    enabled: true
+    name: "my-custom-gateway"
+    namespace: "istio-system"
+    hosts:
+      - "api.example.com"
+      - "*.api.example.com"
+    tls:
+      mode: SIMPLE
+      credentialName: "my-tls-secret"
+    http:
+      redirectToHttps: true
+```
+
+### 自定義 Istio VirtualService
+
+```yaml
+istio:
+  virtualService:
+    enabled: true
+    name: "my-custom-vs"
+    hosts:
+      - "api.example.com"
+    gateways:
+      - "istio-system/my-custom-gateway"
+    http:
+      - match:
+          - uri:
+              prefix: "/api/v1"
+        route:
+          - destination:
+              host: "inventory-api"
+              port:
+                number: 80
+        timeout: 30s
+        retries:
+          attempts: 3
+          perTryTimeout: 10s
+```
+
+### 自定義 cert-manager 證書
+
+```yaml
+certificate:
+  enabled: true
+  name: "my-custom-cert"
+  namespace: "istio-system"
+  secretName: "my-tls-secret"
+  issuerRef:
+    name: "letsencrypt-prod"
+    kind: "ClusterIssuer"
+  dnsNames:
+    - "api.example.com"
+    - "*.api.example.com"
+  duration: "2160h"  # 90 days
+  renewBefore: "360h"  # 15 days
 ```
 
 ### 自定義 Ingress
@@ -215,8 +305,8 @@ configMap:
 
 ```yaml
 secrets:
-  SECRET_KEY: "my-custom-secret-key"
-  DB_PASSWORD: "my-secure-password"
+  SECRET_KEY: ""
+  DB_PASSWORD: ""
 ```
 
 ### 自定義節點選擇器
@@ -355,19 +445,31 @@ podSecurityPolicy:
 
 ```bash
 # 檢查部署狀態
-helm status virtflow-api
+helm status inventory-api
 
 # 查看生成的 YAML
-helm template virtflow-api ./helm/virtflow-api
+helm template inventory-api ./helm/inventory-api
 
 # 驗證 Chart
-helm lint ./helm/virtflow-api
+helm lint ./helm/inventory-api
 
 # 查看歷史
-helm history virtflow-api
+helm history inventory-api
 
 # 回滾到上一個版本
-helm rollback virtflow-api
+helm rollback inventory-api
+
+# 檢查 Istio Gateway 狀態
+kubectl get gateway -n istio-system
+
+# 檢查 Istio VirtualService 狀態
+kubectl get virtualservice
+
+# 檢查 cert-manager 證書狀態
+kubectl get certificate -n istio-system
+
+# 檢查證書詳細信息
+kubectl describe certificate inventory-api-tls-cert -n istio-system
 ```
 
 ## 貢獻
