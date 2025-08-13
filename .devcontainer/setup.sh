@@ -85,11 +85,11 @@ if [ ! -f "/workspace/.env" ]; then
     cat > /workspace/.env << EOF
 # Django settings
 DEBUG=True
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=
 ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
 
 # Database settings (external database)
-DATABASE_URL=postgresql://user:password@host:5432/dbname
+DATABASE_URL=postgresql://user:user@host:5432/dbname
 
 # Proxy settings (if needed)
 # HTTP_PROXY=http://proxy.example.com:8080

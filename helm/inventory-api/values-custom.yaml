@@ -124,7 +124,7 @@ env:
 
 # Custom secrets configuration
 secrets:
-  SECRET_KEY: "my-custom-secret-key-here"
+  SECRET_KEY: ""
   DB_USER: "inventory_api_custom"
   DB_PASSWORD: ""
   DJANGO_ADMIN_PASSWORD: ""
