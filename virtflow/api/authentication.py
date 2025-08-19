@@ -11,7 +11,7 @@ from rest_framework import permissions
 #             return None
             
 #         token = auth_header.split(' ')[1]
-#         if token == os.environ.get("DJANGO_API_TOKEN"):
+#         if token == os.environ.get("DJANGO_BACKDOOR_API_TOKEN"):
 #             return (None, token)
 #         raise AuthenticationFailed('Invalid or missing API token')
 

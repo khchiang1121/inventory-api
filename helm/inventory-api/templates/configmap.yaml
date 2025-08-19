@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "inventory-api.labels" . | nindent 4 }}
 data:
-  {{- include "inventory-api.envVars" . | nindent 2 }}
-  {{- with .Values.configMap.additionalData }}
-  {{- toYaml . | nindent 2 }}
-  {{- end }} 
+  {{- range $key, $value := .Values.configMap.data }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

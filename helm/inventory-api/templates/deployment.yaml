@@ -59,7 +59,7 @@ spec:
           ports:
           {{- range .Values.service.ports }}
             - name: {{ .name }}
-              containerPort: {{ if kindIs "string" .targetPort }}{{ if eq .targetPort "http" }}{{ $.Values.env.APP_PORT | default "8201" }}{{ else if eq .targetPort "grpc" }}50051{{ else if eq .targetPort "metrics" }}9090{{ else }}{{ .port }}{{ end }}{{ else }}{{ .targetPort }}{{ end }}
+              containerPort: {{ if kindIs "string" .targetPort }}{{ if eq .targetPort "http" }}{{ $.Values.configMap.DJANGO_APP_PORT | default "8201" }}{{ else if eq .targetPort "grpc" }}50051{{ else if eq .targetPort "metrics" }}9090{{ else }}{{ .port }}{{ end }}{{ else }}{{ .targetPort }}{{ end }}
               protocol: {{ .protocol | default "TCP" }}
           {{- end }}
           {{- if .Values.healthCheck.livenessProbe.enabled }}
@@ -86,13 +86,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             {{- include "inventory-api.secretEnvVars" . | nindent 12 }}
-            {{- range $key, $value := .Values.env }}
-            - name: {{ $key }}
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "inventory-api.configMapName" $ }}
-                  key: {{ $key }}
-            {{- end }}
+            {{- include "inventory-api.configEnvVars" . | nindent 12 }}
           {{- if .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml .Values.volumeMounts | nindent 12 }}

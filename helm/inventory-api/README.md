@@ -303,10 +303,47 @@ configMap:
 
 ### 自定義 Secrets
 
+Chart 支援自動生成安全的密碼和密鑰。當 `secrets.create` 設為 `true` 時，以下欄位會自動生成：
+
+#### 自動生成欄位
+
+| 欄位 | 描述 | 生成規則 |
+|------|------|----------|
+| `POSTGRES_PASSWORD` | PostgreSQL 資料庫密碼 | 32 字元隨機字母數字組合 |
+| `DJANGO_SUPERUSER_PASSWORD` | Django 超級使用者密碼 | 32 字元隨機字母數字組合 |
+| `DJANGO_SECRET_KEY` | Django 密鑰 | 50 字元隨機字母數字組合 |
+| `DJANGO_BACKDOOR_API_TOKEN` | 後門 API 令牌 | 32 字元隨機字母數字組合 |
+| `PGADMIN_DEFAULT_PASSWORD` | PGAdmin 密碼 | 32 字元隨機字母數字組合 |
+
+#### 使用方式
+
 ```yaml
 secrets:
-  SECRET_KEY: ""
-  DB_PASSWORD: ""
+  create: true
+  data:
+    # 留空以自動生成
+    POSTGRES_PASSWORD: ""
+    DJANGO_SUPERUSER_PASSWORD: ""
+    DJANGO_SECRET_KEY: ""
+    DJANGO_BACKDOOR_API_TOKEN: ""
+    PGADMIN_DEFAULT_PASSWORD: ""
+    
+    # 或提供自定義值
+    POSTGRES_USER: "myuser"
+    DJANGO_SUPERUSER_USERNAME: "admin"
+```
+
+#### 手動設定密碼
+
+如果您想使用預設密碼，可以在 values 文件中設定：
+
+```yaml
+secrets:
+  create: true
+  data:
+    POSTGRES_PASSWORD: ""
+    DJANGO_SUPERUSER_PASSWORD: ""
+    DJANGO_SECRET_KEY: ""
 ```
 
 ### 自定義節點選擇器

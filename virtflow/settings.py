@@ -98,11 +98,11 @@ WSGI_APPLICATION = "virtflow.wsgi.application"
 
 # Prefer PostgreSQL if env vars are provided; otherwise use SQLite for local
 # development and test execution (CI or developer machines without Postgres).
-if os.environ.get("POSTGRES_DB"):
+if os.environ.get("POSTGRES_NAME"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB", ""),
+            "NAME": os.environ.get("POSTGRES_NAME", ""),
             "USER": os.environ.get("POSTGRES_USER", ""),
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
             "HOST": os.environ.get("POSTGRES_HOST", "localhost"),

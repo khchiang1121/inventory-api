@@ -102,6 +102,70 @@ Generate Django secret key if not provided
 {{- end }}
 
 {{/*
+Generate PostgreSQL password if not provided
+*/}}
+{{- define "inventory-api.postgresPassword" -}}
+{{- if .Values.secrets.data.POSTGRES_PASSWORD }}
+{{- .Values.secrets.data.POSTGRES_PASSWORD | b64enc }}
+{{- else }}
+{{- $password := randAlphaNum 32 }}
+{{- printf "%s" $password | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django superuser password if not provided
+*/}}
+{{- define "inventory-api.djangoSuperuserPassword" -}}
+{{- if .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD }}
+{{- .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD | b64enc }}
+{{- else }}
+{{- $password := randAlphaNum 32 }}
+{{- printf "%s" $password | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django secret key if not provided
+*/}}
+{{- define "inventory-api.djangoSecretKey" -}}
+{{- if .Values.secrets.data.DJANGO_SECRET_KEY }}
+{{- .Values.secrets.data.DJANGO_SECRET_KEY | b64enc }}
+{{- else }}
+{{- $secretKey := randAlphaNum 50 }}
+{{- printf "%s" $secretKey | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django backdoor API token if not provided
+*/}}
+{{- define "inventory-api.djangoBackdoorApiToken" -}}
+{{- if .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN }}
+{{- if eq .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN "" }}
+{{- printf "" | b64enc }}
+{{- else }}
+{{- .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN | b64enc }}
+{{- end }}
+{{- else }}
+{{- $token := randAlphaNum 32 }}
+{{- printf "%s" $token | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate PGAdmin password if not provided
+*/}}
+{{- define "inventory-api.pgadminPassword" -}}
+{{- if .Values.secrets.data.PGADMIN_DEFAULT_PASSWORD }}
+{{- .Values.secrets.data.PGADMIN_DEFAULT_PASSWORD | b64enc }}
+{{- else }}
+{{- $password := randAlphaNum 32 }}
+{{- printf "%s" $password | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
 Generate environment variables
 */}}
 {{- define "inventory-api.envVars" -}}
@@ -115,24 +179,25 @@ Generate environment variables
 Generate secret environment variables
 */}}
 {{- define "inventory-api.secretEnvVars" -}}
-- name: SECRET_KEY
+{{- range $key, $value := .Values.secrets.data }}
+- name: {{ $key }}
   valueFrom:
     secretKeyRef:
-      name: {{ include "inventory-api.secretName" . }}
-      key: SECRET_KEY
-- name: DB_USER
+      name: {{ include "inventory-api.secretName" $ }}
+      key: {{ $key }}
+{{- end }}
+{{- end }}
+
+
+{{/*
+Generate config environment variables
+*/}}
+{{- define "inventory-api.configEnvVars" -}}
+{{- range $key, $value := .Values.configMap.data }}
+- name: {{ $key }}
   valueFrom:
-    secretKeyRef:
-      name: {{ include "inventory-api.secretName" . }}
-      key: DB_USER
-- name: DB_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ include "inventory-api.secretName" . }}
-      key: DB_PASSWORD
-- name: DJANGO_ADMIN_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ include "inventory-api.secretName" . }}
-      key: DJANGO_ADMIN_PASSWORD
-{{- end }} 
+    configMapKeyRef:
+      name: {{ include "inventory-api.configMapName" $ }}
+      key: {{ $key }}
+{{- end }}
+{{- end }}
