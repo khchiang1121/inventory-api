@@ -36,8 +36,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from inventory_api import settings
 
+from inventory_api import settings
 from inventory_api.api.v1.serializers import CustomUserSerializer
 
 
@@ -125,6 +125,7 @@ def health_check(request: Request) -> Response:
 
 
 urlpatterns = [
+    path("", include("django_prometheus.urls")),
     # Admin
     path("admin/", admin.site.urls),
     # Schema
