@@ -21,4 +21,5 @@ services:
       # - ~/.vscode-server:/home/vscode/.vscode-server
       # - ./:/workspaces/${PROJECT_BASE_DIR}:cached
       # - ~/.gitconfig:/home/vscode/.gitconfig:ro
+    # entrypoint: /usr/local/share/docker-init.sh
     command: sleep infinity

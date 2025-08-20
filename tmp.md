@@ -6,6 +6,7 @@ python manage.py migrate --plan
 python manage.py sqlmigrate app1 0002_add_new_field
  python manage.py createsuperuser
 
+
 python manage.py makemigrations backend
 python manage.py migrate
 python manage.py runserver
@@ -40,6 +41,11 @@ conda activate virtflow
 export DJANGO_SETTINGS_MODULE=virtflow.settings
 
 # 正確從0啟動流程
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+
 
 create .env
 create pgadmin4/.pgpass
