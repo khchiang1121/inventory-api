@@ -263,6 +263,14 @@ serviceMonitor:
   scrapeTimeout: 10s
   path: /metrics
   port: http
+  # Optional namespace selector - allows monitoring services across namespaces
+  # namespaceSelector:
+  #   matchNames:
+  #     - default
+  #     - monitoring
+  #   # or use matchLabels:
+  #   # matchLabels:
+  #   #   environment: production
 
 # Pod security policy
 podSecurityPolicy:
