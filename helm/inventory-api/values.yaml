@@ -263,14 +263,24 @@ serviceMonitor:
   scrapeTimeout: 10s
   path: /metrics
   port: http
-  # Optional namespace selector - allows monitoring services across namespaces
-  # namespaceSelector:
-  #   matchNames:
-  #     - default
-  #     - monitoring
-  #   # or use matchLabels:
-  #   # matchLabels:
-  #   #   environment: production
+  # Namespace selector configuration
+  namespaceSelector:
+    # Whether to enable namespace selector (allows monitoring across namespaces)
+    enabled: false
+    # Use default namespace (current release namespace) - set to true for simple setup
+    useDefault: true
+    # Custom namespace selector configuration (only used when useDefault is false)
+    # You can use either matchNames or matchLabels
+    config:
+      # Example 1: Monitor specific namespaces by name
+      matchNames:
+        - default
+        - monitoring
+        - production
+      # Example 2: Monitor namespaces with specific labels (uncomment to use)
+      # matchLabels:
+      #   environment: production
+      #   monitoring: enabled
 
 # Pod security policy
 podSecurityPolicy:
