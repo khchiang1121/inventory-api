@@ -104,7 +104,8 @@ WSGI_APPLICATION = "inventory_api.wsgi.application"
 if os.environ.get("POSTGRES_NAME"):
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            # "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_prometheus.db.backends.postgresql",
             "NAME": os.environ.get("POSTGRES_NAME", ""),
             "USER": os.environ.get("POSTGRES_USER", ""),
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
