@@ -18,7 +18,6 @@ Including another URLconf
 import time
 
 import psutil
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.core.cache import cache
 from django.db import connection
@@ -37,7 +36,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from inventory_api import settings
 from inventory_api.api.v1.serializers import CustomUserSerializer
 
 
@@ -126,6 +124,8 @@ def health_check(request: Request) -> Response:
 
 urlpatterns = [
     path("", include("django_prometheus.urls")),
+    path("api-auth/", include("rest_framework.urls")),  # 這樣右上角會出現 Login
+
     # Admin
     path("admin/", admin.site.urls),
     # Schema

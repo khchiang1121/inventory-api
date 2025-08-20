@@ -1,15 +1,14 @@
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.permissions import BasePermission
-from rest_framework.exceptions import AuthenticationFailed
-import os
-from rest_framework import permissions
+from typing import Any, Optional, Tuple
+
+from django.conf import settings
+from rest_framework.authentication import TokenAuthentication
 
 # class CustomTokenAuthentication(BaseAuthentication):
 #     def authenticate(self, request):
 #         auth_header = request.headers.get('Authorization')
 #         if not auth_header or not auth_header.startswith('Bearer '):
 #             return None
-            
+#
 #         token = auth_header.split(' ')[1]
 #         if token == os.environ.get("DJANGO_BACKDOOR_API_TOKEN"):
 #             return (None, token)
@@ -24,8 +23,23 @@ from rest_framework import permissions
 
 # # Default permission classes for all views
 # DEFAULT_PERMISSION_CLASSES = [TokenPermission]
-# DEFAULT_AUTHENTICATION_CLASSES = [CustomTokenAuthentication] 
+# DEFAULT_AUTHENTICATION_CLASSES = [CustomTokenAuthentication]
 
+
+class ConditionalTokenAuthentication(TokenAuthentication):
+    """
+    Token authentication that can be disabled via settings.
+    When REQUIRE_API_AUTHENTICATION is False, this authentication class
+    will not require authentication and will allow anonymous access.
+    """
+
+    def authenticate(self, request):
+        # If authentication is not required, skip token authentication
+        if not getattr(settings, "REQUIRE_API_AUTHENTICATION", True):
+            return None
+
+        # Otherwise, use the standard token authentication
+        return super().authenticate(request)
 
 
 # class HasPermissionForObject(permissions.BasePermission):

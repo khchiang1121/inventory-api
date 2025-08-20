@@ -36,6 +36,13 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", secrets.token_urlsafe(50))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
+# API Authentication Configuration
+# When True, API requires token authentication.
+# When False, API allows anonymous access.
+REQUIRE_API_AUTHENTICATION = (
+    os.environ.get("REQUIRE_API_AUTHENTICATION", "True") == "True"
+)
+
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "localhost").split(
     ","
@@ -189,7 +196,8 @@ APPEND_SLASH = False  # 取消自動補 /，避免重導向錯誤
 # Django REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",  # for browsable API login
+        "inventory_api.api.authentication.ConditionalTokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "inventory_api.api.permissions.HasPermissionForObject",
@@ -197,7 +205,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
     # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    "DEFAULT_SCHEMA_CLASS": "inventory_api.schema.CustomAutoSchema",
+    "DEFAULT_SCHEMA_CLASS": ("inventory_api.schema.CustomAutoSchema"),
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
