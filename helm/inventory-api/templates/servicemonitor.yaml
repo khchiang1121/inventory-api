@@ -12,7 +12,7 @@ spec:
       {{- include "inventory-api.selectorLabels" . | nindent 6 }}
   {{- if .Values.serviceMonitor.namespaceSelector }}
   namespaceSelector:
-    {{- toYaml .Values.serviceMonitor.namespaceSelector | nindent 4 }}
+    {{- toYaml .Values.serviceMonitor.namespaceSelector | default .Release.Namespace | nindent 4 }}
   {{- end }}
   endpoints:
   - port: {{ .Values.serviceMonitor.port }}
