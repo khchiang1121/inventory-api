@@ -49,7 +49,7 @@ export NO_PROXY=localhost,127.0.0.1,::1,.company.com
 The container uses the following environment variables:
 
 - `PYTHONPATH=/workspace`
-- `DJANGO_SETTINGS_MODULE=virtflow.settings`
+- `DJANGO_SETTINGS_MODULE=inventory_api.settings`
 - `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` (from proxy.conf)
 
 ## Development Workflow
@@ -61,7 +61,7 @@ The container uses the following environment variables:
 python manage.py runserver 0.0.0.0:8201
 
 # Or using uvicorn
-uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8201
+uvicorn inventory_api.asgi:application --host 0.0.0.0 --port 8201
 ```
 
 ### Database Management

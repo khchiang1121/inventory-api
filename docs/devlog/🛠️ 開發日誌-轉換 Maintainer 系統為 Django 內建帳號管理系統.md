@@ -58,7 +58,7 @@ class CustomUser(AbstractUser):
 
 ```python
 # settings.py
-AUTH_USER_MODEL = 'virtflow.CustomUser'
+AUTH_USER_MODEL = 'inventory_api.CustomUser'
 ```
 
 ---

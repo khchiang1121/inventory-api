@@ -29,7 +29,7 @@ Baremetal.objects.create(name="test_host")
 print(Baremetal.objects.all())
 如果這時候仍然報錯 relation "backend_host" does not exist，那麼可能是資料庫的問題，請重新檢查 migration。
 
-uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8201
+uvicorn inventory_api.asgi:application --host 0.0.0.0 --port 8201
 
 pip uninstall ninja
 mamba install --yes --file requirements.txt
@@ -38,7 +38,7 @@ conda create --name virtflow python=3.13 "mamba>=0.22.1"
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate virtflow
 
-export DJANGO_SETTINGS_MODULE=virtflow.settings
+export DJANGO_SETTINGS_MODULE=inventory_api.settings
 
 # 正確從0啟動流程
 python3 -m venv .venv

@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "guardian",
     "corsheaders",
-    "virtflow.api",
+    "inventory_api.api",
 ]
 
 MIDDLEWARE = [
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-ROOT_URLCONF = "virtflow.urls"
+ROOT_URLCONF = "inventory_api.urls"
 
 TEMPLATES = [
     {
@@ -90,7 +90,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "virtflow.wsgi.application"
+WSGI_APPLICATION = "inventory_api.wsgi.application"
 
 
 # Database
@@ -188,12 +188,12 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "virtflow.api.permissions.HasPermissionForObject",
+        "inventory_api.api.permissions.HasPermissionForObject",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
     # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    "DEFAULT_SCHEMA_CLASS": "virtflow.schema.CustomAutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "inventory_api.schema.CustomAutoSchema",
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",

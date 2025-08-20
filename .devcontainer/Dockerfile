@@ -27,11 +27,11 @@ SHELL ["/bin/bash", "-c"]
 
 # 條件式執行 sources.list 更新
 RUN if [[ "${OVERWRITE_APT_SOURCE}" == "true" ]]; then \
-        echo "Overwriting APT source..." && \
-        rm -f /etc/apt/sources.list.d/*.list && \
-        echo "${APT_SOURCE_CONTENT}" > /etc/apt/sources.list ; \
+    echo "Overwriting APT source..." && \
+    rm -f /etc/apt/sources.list.d/*.list && \
+    echo "${APT_SOURCE_CONTENT}" > /etc/apt/sources.list ; \
     else \
-        echo "Skipping APT source overwrite."; \
+    echo "Skipping APT source overwrite."; \
     fi
 
 # Install system dependencies
@@ -86,10 +86,10 @@ COPY requirements.txt .
 ARG PIP_INDEX_URL
 ARG PIP_TRUSTED_HOST
 RUN if [ -n "$PIP_INDEX_URL" ]; then \
-        echo "[global]" > /etc/pip.conf && \
-        echo "trusted-host = $PIP_TRUSTED_HOST" >> /etc/pip.conf && \
-        echo "index-url = $PIP_INDEX_URL" >> /etc/pip.conf && \
-        echo "index = $PIP_INDEX_URL" >> /etc/pip.conf; \
+    echo "[global]" > /etc/pip.conf && \
+    echo "trusted-host = $PIP_TRUSTED_HOST" >> /etc/pip.conf && \
+    echo "index-url = $PIP_INDEX_URL" >> /etc/pip.conf && \
+    echo "index = $PIP_INDEX_URL" >> /etc/pip.conf; \
     fi
 
 RUN pip install --upgrade pip && \
@@ -104,4 +104,4 @@ ENV PATH="/home/vscode/.local/bin:$PATH"
 # Expose the port the app runs on
 EXPOSE 8201 8202 5432
 
-CMD ["uvicorn", "virtflow.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
+CMD ["uvicorn", "inventory_api.asgi:application", "--host", "0.0.0.0", "--port", "8201"]

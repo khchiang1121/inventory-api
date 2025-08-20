@@ -55,7 +55,7 @@ Links VMs and Baremetal servers to Ansible groups:
 ### Creating Groups and Variables
 
 ```python
-from virtflow.api.models import AnsibleGroup, AnsibleGroupVariable
+from inventory_api.api.models import AnsibleGroup, AnsibleGroupVariable
 
 # Create a group
 webservers = AnsibleGroup.objects.create(
@@ -73,7 +73,7 @@ webservers.set_variable("nginx_version", "1.18.0", "string")
 ### Creating Group Relationships
 
 ```python
-from virtflow.api.models import AnsibleGroup, AnsibleGroupRelationship
+from inventory_api.api.models import AnsibleGroup, AnsibleGroupRelationship
 
 # Create parent and child groups
 production = AnsibleGroup.objects.create(name="production")
@@ -89,7 +89,7 @@ AnsibleGroupRelationship.objects.create(
 ### Assigning Hosts to Groups
 
 ```python
-from virtflow.api.models import AnsibleHost
+from inventory_api.api.models import AnsibleHost
 from django.contrib.contenttypes.models import ContentType
 
 # Get a VM or Baremetal server

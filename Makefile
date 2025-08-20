@@ -10,16 +10,16 @@ migrate:
 	python manage.py migrate
 
 test:
-	python manage.py test virtflow.api.tests
+	python manage.py test inventory_api.api.tests
 
 run:
 	python manage.py runserver 0.0.0.0:8201
 
 production:
-	uvicorn virtflow.asgi:application --host 0.0.0.0 --port 8200
+	uvicorn inventory_api.asgi:application --host 0.0.0.0 --port 8200
 
 production-gunicorn:
-	gunicorn virtflow.wsgi:application --bind 0.0.0.0:8200
+	gunicorn inventory_api.wsgi:application --bind 0.0.0.0:8200
 
 stage:
 	python manage.py runserver 0.0.0.0:8201

@@ -86,7 +86,7 @@ virtflow/
 ```python
 INSTALLED_APPS = [
     ...
-    'virtflow.api',
+    'inventory_api.api',
 ]
 ```
 
@@ -96,8 +96,8 @@ INSTALLED_APPS = [
 from django.urls import re_path, include
 
 urlpatterns = [
-    re_path(r'^api/v1/', include(('virtflow.api.v1.urls', 'v1'), namespace='v1')),
-    re_path(r'^api/v2/', include(('virtflow.api.v2.urls', 'v2'), namespace='v2')),
+    re_path(r'^api/v1/', include(('inventory_api.api.v1.urls', 'v1'), namespace='v1')),
+    re_path(r'^api/v2/', include(('inventory_api.api.v2.urls', 'v2'), namespace='v2')),
 ]
 ```
 
@@ -125,7 +125,7 @@ urlpatterns = [
 
 本專案中，**所有版本的 API 均共用相同的資料模型（Model）**，具體做法如下：
 
-- Model 統一定義於 `virtflow.api.models`
+- Model 統一定義於 `inventory_api.api.models`
 - 不隨 API 版本變化而複製或分支
 - 各版本的行為差異由 View 和 Serializer 層進行封裝與裁切，而非透過重建 Model 處理
 
