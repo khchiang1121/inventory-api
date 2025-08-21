@@ -1,6 +1,7 @@
 from typing import Any, Optional, Tuple
 
 from django.conf import settings
+
 from rest_framework.authentication import TokenAuthentication
 
 # class CustomTokenAuthentication(BaseAuthentication):

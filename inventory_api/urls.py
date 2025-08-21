@@ -17,11 +17,12 @@ Including another URLconf
 
 import time
 
-import psutil
 from django.contrib import admin
 from django.core.cache import cache
 from django.db import connection
 from django.urls import include, path, re_path
+
+import psutil
 from drf_spectacular.views import (
     RedirectView,
     SpectacularAPIView,
@@ -125,7 +126,6 @@ def health_check(request: Request) -> Response:
 urlpatterns = [
     path("", include("django_prometheus.urls")),
     path("api-auth/", include("rest_framework.urls")),  # 這樣右上角會出現 Login
-
     # Admin
     path("admin/", admin.site.urls),
     # Schema

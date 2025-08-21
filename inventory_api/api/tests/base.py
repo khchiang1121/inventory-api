@@ -1,7 +1,8 @@
 from typing import Tuple
 
-import pytest
 from django.contrib.auth import get_user_model
+
+import pytest
 from rest_framework.test import APIClient, APITestCase
 
 

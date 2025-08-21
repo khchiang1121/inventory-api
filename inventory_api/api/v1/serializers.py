@@ -2,6 +2,7 @@ from datetime import datetime  # noqa: F401
 from uuid import UUID  # noqa: F401
 
 from django.contrib.contenttypes.models import ContentType
+
 from rest_framework import serializers
 
 from .. import models

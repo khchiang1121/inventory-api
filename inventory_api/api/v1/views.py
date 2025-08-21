@@ -2,11 +2,12 @@ import os
 import time
 from typing import Type
 
-import psutil
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import get_object_or_404
+
+import psutil
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated

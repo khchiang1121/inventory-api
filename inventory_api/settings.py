@@ -40,7 +40,9 @@ ENABLE_HTTPS = os.getenv("ENABLE_HTTPS", "False") == "True"
 
 # Host and CSRF Configuration
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
-CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "localhost").split(",")
+CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "localhost").split(
+    ","
+)
 
 # =============================================================================
 # Application Definition
@@ -279,7 +281,9 @@ CORS_ALLOW_HEADERS = [
 
 if ENABLE_HTTPS:
     SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))  # >= 1 year to preload
+    SECURE_HSTS_SECONDS = int(
+        os.getenv("SECURE_HSTS_SECONDS", "31536000")
+    )  # >= 1 year to preload
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True

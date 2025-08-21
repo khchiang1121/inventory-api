@@ -1,5 +1,6 @@
-import pytest
 from django.contrib.contenttypes.models import ContentType
+
+import pytest
 
 from .base import auth_client
 

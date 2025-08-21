@@ -1,5 +1,6 @@
-import pytest
 from django.contrib.auth import get_user_model
+
+import pytest
 from rest_framework.test import APIClient
 
 
@@ -27,5 +28,3 @@ def auth_client(api_client: APIClient, admin_user) -> APIClient:
     token, _ = Token.objects.get_or_create(user=admin_user)
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     return api_client
-
-
