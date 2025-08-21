@@ -154,9 +154,41 @@ cd inventory-api
 2. 設置環境變數
 
 ```bash
-cp .env.example .env
+cp env.example .env
 # 編輯 .env 文件以設定必要的環境變數
 ```
+
+### 環境變數配置
+
+專案支援通過環境變數進行配置，主要配置項目包括：
+
+#### Django 基本設定
+- `DJANGO_SECRET_KEY`: Django 密鑰（生產環境必須設定）
+- `DJANGO_DEBUG`: 除錯模式（生產環境設為 False）
+- `DJANGO_ALLOWED_HOSTS`: 允許的主機（逗號分隔）
+- `DJANGO_CSRF_TRUSTED_ORIGINS`: CSRF 信任來源（逗號分隔）
+- `DJANGO_LANGUAGE_CODE`: 語言代碼（預設：en-us）
+- `DJANGO_TIME_ZONE`: 時區（預設：UTC）
+
+#### 資料庫設定
+- `POSTGRES_NAME`: PostgreSQL 資料庫名稱
+- `POSTGRES_USER`: PostgreSQL 使用者名稱
+- `POSTGRES_PASSWORD`: PostgreSQL 密碼
+- `POSTGRES_HOST`: PostgreSQL 主機（預設：localhost）
+- `POSTGRES_PORT`: PostgreSQL 埠號（預設：5432）
+
+#### API 設定
+- `REQUIRE_API_AUTHENTICATION`: API 認證要求（預設：True）
+- `DRF_PAGE_SIZE`: DRF 分頁大小（預設：10）
+
+#### CORS 設定
+- `CORS_ALLOWED_ORIGINS`: 允許的 CORS 來源（逗號分隔）
+
+#### 生產環境安全設定
+- `SECURE_SSL_REDIRECT`: HTTPS 重導向（生產環境建議：True）
+- `SECURE_HSTS_SECONDS`: HSTS 秒數（預設：31536000）
+
+> **注意**: 如果未設定 PostgreSQL 環境變數，系統會自動使用 SQLite 作為開發資料庫。
 
 3. 啟動開發環境
 
