@@ -16,9 +16,14 @@ spec:
     {{- toYaml .Values.deployment.strategy | nindent 4 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- if or .Values.podAnnotations .Values.rolloutOnConfigmapChange.enabled }}
       annotations:
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.rolloutOnConfigmapChange.enabled }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
       {{- end }}
       labels:
         {{- include "inventory-api.selectorLabels" . | nindent 8 }}

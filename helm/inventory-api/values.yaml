@@ -50,6 +50,10 @@ serviceAccount:
 # Pod annotations
 podAnnotations: {}
 
+# Rollout deployment when configmap changes
+rolloutOnConfigmapChange:
+  enabled: true
+
 # Pod security context
 podSecurityContext: {}
   # fsGroup: 2000
