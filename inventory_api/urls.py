@@ -126,6 +126,8 @@ def health_check(request: Request) -> Response:
 urlpatterns = [
     path("", include("django_prometheus.urls")),
     path("api-auth/", include("rest_framework.urls")),  # 這樣右上角會出現 Login
+    path('schema-viewer/', include('schema_viewer.urls')),
+    path("schema-viewer/schema", RedirectView.as_view(url="/schema-viewer/schema/", permanent=False)),
     # Admin
     path("admin/", admin.site.urls),
     # Schema

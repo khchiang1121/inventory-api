@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local apps
     "inventory_api.api",
+    'schema_viewer',
 ]
 
 MIDDLEWARE = [
