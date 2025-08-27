@@ -2,9 +2,9 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "inventory-api.fullname" . }}
+  name: {{ include "api-service.fullname" . }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
 spec:
   {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
@@ -14,5 +14,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
+      {{- include "api-service.selectorLabels" . | nindent 6 }}
 {{- end }}

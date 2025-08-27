@@ -162,32 +162,32 @@ healthCheck:
 # Secrets configuration
 secrets:
   # Specifies whether a secret should be created
-  create: true
-  data:
-    # Database credentials
-    POSTGRES_USER: "admin"
-    # Database password - leave empty to auto-generate a secure 32-character password
-    POSTGRES_PASSWORD: ""
-    POSTGRES_NAME: "inventory-api"
-    POSTGRES_HOST: "postgres"
-    POSTGRES_PORT: "5432"
+  create: false
+  data: {}
+    # # Database credentials
+    # POSTGRES_USER: "admin"
+    # # Database password - leave empty to auto-generate a secure 32-character password
+    # POSTGRES_PASSWORD: ""
+    # POSTGRES_NAME: "inventory-api"
+    # POSTGRES_HOST: "postgres"
+    # POSTGRES_PORT: "5432"
 
-    # Admin password
-    DJANGO_SUPERUSER_USERNAME: "admin"
-    DJANGO_SUPERUSER_EMAIL: "admin@example.com"
-    # Django superuser password - leave empty to auto-generate a secure 32-character password
-    DJANGO_SUPERUSER_PASSWORD: ""
+    # # Admin password
+    # DJANGO_SUPERUSER_USERNAME: "admin"
+    # DJANGO_SUPERUSER_EMAIL: "admin@example.com"
+    # # Django superuser password - leave empty to auto-generate a secure 32-character password
+    # DJANGO_SUPERUSER_PASSWORD: ""
 
-    # Django secret key - leave empty to auto-generate a secure 50-character key
-    DJANGO_SECRET_KEY: ""
+    # # Django secret key - leave empty to auto-generate a secure 50-character key
+    # DJANGO_SECRET_KEY: ""
 
-    # API token for backdoor access - leave empty to auto-generate, set to empty string to disable
-    DJANGO_BACKDOOR_API_TOKEN: ""
+    # # API token for backdoor access - leave empty to auto-generate, set to empty string to disable
+    # DJANGO_BACKDOOR_API_TOKEN: ""
 
-    # PGAdmin settings
-    PGADMIN_DEFAULT_EMAIL: "admin@example.com"
-    # PGAdmin password - leave empty to auto-generate a secure 32-character password
-    PGADMIN_DEFAULT_PASSWORD: ""
+    # # PGAdmin settings
+    # PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+    # # PGAdmin password - leave empty to auto-generate a secure 32-character password
+    # PGADMIN_DEFAULT_PASSWORD: ""
 
 vaultSecret:
   create: false
@@ -201,20 +201,20 @@ vaultSecret:
 
 # ConfigMap configuration
 configMap:
-  create: true
-  data:
+  create: false
+  data: {}
     # PGAdmin settings
-    PGADMIN_CONFIG_SERVER_MODE: "True"
+    # PGADMIN_CONFIG_SERVER_MODE: "True"
 
-    # Django settings
-    DJANGO_SETTINGS_MODULE: "inventory.settings"
-    DJANGO_DEBUG: "False"
-    DJANGO_ALLOWED_HOSTS: "*"
-    DJANGO_CSRF_TRUSTED_ORIGINS: "*"
+    # # Django settings
+    # DJANGO_SETTINGS_MODULE: "inventory.settings"
+    # DJANGO_DEBUG: "False"
+    # DJANGO_ALLOWED_HOSTS: "*"
+    # DJANGO_CSRF_TRUSTED_ORIGINS: "*"
     
-    # Application settings
-    DJANGO_APP_PORT: "8201"
-    DJANGO_WORKERS: "4"
+    # # Application settings
+    # DJANGO_APP_PORT: ""
+    # DJANGO_WORKERS: ""
 
 # Node selector
 nodeSelector: {}

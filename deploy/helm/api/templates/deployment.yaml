@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "inventory-api.fullname" . }}
+  name: {{ include "api-service.fullname" . }}
   namespace: {{ .Values.deployment.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.deployment.replicas }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
+      {{- include "api-service.selectorLabels" . | nindent 6 }}
   strategy:
     {{- toYaml .Values.deployment.strategy | nindent 4 }}
   template:
@@ -26,13 +26,13 @@ spec:
         {{- end }}
       {{- end }}
       labels:
-        {{- include "inventory-api.selectorLabels" . | nindent 8 }}
+        {{- include "api-service.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "inventory-api.serviceAccountName" . }}
+      serviceAccountName: {{ include "api-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.nodeSelector }}
@@ -59,7 +59,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ include "inventory-api.image" . }}"
+          image: "{{ include "api-service.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
           {{- range .Values.service.ports }}
@@ -90,8 +90,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-            {{- include "inventory-api.secretEnvVars" . | nindent 12 }}
-            {{- include "inventory-api.configEnvVars" . | nindent 12 }}
+            {{- include "api-service.secretEnvVars" . | nindent 12 }}
+            {{- include "api-service.configEnvVars" . | nindent 12 }}
           {{- if .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml .Values.volumeMounts | nindent 12 }}

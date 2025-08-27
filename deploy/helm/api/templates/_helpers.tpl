@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "inventory-api.name" -}}
+{{- define "api-service.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "inventory-api.fullname" -}}
+{{- define "api-service.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "inventory-api.chart" -}}
+{{- define "api-service.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "inventory-api.labels" -}}
-helm.sh/chart: {{ include "inventory-api.chart" . }}
-{{ include "inventory-api.selectorLabels" . }}
+{{- define "api-service.labels" -}}
+helm.sh/chart: {{ include "api-service.chart" . }}
+{{ include "api-service.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "inventory-api.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "inventory-api.name" . }}
+{{- define "api-service.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "api-service.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "inventory-api.serviceAccountName" -}}
+{{- define "api-service.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "inventory-api.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "api-service.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
@@ -64,21 +64,21 @@ Create the name of the service account to use
 {{/*
 Create the name of the config map
 */}}
-{{- define "inventory-api.configMapName" -}}
-{{- printf "%s-config" (include "inventory-api.fullname" .) }}
+{{- define "api-service.configMapName" -}}
+{{- printf "%s-config" (include "api-service.fullname" .) }}
 {{- end }}
 
 {{/*
 Create the name of the secret
 */}}
-{{- define "inventory-api.secretName" -}}
-{{- printf "%s-secrets" (include "inventory-api.fullname" .) }}
+{{- define "api-service.secretName" -}}
+{{- printf "%s-secrets" (include "api-service.fullname" .) }}
 {{- end }}
 
 {{/*
 Get the image name
 */}}
-{{- define "inventory-api.image" -}}
+{{- define "api-service.image" -}}
 {{- $registryName := .Values.image.registry -}}
 {{- $repositoryName := .Values.image.repository -}}
 {{- $tag := .Values.image.tag | toString -}}
@@ -92,7 +92,7 @@ Get the image name
 {{/*
 Generate Django secret key if not provided
 */}}
-{{- define "inventory-api.secretKey" -}}
+{{- define "api-service.secretKey" -}}
 {{- if .Values.secrets.SECRET_KEY }}
 {{- .Values.secrets.SECRET_KEY | b64enc }}
 {{- else }}
@@ -104,7 +104,7 @@ Generate Django secret key if not provided
 {{/*
 Generate PostgreSQL password if not provided
 */}}
-{{- define "inventory-api.postgresPassword" -}}
+{{- define "api-service.postgresPassword" -}}
 {{- if .Values.secrets.data.POSTGRES_PASSWORD }}
 {{- .Values.secrets.data.POSTGRES_PASSWORD | b64enc }}
 {{- else }}
@@ -114,49 +114,9 @@ Generate PostgreSQL password if not provided
 {{- end }}
 
 {{/*
-Generate Django superuser password if not provided
-*/}}
-{{- define "inventory-api.djangoSuperuserPassword" -}}
-{{- if .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD }}
-{{- .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD | b64enc }}
-{{- else }}
-{{- $password := randAlphaNum 32 }}
-{{- printf "%s" $password | b64enc }}
-{{- end }}
-{{- end }}
-
-{{/*
-Generate Django secret key if not provided
-*/}}
-{{- define "inventory-api.djangoSecretKey" -}}
-{{- if .Values.secrets.data.DJANGO_SECRET_KEY }}
-{{- .Values.secrets.data.DJANGO_SECRET_KEY | b64enc }}
-{{- else }}
-{{- $secretKey := randAlphaNum 50 }}
-{{- printf "%s" $secretKey | b64enc }}
-{{- end }}
-{{- end }}
-
-{{/*
-Generate Django backdoor API token if not provided
-*/}}
-{{- define "inventory-api.djangoBackdoorApiToken" -}}
-{{- if .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN }}
-{{- if eq .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN "" }}
-{{- printf "" | b64enc }}
-{{- else }}
-{{- .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN | b64enc }}
-{{- end }}
-{{- else }}
-{{- $token := randAlphaNum 32 }}
-{{- printf "%s" $token | b64enc }}
-{{- end }}
-{{- end }}
-
-{{/*
 Generate PGAdmin password if not provided
 */}}
-{{- define "inventory-api.pgadminPassword" -}}
+{{- define "api-service.pgadminPassword" -}}
 {{- if .Values.secrets.data.PGADMIN_DEFAULT_PASSWORD }}
 {{- .Values.secrets.data.PGADMIN_DEFAULT_PASSWORD | b64enc }}
 {{- else }}
@@ -168,7 +128,7 @@ Generate PGAdmin password if not provided
 {{/*
 Generate environment variables
 */}}
-{{- define "inventory-api.envVars" -}}
+{{- define "api-service.envVars" -}}
 {{- range $key, $value := .Values.env }}
 - name: {{ $key }}
   value: {{ $value | quote }}
@@ -178,12 +138,12 @@ Generate environment variables
 {{/*
 Generate secret environment variables
 */}}
-{{- define "inventory-api.secretEnvVars" -}}
+{{- define "api-service.secretEnvVars" -}}
 {{- range $key, $value := .Values.secrets.data }}
 - name: {{ $key }}
   valueFrom:
     secretKeyRef:
-      name: {{ include "inventory-api.secretName" $ }}
+      name: {{ include "api-service.secretName" $ }}
       key: {{ $key }}
 {{- end }}
 {{- end }}
@@ -192,12 +152,58 @@ Generate secret environment variables
 {{/*
 Generate config environment variables
 */}}
-{{- define "inventory-api.configEnvVars" -}}
+{{- define "api-service.configEnvVars" -}}
 {{- range $key, $value := .Values.configMap.data }}
 - name: {{ $key }}
   valueFrom:
     configMapKeyRef:
-      name: {{ include "inventory-api.configMapName" $ }}
+      name: {{ include "api-service.configMapName" $ }}
       key: {{ $key }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django superuser password if not provided
+*/}}
+{{- define "api-service.djangoSuperuserPassword" -}}
+{{- if hasKey .Values.secrets.data "DJANGO_SUPERUSER_PASSWORD" -}}
+{{- if .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD }}
+{{- .Values.secrets.data.DJANGO_SUPERUSER_PASSWORD | b64enc }}
+{{- else }}
+{{- $password := randAlphaNum 32 }}
+{{- printf "%s" $password | b64enc }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django secret key if not provided
+*/}}
+{{- define "api-service.djangoSecretKey" -}}
+{{- if hasKey .Values.secrets.data "DJANGO_SECRET_KEY" -}}
+{{- if .Values.secrets.data.DJANGO_SECRET_KEY }}
+{{- .Values.secrets.data.DJANGO_SECRET_KEY | b64enc }}
+{{- else }}
+{{- $secretKey := randAlphaNum 50 }}
+{{- printf "%s" $secretKey | b64enc }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Generate Django backdoor API token if not provided
+*/}}
+{{- define "api-service.djangoBackdoorApiToken" -}}
+{{- if hasKey .Values.secrets.data "DJANGO_BACKDOOR_API_TOKEN" -}}
+{{- if .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN }}
+{{- if eq .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN "" }}
+{{- printf "" | b64enc }}
+{{- else }}
+{{- .Values.secrets.data.DJANGO_BACKDOOR_API_TOKEN | b64enc }}
+{{- end }}
+{{- else }}
+{{- $token := randAlphaNum 32 }}
+{{- printf "%s" $token | b64enc }}
+{{- end }}
 {{- end }}
 {{- end }}

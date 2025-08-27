@@ -2,14 +2,14 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "inventory-api.fullname" . }}
+  name: {{ include "api-service.fullname" . }}
   namespace: {{ .Values.serviceMonitor.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "inventory-api.selectorLabels" . | nindent 6 }}
+      {{- include "api-service.selectorLabels" . | nindent 6 }}
   {{- if .Values.serviceMonitor.namespaceSelector.enabled }}
   namespaceSelector:
     {{- if .Values.serviceMonitor.namespaceSelector.useDefault }}

@@ -2,13 +2,13 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ .Values.certificate.name | default (printf "%s-tls-cert" (include "inventory-api.fullname" .)) }}
+  name: {{ .Values.certificate.name | default (printf "%s-tls-cert" (include "api-service.fullname" .)) }}
   namespace: {{ .Values.certificate.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: certificate
 spec:
-  secretName: {{ .Values.certificate.secretName | default (printf "%s-tls-cert" (include "inventory-api.fullname" .)) }}
+  secretName: {{ .Values.certificate.secretName | default (printf "%s-tls-cert" (include "api-service.fullname" .)) }}
   issuerRef:
     name: {{ .Values.certificate.issuerRef.name }}
     kind: {{ .Values.certificate.issuerRef.kind | default "ClusterIssuer" }}

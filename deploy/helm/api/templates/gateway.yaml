@@ -2,10 +2,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: {{ .Values.istio.gateway.name | default (printf "%s-gateway" (include "inventory-api.fullname" .)) }}
+  name: {{ .Values.istio.gateway.name | default (printf "%s-gateway" (include "api-service.fullname" .)) }}
   namespace: {{ .Values.istio.gateway.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 spec:
   selector:

@@ -2,10 +2,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: {{ .Values.istio.virtualService.name | default (printf "%s-vs" (include "inventory-api.fullname" .)) }}
+  name: {{ .Values.istio.virtualService.name | default (printf "%s-vs" (include "api-service.fullname" .)) }}
   namespace: {{ .Values.istio.virtualService.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
     app.kubernetes.io/component: virtualservice
 spec:
   hosts:
@@ -40,7 +40,7 @@ spec:
     route:
     {{- range .route }}
     - destination:
-        host: {{ .destination.host | default (include "inventory-api.fullname" $) | quote }}
+        host: {{ .destination.host | default (include "api-service.fullname" $) | quote }}
         {{- if .destination.port }}
         port:
           number: {{ .destination.port.number }}

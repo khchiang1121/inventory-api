@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "inventory-api.fullname" . }}
+  name: {{ include "api-service.fullname" . }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
   {{- with .Values.service.annotations }}
   namespace: {{ .Values.service.namespace | default .Release.Namespace }}
   annotations:
@@ -30,4 +30,4 @@ spec:
     {{- end }}
   {{- end }}
   selector:
-    {{- include "inventory-api.selectorLabels" . | nindent 4 }}
+    {{- include "api-service.selectorLabels" . | nindent 4 }}

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "inventory-api.configMapName" . }}
+  name: {{ include "api-service.configMapName" . }}
   namespace: {{ .Values.configMap.namespace | default .Release.Namespace }}
   labels:
-    {{- include "inventory-api.labels" . | nindent 4 }}
+    {{- include "api-service.labels" . | nindent 4 }}
 data:
   {{- range $key, $value := .Values.configMap.data }}
   {{ $key }}: {{ $value | quote }}
