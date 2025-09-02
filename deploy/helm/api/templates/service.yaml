@@ -4,8 +4,8 @@ metadata:
   name: {{ include "api-service.fullname" . }}
   labels:
     {{- include "api-service.labels" . | nindent 4 }}
-  {{- with .Values.service.annotations }}
   namespace: {{ .Values.service.namespace | default .Release.Namespace }}
+  {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
