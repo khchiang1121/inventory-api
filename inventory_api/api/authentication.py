@@ -1,7 +1,6 @@
 from typing import Any, Optional, Tuple
 
 from django.conf import settings
-
 from rest_framework.authentication import TokenAuthentication
 
 # class CustomTokenAuthentication(BaseAuthentication):
@@ -35,12 +34,15 @@ class ConditionalTokenAuthentication(TokenAuthentication):
     """
 
     def authenticate(self, request):
-        # If authentication is not required, skip token authentication
-        if not getattr(settings, "REQUIRE_API_AUTHENTICATION", True):
+        # Always try token authentication if provided
+        result = super().authenticate(request)
+
+        # If authentication is not required and no token was provided, allow anonymous access
+        if not getattr(settings, "REQUIRE_API_AUTHENTICATION", True) and result is None:
             return None
 
-        # Otherwise, use the standard token authentication
-        return super().authenticate(request)
+        # Return the authentication result (user, token) or None
+        return result
 
 
 # class HasPermissionForObject(permissions.BasePermission):

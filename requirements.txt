@@ -22,3 +22,4 @@ django-guardian
 django-cors-headers
 psutil
 django-schema-viewer
+pytest-cov

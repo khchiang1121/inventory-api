@@ -1,6 +1,5 @@
-from django.contrib.auth import get_user_model
-
 import pytest
+from django.contrib.auth import get_user_model
 
 from .base import api_client, auth_client
 
@@ -29,3 +28,16 @@ def test_change_password_requires_auth(auth_client):
         "/api/v1/auth/change-password/", {"new_password": "x"}, format="json"
     )
     assert r.status_code in (200, 204)
+
+
+@pytest.mark.django_db
+def test_login_endpoint(api_client):
+    """Test POST /api/v1/auth/login/ - User login"""
+    # Create user for login test
+    User = get_user_model()
+    user = User.objects.create_user(username="loginuser", password="loginpass123")
+
+    data = {"username": "loginuser", "password": "loginpass123"}
+    response = api_client.post("/api/v1/auth/login/", data, format="json")
+    assert response.status_code == 200
+    assert "token" in response.data

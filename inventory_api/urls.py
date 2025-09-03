@@ -17,12 +17,11 @@ Including another URLconf
 
 import time
 
+import psutil
 from django.contrib import admin
 from django.core.cache import cache
 from django.db import connection
 from django.urls import include, path, re_path
-
-import psutil
 from drf_spectacular.views import (
     RedirectView,
     SpectacularAPIView,
@@ -37,19 +36,23 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from inventory_api.api.permissions import HasPermissionForObject
 from inventory_api.api.v1.serializers import CustomUserSerializer
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasPermissionForObject])
 def me_view(request: Request) -> Response:
     """Get current user information"""
-    serializer = CustomUserSerializer(request.user)
-    return Response(serializer.data)
+    if request.user and request.user.is_authenticated:
+        serializer = CustomUserSerializer(request.user)
+        return Response(serializer.data)
+    else:
+        return Response({"message": "User not authenticated"}, status=401)
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasPermissionForObject])
 def logout_view(request: Request) -> Response:
     """Logout current user"""
     # In a real implementation, you might want to invalidate the token
@@ -66,7 +69,7 @@ def refresh_view(request: Request) -> Response:
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasPermissionForObject])
 def change_password_view(request: Request) -> Response:
     """Change user password"""
     # For now, we'll return a success response
@@ -126,8 +129,11 @@ def health_check(request: Request) -> Response:
 urlpatterns = [
     path("", include("django_prometheus.urls")),
     path("api-auth/", include("rest_framework.urls")),  # 這樣右上角會出現 Login
-    path('schema-viewer/', include('schema_viewer.urls')),
-    path("schema-viewer/schema", RedirectView.as_view(url="/schema-viewer/schema/", permanent=False)),
+    path("schema-viewer/", include("schema_viewer.urls")),
+    path(
+        "schema-viewer/schema",
+        RedirectView.as_view(url="/schema-viewer/schema/", permanent=False),
+    ),
     # Admin
     path("admin/", admin.site.urls),
     # Schema

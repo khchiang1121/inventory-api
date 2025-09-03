@@ -1,7 +1,6 @@
+import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-
-import pytest
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
@@ -27,8 +26,9 @@ def test_login_obtain_token(api_client):
 @pytest.mark.django_db
 def test_me_requires_auth(api_client):
     resp = api_client.get("/api/v1/auth/me/")
-    # Global permission class swaps unauthenticated user to admin; but me_view is IsAuthenticated
-    assert resp.status_code in (401, 403)
+    # Since REQUIRE_API_AUTHENTICATION is False, endpoint allows access but user is not authenticated
+    assert resp.status_code == 401
+    assert resp.data["message"] == "User not authenticated"
 
 
 @pytest.mark.django_db
