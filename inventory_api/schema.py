@@ -18,9 +18,9 @@ class CustomAutoSchema(AutoSchema):
         view = self.view
         if hasattr(view, "__class__"):
             name = view.__class__.__name__
-            return name
-        return super().get_override_view_name()  # type: ignore
+            return split_camel_case(name)
+        return ""
 
     def get_tags(self) -> list[str]:
         override_tag = self.get_override_view_name()
-        return [override_tag] if override_tag else super().get_tags()  # type: ignore
+        return [override_tag] if override_tag else super().get_tags()

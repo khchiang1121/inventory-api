@@ -86,4 +86,4 @@ EXPOSE 8201
 
 ENTRYPOINT ["./entrypoint.sh"]
 
-CMD ["uvicorn", "inventory_api.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
+CMD ["gunicorn", "inventory_api.wsgi:application", "--host", "0.0.0.0", "--port", "8201"]
