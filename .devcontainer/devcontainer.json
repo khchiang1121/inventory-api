@@ -33,7 +33,6 @@
         "vscode": {
             "extensions": [
                 "ms-python.python",
-                "ms-python.flake8",
                 "ms-python.black-formatter",
                 "ms-python.isort",
                 "ms-python.mypy-type-checker",
@@ -45,7 +44,6 @@
                 "github.copilot",
                 "github.copilot-chat",
                 "ms-vscode.hexeditor",
-                "streetsidesoftware.code-spell-checker",
                 "humao.rest-client",
                 "rangav.vscode-thunder-client",
                 "ckolkman.vscode-postgres",
@@ -67,7 +65,6 @@
                 "python.defaultInterpreterPath": "/usr/bin/python",
                 "python.linting.enabled": true,
                 "python.linting.pylintEnabled": true,
-                "python.linting.flake8Enabled": true,
                 "python.formatting.provider": "black",
                 "python.sortImports.path": "isort",
                 "python.analysis.typeCheckingMode": "basic",
@@ -75,6 +72,9 @@
                 "editor.formatOnSave": true,
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": true
+                },
+                "[python]": {
+                    "editor.defaultFormatter": "ms-python.black-formatter"
                 },
                 "files.exclude": {
                     "**/__pycache__": true,
@@ -88,7 +88,7 @@
                         "driver": "PostgreSQL",
                         "previewLimit": 50,
                         "server": "postgres",
-                        "port": 5432,
+                        "port": 5432
                         // "database": "${POSTGRES_DB}",
                         // "username": "${POSTGRES_USER}",
                         // "password": "${POSTGRES_PASSWORD}"

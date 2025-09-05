@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 99
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint.format]
+max-line-length = 99
+ignore-long-lines = "^\\s*(# )?<?https?://\\S+>?$"
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114", "C0115", "C0116",  # module/class/function docstring 強制
+    "C0103",                    # 命名規則（若不想被強制 snake_case）
+    "R0903", "R0913", "R0914"   # 類別/參數/區域變數過多（可按需調整）
+]
+
+[mypy]
+python_version = "3.10"
+strict = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true

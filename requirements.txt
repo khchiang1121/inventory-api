@@ -24,3 +24,7 @@ psutil
 django-schema-viewer
 pytest-cov
 pytest-xdist
+pylint
+black
+isort
+mypy
