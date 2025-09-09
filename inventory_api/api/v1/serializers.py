@@ -2,7 +2,6 @@ from datetime import datetime  # noqa: F401
 from uuid import UUID  # noqa: F401
 
 from django.contrib.contenttypes.models import ContentType
-
 from rest_framework import serializers
 
 from .. import models
@@ -723,8 +722,327 @@ class ObjectPermissionSerializer(serializers.Serializer):
 
 
 # ------------------------------------------------------------------------------
-# Ansible Serializers
+# Ansible Inventory Serializers
 # ------------------------------------------------------------------------------
+class AnsibleInventorySerializer(serializers.ModelSerializer):
+    created_by = CustomUserSerializer(read_only=True)
+    groups_count = serializers.SerializerMethodField()
+    hosts_count = serializers.SerializerMethodField()
+    associated_variable_sets_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "id",
+            "name",
+            "description",
+            "version",
+            "source_type",
+            "source_plugin",
+            "source_config",
+            "status",
+            "created_by",
+            "groups_count",
+            "hosts_count",
+            "associated_variable_sets_count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_groups_count(self, obj) -> int:
+        return obj.groups.count()
+
+    def get_hosts_count(self, obj) -> int:
+        return obj.hosts.count()
+
+    def get_associated_variable_sets_count(self, obj) -> int:
+        return obj.associated_variable_sets.count()
+
+
+class AnsibleInventoryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "id",
+            "name",
+            "description",
+            "version",
+            "source_type",
+            "source_plugin",
+            "source_config",
+            "status",
+        ]
+
+
+class AnsibleInventoryUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "name",
+            "description",
+            "version",
+            "source_type",
+            "source_plugin",
+            "source_config",
+            "status",
+        ]
+
+
+class AnsibleInventoryVariableSerializer(serializers.ModelSerializer):
+    inventory = AnsibleInventorySerializer(read_only=True)
+
+    class Meta:
+        model = models.AnsibleInventoryVariable
+        fields = [
+            "id",
+            "inventory",
+            "key",
+            "value",
+            "value_type",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryVariableCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariable
+        fields = ["id", "inventory", "key", "value", "value_type"]
+
+
+class AnsibleInventoryVariableUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariable
+        fields = ["key", "value", "value_type"]
+
+
+# ------------------------------------------------------------------------------
+# Ansible Variable Set Serializers
+# ------------------------------------------------------------------------------
+class AnsibleVariableSetSerializer(serializers.ModelSerializer):
+    created_by = CustomUserSerializer(read_only=True)
+    associated_inventories_count = serializers.SerializerMethodField()
+    parsed_content = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "id",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+            "created_by",
+            "associated_inventories_count",
+            "parsed_content",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_associated_inventories_count(self, obj) -> int:
+        return obj.associated_inventories.count()
+
+    def get_parsed_content(self, obj) -> dict:
+        return obj.get_parsed_content()
+
+
+class AnsibleVariableSetCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "id",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+class AnsibleVariableSetUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+class AnsibleInventoryVariableSetAssociationSerializer(serializers.ModelSerializer):
+    inventory = AnsibleInventorySerializer(read_only=True)
+    variable_set = AnsibleVariableSetSerializer(read_only=True)
+
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "id",
+            "inventory",
+            "variable_set",
+            "load_priority",
+            "enabled",
+            "load_tags",
+            "load_config",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryVariableSetAssociationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "id",
+            "inventory",
+            "variable_set",
+            "load_priority",
+            "enabled",
+            "load_tags",
+            "load_config",
+        ]
+
+
+class AnsibleInventoryVariableSetAssociationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "load_priority",
+            "enabled",
+            "load_tags",
+            "load_config",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Ansible Host Variable Serializers
+# ------------------------------------------------------------------------------
+class AnsibleHostVariableSerializer(serializers.ModelSerializer):
+    host: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = [
+            "id",
+            "host",
+            "key",
+            "value",
+            "value_type",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleHostVariableCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = ["id", "host", "key", "value", "value_type"]
+
+
+class AnsibleHostVariableUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = ["key", "value", "value_type"]
+
+
+# ------------------------------------------------------------------------------
+# Ansible Inventory Plugin Serializers
+# ------------------------------------------------------------------------------
+class AnsibleInventoryPluginSerializer(serializers.ModelSerializer):
+    inventory = AnsibleInventorySerializer(read_only=True)
+
+    class Meta:
+        model = models.AnsibleInventoryPlugin
+        fields = [
+            "id",
+            "inventory",
+            "name",
+            "config",
+            "enabled",
+            "priority",
+            "cache_timeout",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryPluginCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryPlugin
+        fields = [
+            "id",
+            "inventory",
+            "name",
+            "config",
+            "enabled",
+            "priority",
+            "cache_timeout",
+        ]
+
+
+class AnsibleInventoryPluginUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryPlugin
+        fields = [
+            "name",
+            "config",
+            "enabled",
+            "priority",
+            "cache_timeout",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Ansible Inventory Template Serializers
+# ------------------------------------------------------------------------------
+class AnsibleInventoryTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+            "variables",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryTemplateCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+            "variables",
+        ]
+
+
+class AnsibleInventoryTemplateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+            "variables",
+        ]
+
+
 class AnsibleGroupVariableSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnsibleGroupVariable
@@ -752,12 +1070,8 @@ class AnsibleGroupVariableUpdateSerializer(serializers.ModelSerializer):
 
 
 class AnsibleGroupRelationshipSerializer(serializers.ModelSerializer):
-    parent_group = serializers.PrimaryKeyRelatedField(
-        queryset=models.AnsibleGroup.objects.all()
-    )
-    child_group = serializers.PrimaryKeyRelatedField(
-        queryset=models.AnsibleGroup.objects.all()
-    )
+    parent_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
+    child_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
 
     class Meta:
         model = models.AnsibleGroupRelationship
@@ -787,6 +1101,7 @@ class AnsibleGroupSerializer(serializers.ModelSerializer):
         model = models.AnsibleGroup
         fields = [
             "id",
+            "inventory",
             "name",
             "description",
             "is_special",
@@ -804,9 +1119,7 @@ class AnsibleGroupSerializer(serializers.ModelSerializer):
         return [{"id": str(group.id), "name": group.name} for group in obj.child_groups]
 
     def get_parent_groups(self, obj):
-        return [
-            {"id": str(group.id), "name": group.name} for group in obj.parent_groups
-        ]
+        return [{"id": str(group.id), "name": group.name} for group in obj.parent_groups]
 
     def get_all_variables(self, obj):
         return obj.all_variables
@@ -826,13 +1139,13 @@ class AnsibleGroupSerializer(serializers.ModelSerializer):
 class AnsibleGroupCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnsibleGroup
-        fields = ["id", "name", "description", "is_special", "status"]
+        fields = ["id", "inventory", "name", "description", "is_special", "status"]
 
 
 class AnsibleGroupUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnsibleGroup
-        fields = ["id", "name", "description", "is_special", "status"]
+        fields = ["id", "inventory", "name", "description", "is_special", "status"]
 
 
 class AnsibleHostSerializer(serializers.ModelSerializer):
@@ -851,7 +1164,7 @@ class AnsibleHostSerializer(serializers.ModelSerializer):
             "host",
             "content_type",
             "object_id",
-            "host_vars",
+            "metadata",
             "ansible_host",
             "ansible_port",
             "ansible_user",
@@ -866,14 +1179,15 @@ class AnsibleHostCreateSerializer(serializers.ModelSerializer):
         model = models.AnsibleHost
         fields = [
             "id",
+            "inventory",
             "group",
             "content_type",
             "object_id",
-            "host_vars",
             "ansible_host",
             "ansible_port",
             "ansible_user",
             "ansible_ssh_private_key_file",
+            "metadata",
         ]
 
 
@@ -881,10 +1195,11 @@ class AnsibleHostUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnsibleHost
         fields = [
+            "inventory",
             "group",
-            "host_vars",
             "ansible_host",
             "ansible_port",
             "ansible_user",
             "ansible_ssh_private_key_file",
+            "metadata",
         ]

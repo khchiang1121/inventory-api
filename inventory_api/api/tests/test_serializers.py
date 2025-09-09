@@ -288,7 +288,15 @@ class TestAnsibleSerializers:
 
     def test_ansible_group_serializer_valid_data(self):
         """Test AnsibleGroupSerializer with valid data"""
+        # First create an inventory
+        from inventory_api.api.models import AnsibleInventory
+
+        inventory = AnsibleInventory.objects.create(
+            name="test_inventory", description="Test inventory", status="active"
+        )
+
         data = {
+            "inventory": str(inventory.id),
             "name": "web_servers",
             "description": "Web server group",
             "status": "active",
@@ -302,7 +310,12 @@ class TestAnsibleSerializers:
     def test_ansible_host_serializer_with_connection_details(self):
         """Test AnsibleHostSerializer with connection details"""
         # Create required objects for AnsibleHost
-        group = AnsibleGroup.objects.create(name="test_group")
+        from inventory_api.api.models import AnsibleInventory
+
+        inventory = AnsibleInventory.objects.create(
+            name="test_inventory_host", description="Test inventory for host", status="active"
+        )
+        group = AnsibleGroup.objects.create(name="test_group", inventory=inventory)
         tenant = Tenant.objects.create(name="Test Tenant", status="active")
 
         # Get content type for tenant
@@ -311,13 +324,14 @@ class TestAnsibleSerializers:
         content_type = ContentType.objects.get_for_model(Tenant)
 
         data = {
+            "inventory": str(inventory.id),
             "group": str(group.id),
             "content_type": content_type.id,
             "object_id": str(tenant.id),
             "ansible_host": "192.168.1.10",
             "ansible_port": 22,
             "ansible_user": "deploy",
-            "host_vars": {"role": "primary"},
+            "metadata": {"role": "primary"},
         }
         serializer = AnsibleHostCreateSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"

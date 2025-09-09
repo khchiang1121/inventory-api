@@ -1,5 +1,4 @@
 from django.urls import include, path
-
 from rest_framework.routers import DefaultRouter
 
 from inventory_api.api.v1 import views
@@ -48,6 +47,18 @@ router.register(r"bastion-cluster-associations", views.BastionClusterAssociation
 router.register(r"k8s-cluster-service-meshes", views.K8sClusterToServiceMeshViewSet)
 router.register(r"service-meshes", views.ServiceMeshViewSet)
 router.register(r"virtual-machines", views.VirtualMachineViewSet)
+
+# Ansible Inventory routes
+router.register(r"ansible-inventories", views.AnsibleInventoryViewSet)
+router.register(r"ansible-inventory-variables", views.AnsibleInventoryVariableViewSet)
+router.register(r"ansible-variable-sets", views.AnsibleVariableSetViewSet)
+router.register(
+    r"ansible-inventory-variable-set-associations",
+    views.AnsibleInventoryVariableSetAssociationViewSet,
+)
+router.register(r"ansible-host-variables", views.AnsibleHostVariableViewSet)
+router.register(r"ansible-inventory-plugins", views.AnsibleInventoryPluginViewSet)
+router.register(r"ansible-inventory-templates", views.AnsibleInventoryTemplateViewSet)
 
 # Ansible routes
 router.register(r"ansible-groups", views.AnsibleGroupViewSet)

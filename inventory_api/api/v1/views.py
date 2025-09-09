@@ -267,8 +267,180 @@ class VirtualMachineViewSet(viewsets.ModelViewSet):
 
 
 # ------------------------------------------------------------------------------
-# Ansible ViewSets
+# Ansible Inventory ViewSets
 # ------------------------------------------------------------------------------
+class AnsibleInventoryViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventory.objects.all().order_by("name")
+    serializer_class = serializers.AnsibleInventorySerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryUpdateSerializer
+        return serializers.AnsibleInventorySerializer
+
+    @action(detail=True, methods=["get"])
+    def merged_variables(self, request, pk=None) -> Response:
+        """Get merged variables for this inventory"""
+        inventory = self.get_object()
+        group_id = request.query_params.get("group_id")
+        host_id = request.query_params.get("host_id")
+
+        # Get merged variables
+        merged_vars = {}
+
+        # Inventory-level variables
+        for var in inventory.variables.all():
+            merged_vars[var.key] = var.get_typed_value()
+
+        # Associated variable sets
+        associated_sets = inventory.associated_variable_sets.filter(
+            enabled=True, variable_set__status="active"
+        ).order_by("load_priority", "variable_set__priority")
+
+        for association in associated_sets:
+            set_vars = association.variable_set.get_parsed_content()
+            merged_vars.update(set_vars)
+
+        # Group variables if specified
+        if group_id:
+            try:
+                group = models.AnsibleGroup.objects.get(id=group_id)
+                for var in group.variables.all():
+                    merged_vars[var.key] = var.get_typed_value()
+            except models.AnsibleGroup.DoesNotExist:
+                pass
+
+        # Host variables if specified
+        if host_id:
+            try:
+                host = models.AnsibleHost.objects.get(id=host_id)
+                for var in host.structured_variables.all():
+                    merged_vars[var.key] = var.get_typed_value()
+            except models.AnsibleHost.DoesNotExist:
+                pass
+
+        return Response(merged_vars)
+
+
+class AnsibleInventoryVariableViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryVariable.objects.all().order_by("inventory__name", "key")
+    serializer_class = serializers.AnsibleInventoryVariableSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryVariableCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryVariableUpdateSerializer
+        return serializers.AnsibleInventoryVariableSerializer
+
+
+class AnsibleVariableSetViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleVariableSet.objects.all().order_by("priority", "name")
+    serializer_class = serializers.AnsibleVariableSetSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleVariableSetCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleVariableSetUpdateSerializer
+        return serializers.AnsibleVariableSetSerializer
+
+    @action(detail=False, methods=["get"])
+    def by_tags(self, request) -> Response:
+        """Get variable sets filtered by tags"""
+        tags = request.query_params.getlist("tags")
+        if tags:
+            # Use AND logic: all specified tags must be present
+            queryset = self.queryset.filter(status="active")
+            for tag in tags:
+                queryset = queryset.filter(tags__contains=tag)
+        else:
+            queryset = self.queryset.filter(status="active")
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def validate_content(self, request, pk=None) -> Response:
+        """Validate variable set content"""
+        variable_set = self.get_object()
+        is_valid = variable_set.validate_content()
+        return Response({"valid": is_valid})
+
+
+class AnsibleInventoryVariableSetAssociationViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryVariableSetAssociation.objects.all().order_by(
+        "inventory__name", "load_priority"
+    )
+    serializer_class = serializers.AnsibleInventoryVariableSetAssociationSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryVariableSetAssociationCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryVariableSetAssociationUpdateSerializer
+        return serializers.AnsibleInventoryVariableSetAssociationSerializer
+
+
+class AnsibleHostVariableViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleHostVariable.objects.all().order_by("host__group__name", "key")
+    serializer_class = serializers.AnsibleHostVariableSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleHostVariableCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleHostVariableUpdateSerializer
+        return serializers.AnsibleHostVariableSerializer
+
+
+class AnsibleInventoryPluginViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryPlugin.objects.all().order_by(
+        "inventory__name", "priority", "name"
+    )
+    serializer_class = serializers.AnsibleInventoryPluginSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryPluginCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryPluginUpdateSerializer
+        return serializers.AnsibleInventoryPluginSerializer
+
+
+class AnsibleInventoryTemplateViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryTemplate.objects.all().order_by("name")
+    serializer_class = serializers.AnsibleInventoryTemplateSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryTemplateCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryTemplateUpdateSerializer
+        return serializers.AnsibleInventoryTemplateSerializer
+
+    @action(detail=True, methods=["post"])
+    def render_template(self, request, pk=None) -> Response:
+        """Render template with provided context"""
+        template = self.get_object()
+        context = request.data.get("context", {})
+
+        try:
+            # Try to import jinja2, but don't fail if not available
+            try:
+                from jinja2 import Template
+
+                jinja_template = Template(template.template_content)
+                rendered_content = jinja_template.render(**context)
+                return Response({"rendered_content": rendered_content})
+            except ImportError:
+                return Response({"error": "jinja2 not installed"}, status=400)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+
 class AnsibleGroupViewSet(viewsets.ModelViewSet):
     queryset = models.AnsibleGroup.objects.all().order_by("name")
     serializer_class = serializers.AnsibleGroupSerializer

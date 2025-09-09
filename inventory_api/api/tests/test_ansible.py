@@ -9,7 +9,19 @@ from django.contrib.contenttypes.models import ContentType
 @pytest.mark.django_db
 def test_ansible_group_create(auth_client):
     """Test creating an Ansible group"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-group-create",
+            "description": "Test inventory for group creation",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     payload = {
+        "inventory": inventory["id"],
         "name": "webservers-create",
         "description": "Web server group",
         "is_special": False,
@@ -32,7 +44,19 @@ def test_ansible_group_list(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_retrieve(auth_client):
     """Test retrieving a specific Ansible group"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-group-retrieve",
+            "description": "Test inventory for group retrieval",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     payload = {
+        "inventory": inventory["id"],
         "name": "dbservers-retrieve",
         "description": "Database server group",
         "is_special": False,
@@ -50,7 +74,19 @@ def test_ansible_group_retrieve(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_update_put(auth_client):
     """Test updating an Ansible group with PUT"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-group-put",
+            "description": "Test inventory for group PUT update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     payload = {
+        "inventory": inventory["id"],
         "name": "appservers-put",
         "description": "Application server group",
         "is_special": False,
@@ -60,14 +96,13 @@ def test_ansible_group_update_put(auth_client):
     group_id = create_r.data["id"]
 
     put_payload = {
+        "inventory": inventory["id"],
         "name": "appservers-put-updated",
         "description": "Updated application server group",
         "is_special": True,
         "status": "inactive",
     }
-    r = auth_client.put(
-        f"/api/v1/ansible-groups/{group_id}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/ansible-groups/{group_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "appservers-put-updated"
     assert r.data["description"] == "Updated application server group"
@@ -83,7 +118,19 @@ def test_ansible_group_update_put(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_update_patch(auth_client):
     """Test updating an Ansible group with PATCH"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-group-patch",
+            "description": "Test inventory for group PATCH update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     payload = {
+        "inventory": inventory["id"],
         "name": "loadbalancers-patch",
         "description": "Load balancer group",
         "is_special": False,
@@ -109,7 +156,19 @@ def test_ansible_group_update_patch(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_delete(auth_client):
     """Test deleting an Ansible group"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-group-delete",
+            "description": "Test inventory for group deletion",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     payload = {
+        "inventory": inventory["id"],
         "name": "tempgroup-delete",
         "description": "Temporary group",
         "is_special": False,
@@ -134,9 +193,21 @@ def test_ansible_group_delete(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_variables_create(auth_client):
     """Test creating Ansible group variables"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-vars-create",
+            "description": "Test inventory for group variables creation",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-vars-create",
             "description": "",
             "is_special": True,
@@ -169,9 +240,21 @@ def test_ansible_group_variables_list(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_variables_retrieve(auth_client):
     """Test retrieving specific Ansible group variables"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-vars-retrieve",
+            "description": "Test inventory for group variables retrieval",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-vars-retrieve",
             "description": "",
             "is_special": True,
@@ -186,9 +269,7 @@ def test_ansible_group_variables_retrieve(auth_client):
         "value": "false",
         "value_type": "boolean",
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-variables", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-variables", payload, format="json")
     var_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/ansible-group-variables/{var_id}")
@@ -201,9 +282,21 @@ def test_ansible_group_variables_retrieve(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_variables_update_put(auth_client):
     """Test updating Ansible group variables with PUT"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-vars-put",
+            "description": "Test inventory for group variables PUT update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-vars-put",
             "description": "",
             "is_special": True,
@@ -218,9 +311,7 @@ def test_ansible_group_variables_update_put(auth_client):
         "value": "100",
         "value_type": "integer",
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-variables", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-variables", payload, format="json")
     var_id = create_r.data["id"]
 
     put_payload = {
@@ -229,9 +320,7 @@ def test_ansible_group_variables_update_put(auth_client):
         "value": "200",
         "value_type": "integer",
     }
-    r = auth_client.put(
-        f"/api/v1/ansible-group-variables/{var_id}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/ansible-group-variables/{var_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["key"] == "max_connections_updated"
     assert r.data["value"] == "200"
@@ -246,9 +335,21 @@ def test_ansible_group_variables_update_put(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_variables_update_patch(auth_client):
     """Test updating Ansible group variables with PATCH"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-vars-patch",
+            "description": "Test inventory for group variables PATCH update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-vars-patch",
             "description": "",
             "is_special": True,
@@ -263,9 +364,7 @@ def test_ansible_group_variables_update_patch(auth_client):
         "value": "30",
         "value_type": "integer",
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-variables", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-variables", payload, format="json")
     var_id = create_r.data["id"]
 
     r = auth_client.patch(
@@ -285,9 +384,21 @@ def test_ansible_group_variables_update_patch(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_variables_delete(auth_client):
     """Test deleting Ansible group variables"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-vars-delete",
+            "description": "Test inventory for group variables deletion",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-vars-delete",
             "description": "",
             "is_special": True,
@@ -302,9 +413,7 @@ def test_ansible_group_variables_delete(auth_client):
         "value": "temp_value",
         "value_type": "string",
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-variables", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-variables", payload, format="json")
     var_id = create_r.data["id"]
 
     r = auth_client.delete(f"/api/v1/ansible-group-variables/{var_id}")
@@ -323,9 +432,21 @@ def test_ansible_group_variables_delete(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_relationships_create(auth_client):
     """Test creating Ansible group relationships"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-rel-create",
+            "description": "Test inventory for group relationships creation",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     parent_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-rel-create",
             "description": "",
             "is_special": True,
@@ -337,6 +458,7 @@ def test_ansible_group_relationships_create(auth_client):
     child_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "web-rel-create",
             "description": "",
             "is_special": False,
@@ -366,9 +488,21 @@ def test_ansible_group_relationships_list(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_relationships_retrieve(auth_client):
     """Test retrieving specific Ansible group relationships"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-rel-retrieve",
+            "description": "Test inventory for group relationships retrieval",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     parent_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-rel-retrieve",
             "description": "",
             "is_special": True,
@@ -380,6 +514,7 @@ def test_ansible_group_relationships_retrieve(auth_client):
     child_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "db-rel-retrieve",
             "description": "",
             "is_special": False,
@@ -392,9 +527,7 @@ def test_ansible_group_relationships_retrieve(auth_client):
         "parent_group": parent_group["id"],
         "child_group": child_group["id"],
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-relationships", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-relationships", payload, format="json")
     rel_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/ansible-group-relationships/{rel_id}")
@@ -406,9 +539,21 @@ def test_ansible_group_relationships_retrieve(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_relationships_update_put(auth_client):
     """Test updating Ansible group relationships with PUT"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-rel-put",
+            "description": "Test inventory for group relationships PUT update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     parent_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-rel-put",
             "description": "",
             "is_special": True,
@@ -420,6 +565,7 @@ def test_ansible_group_relationships_update_put(auth_client):
     child_group1 = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "app-rel-put-1",
             "description": "",
             "is_special": False,
@@ -431,6 +577,7 @@ def test_ansible_group_relationships_update_put(auth_client):
     child_group2 = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "app-rel-put-2",
             "description": "",
             "is_special": False,
@@ -443,9 +590,7 @@ def test_ansible_group_relationships_update_put(auth_client):
         "parent_group": parent_group["id"],
         "child_group": child_group1["id"],
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-relationships", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-relationships", payload, format="json")
     rel_id = create_r.data["id"]
 
     put_payload = {
@@ -467,9 +612,21 @@ def test_ansible_group_relationships_update_put(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_relationships_update_patch(auth_client):
     """Test updating Ansible group relationships with PATCH"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-rel-patch",
+            "description": "Test inventory for group relationships PATCH update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     parent_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-rel-patch",
             "description": "",
             "is_special": True,
@@ -481,6 +638,7 @@ def test_ansible_group_relationships_update_patch(auth_client):
     child_group1 = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "lb-rel-patch-1",
             "description": "",
             "is_special": False,
@@ -492,6 +650,7 @@ def test_ansible_group_relationships_update_patch(auth_client):
     child_group2 = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "lb-rel-patch-2",
             "description": "",
             "is_special": False,
@@ -504,9 +663,7 @@ def test_ansible_group_relationships_update_patch(auth_client):
         "parent_group": parent_group["id"],
         "child_group": child_group1["id"],
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-relationships", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-relationships", payload, format="json")
     rel_id = create_r.data["id"]
 
     r = auth_client.patch(
@@ -516,9 +673,7 @@ def test_ansible_group_relationships_update_patch(auth_client):
     )
     assert r.status_code == 200
     assert str(r.data["child_group"]) == str(child_group2["id"])
-    assert str(r.data["parent_group"]) == str(
-        parent_group["id"]
-    )  # Should remain unchanged
+    assert str(r.data["parent_group"]) == str(parent_group["id"])  # Should remain unchanged
 
     # Verify in database
     r = auth_client.get(f"/api/v1/ansible-group-relationships/{rel_id}")
@@ -530,9 +685,21 @@ def test_ansible_group_relationships_update_patch(auth_client):
 @pytest.mark.django_db
 def test_ansible_group_relationships_delete(auth_client):
     """Test deleting Ansible group relationships"""
+    # First create an inventory
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-rel-delete",
+            "description": "Test inventory for group relationships deletion",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     parent_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "all-rel-delete",
             "description": "",
             "is_special": True,
@@ -544,6 +711,7 @@ def test_ansible_group_relationships_delete(auth_client):
     child_group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "temp-rel-delete",
             "description": "",
             "is_special": False,
@@ -556,9 +724,7 @@ def test_ansible_group_relationships_delete(auth_client):
         "parent_group": parent_group["id"],
         "child_group": child_group["id"],
     }
-    create_r = auth_client.post(
-        "/api/v1/ansible-group-relationships", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/ansible-group-relationships", payload, format="json")
     rel_id = create_r.data["id"]
 
     r = auth_client.delete(f"/api/v1/ansible-group-relationships/{rel_id}")
@@ -605,15 +771,32 @@ def test_ansible_host_create_for_vm(auth_client):
         format="json",
     ).data
 
-    # Create group required by AnsibleHost
+    # Create inventory and group required by AnsibleHost
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-host-create",
+            "description": "Test inventory for host creation",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
-        {"name": "web", "description": "", "is_special": False, "status": "active"},
+        {
+            "inventory": inventory["id"],
+            "name": "web",
+            "description": "",
+            "is_special": False,
+            "status": "active",
+        },
         format="json",
     ).data
 
     ct = ContentType.objects.get(app_label="api", model="virtualmachine")
     payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],
@@ -670,14 +853,32 @@ def test_ansible_host_retrieve(auth_client):
         format="json",
     ).data
 
+    # Create inventory and group required by AnsibleHost
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-host-retrieve",
+            "description": "Test inventory for host retrieval",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
-        {"name": "db", "description": "", "is_special": False, "status": "active"},
+        {
+            "inventory": inventory["id"],
+            "name": "db",
+            "description": "",
+            "is_special": False,
+            "status": "active",
+        },
         format="json",
     ).data
 
     ct = ContentType.objects.get(app_label="api", model="virtualmachine")
     payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],
@@ -725,14 +926,32 @@ def test_ansible_host_update_put(auth_client):
         format="json",
     ).data
 
+    # Create inventory and group required by AnsibleHost
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-host-put",
+            "description": "Test inventory for host PUT update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
-        {"name": "ops", "description": "", "is_special": False, "status": "active"},
+        {
+            "inventory": inventory["id"],
+            "name": "ops",
+            "description": "",
+            "is_special": False,
+            "status": "active",
+        },
         format="json",
     ).data
 
     ct = ContentType.objects.get(app_label="api", model="virtualmachine")
     payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],
@@ -744,6 +963,7 @@ def test_ansible_host_update_put(auth_client):
     host_id = create_r.data["id"]
 
     put_payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],
@@ -796,9 +1016,21 @@ def test_ansible_host_update_patch(auth_client):
         format="json",
     ).data
 
+    # Create inventory and group required by AnsibleHost
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-host-patch",
+            "description": "Test inventory for host PATCH update",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
         {
+            "inventory": inventory["id"],
             "name": "ops-patch",
             "description": "",
             "is_special": False,
@@ -809,6 +1041,7 @@ def test_ansible_host_update_patch(auth_client):
 
     ct = ContentType.objects.get(app_label="api", model="virtualmachine")
     payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],
@@ -867,14 +1100,32 @@ def test_ansible_host_delete(auth_client):
         format="json",
     ).data
 
+    # Create inventory and group required by AnsibleHost
+    inventory = auth_client.post(
+        "/api/v1/ansible-inventories",
+        {
+            "name": "test-inventory-host-delete",
+            "description": "Test inventory for host deletion",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
     group = auth_client.post(
         "/api/v1/ansible-groups",
-        {"name": "ops-del", "description": "", "is_special": False, "status": "active"},
+        {
+            "inventory": inventory["id"],
+            "name": "ops-del",
+            "description": "",
+            "is_special": False,
+            "status": "active",
+        },
         format="json",
     ).data
 
     ct = ContentType.objects.get(app_label="api", model="virtualmachine")
     payload = {
+        "inventory": inventory["id"],
         "group": group["id"],
         "content_type": ct.id,
         "object_id": vm["id"],

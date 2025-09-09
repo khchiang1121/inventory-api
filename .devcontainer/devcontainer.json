@@ -59,7 +59,8 @@
                 "donjayamanne.githistory",
                 "ms-azuretools.vscode-containers",
                 "ms-azuretools.vscode-docker",
-                "mhutchie.git-graph"
+                "mhutchie.git-graph",
+                "ms-vscode.makefile-tools"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/usr/bin/python",

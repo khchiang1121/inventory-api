@@ -109,9 +109,7 @@ class TestInfrastructureViewSets:
         fab = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
 
         data = {"name": "FAB001_Updated", "old_system_id": "legacy1_updated"}
-        response = auth_client.put(
-            f"/api/v1/fabrications/{fab.id}", data, format="json"
-        )
+        response = auth_client.put(f"/api/v1/fabrications/{fab.id}", data, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB001_Updated"
 
@@ -132,15 +130,9 @@ class TestInfrastructureViewSets:
     def test_rack_list_with_status_filter(self, auth_client):
         """Test rack list endpoint with status filtering"""
         # Create test data with different statuses
-        Rack.objects.create(
-            name="RACK001", bgp_number="AS1", as_number=1, status="active"
-        )
-        Rack.objects.create(
-            name="RACK002", bgp_number="AS2", as_number=2, status="inactive"
-        )
-        Rack.objects.create(
-            name="RACK003", bgp_number="AS3", as_number=3, status="maintenance"
-        )
+        Rack.objects.create(name="RACK001", bgp_number="AS1", as_number=1, status="active")
+        Rack.objects.create(name="RACK002", bgp_number="AS2", as_number=2, status="inactive")
+        Rack.objects.create(name="RACK003", bgp_number="AS3", as_number=3, status="maintenance")
 
         # Test filtering by status
         response = auth_client.get("/api/v1/racks?status=active")
@@ -184,9 +176,7 @@ class TestNetworkViewSets:
 
         # Update
         update_data = {"vlan_id": 100, "name": "Production_Updated"}
-        response = auth_client.put(
-            f"/api/v1/vlans/{vlan_id}", update_data, format="json"
-        )
+        response = auth_client.put(f"/api/v1/vlans/{vlan_id}", update_data, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Production_Updated"
 
@@ -309,9 +299,7 @@ class TestPurchaseViewSets:
             "department": "IT",
             "reason": "Server upgrade",
         }
-        response = auth_client.post(
-            "/api/v1/purchase-requisitions", data, format="json"
-        )
+        response = auth_client.post("/api/v1/purchase-requisitions", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         pr_id = response.data["id"]
 
@@ -348,7 +336,19 @@ class TestAnsibleViewSets:
 
     def test_ansible_group_with_variables(self, auth_client):
         """Test Ansible group creation with description"""
+        # First create an inventory
+        inventory_data = {
+            "name": "test_inventory_viewset",
+            "description": "Test inventory for viewset",
+            "status": "active",
+        }
+        inventory_response = auth_client.post(
+            "/api/v1/ansible-inventories", inventory_data, format="json"
+        )
+        assert inventory_response.status_code == status.HTTP_201_CREATED
+
         data = {
+            "inventory": inventory_response.data["id"],
             "name": "web_servers",
             "description": "Web server group",
             "status": "active",
@@ -361,7 +361,14 @@ class TestAnsibleViewSets:
     def test_ansible_host_with_connection_details(self, auth_client):
         """Test Ansible host creation with SSH connection details"""
         # Create required objects
-        group = AnsibleGroup.objects.create(name="test_group")
+        from inventory_api.api.models import AnsibleInventory
+
+        inventory = AnsibleInventory.objects.create(
+            name="test_inventory_host_viewset",
+            description="Test inventory for host viewset",
+            status="active",
+        )
+        group = AnsibleGroup.objects.create(name="test_group", inventory=inventory)
         tenant = Tenant.objects.create(name="Test Tenant", status="active")
 
         # Get content type for tenant
@@ -370,6 +377,7 @@ class TestAnsibleViewSets:
         content_type = ContentType.objects.get_for_model(Tenant)
 
         data = {
+            "inventory": str(inventory.id),
             "group": str(group.id),
             "content_type": content_type.id,
             "object_id": str(tenant.id),
@@ -377,12 +385,12 @@ class TestAnsibleViewSets:
             "ansible_port": 22,
             "ansible_user": "deploy",
             "ansible_ssh_private_key_file": "/home/deploy/.ssh/id_rsa",
-            "host_vars": {"role": "primary", "weight": 100},
+            "metadata": {"role": "primary", "weight": 100},
         }
         response = auth_client.post("/api/v1/ansible-hosts", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["ansible_host"] == "192.168.1.10"
-        assert response.data["host_vars"]["role"] == "primary"
+        assert response.data["metadata"]["role"] == "primary"
 
 
 @pytest.mark.django_db
@@ -466,9 +474,7 @@ class TestErrorHandling:
 
     def test_not_found_error(self, auth_client):
         """Test 404 error for non-existent resources"""
-        response = auth_client.get(
-            "/api/v1/fabrications/99999999-9999-9999-9999-999999999999"
-        )
+        response = auth_client.get("/api/v1/fabrications/99999999-9999-9999-9999-999999999999")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_invalid_uuid_format(self, auth_client):

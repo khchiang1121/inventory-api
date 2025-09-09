@@ -5,9 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-
 from faker import Faker
-from guardian.shortcuts import assign_perm
 
 from inventory_api.api import models  # Replace with your actual app path
 
@@ -15,7 +13,7 @@ from inventory_api.api import models  # Replace with your actual app path
 class Command(BaseCommand):
     help = "Generate fake data for the Django Ninja project"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser) -> None:
         parser.add_argument(
             "--force",
             action="store_true",
@@ -52,10 +50,10 @@ class Command(BaseCommand):
 
         # Create Groups
         group_names = ["admin", "maintainer", "viewer", "operator"]
-        groups = []
+        django_groups = []
         for name in group_names:
-            group, created = Group.objects.get_or_create(name=name)
-            groups.append(group)
+            django_group, created = Group.objects.get_or_create(name=name)
+            django_groups.append(django_group)
             if created:
                 self.stdout.write(f"✔️ Created group: {name}")
             elif not skip_existing:
@@ -89,7 +87,7 @@ class Command(BaseCommand):
                     self.stdout.write(f"✔️ Created user: {username}")
 
                 user.groups.clear()
-                user.groups.add(random.choice(groups))
+                user.groups.add(random.choice(django_groups))
             users.append(user)
 
         # Handle default user
@@ -318,19 +316,19 @@ class Command(BaseCommand):
 
         # Create Quotas
         for _ in range(10):
-            group = random.choice(host_groups)
+            baremetal_group = random.choice(host_groups)
             tenant = random.choice(tenants)
             if (
                 not models.BaremetalGroupTenantQuota.objects.filter(
-                    group=group, tenant=tenant
+                    group=baremetal_group, tenant=tenant
                 ).exists()
                 or not skip_existing
             ):
                 if models.BaremetalGroupTenantQuota.objects.filter(
-                    group=group, tenant=tenant
+                    group=baremetal_group, tenant=tenant
                 ).exists():
                     quota = models.BaremetalGroupTenantQuota.objects.get(
-                        group=group, tenant=tenant
+                        group=baremetal_group, tenant=tenant
                     )
                     quota.cpu_quota_percentage = random.uniform(0.1, 1.0)
                     quota.memory_quota = random.randint(4096, 32768)
@@ -338,7 +336,7 @@ class Command(BaseCommand):
                     quota.save()
                 else:
                     models.BaremetalGroupTenantQuota.objects.create(
-                        group=group,
+                        group=baremetal_group,
                         tenant=tenant,
                         cpu_quota_percentage=random.uniform(0.1, 1.0),
                         memory_quota=random.randint(4096, 32768),
@@ -495,35 +493,172 @@ class Command(BaseCommand):
                     )
         self.stdout.write("✔️ Created Bastion -> K8s associations")
 
-        # Create Ansible Groups
+        # Create Ansible Inventories
+        inventories = []
+        inventory_names = ["production", "staging", "development"]
+
+        for inv_name in inventory_names:
+            inventory, created = models.AnsibleInventory.objects.get_or_create(
+                name=inv_name,
+                defaults={
+                    "description": f"{inv_name.capitalize()} environment inventory",
+                    "version": "1.0",
+                    "source_type": random.choice(["static", "dynamic", "hybrid"]),
+                    "source_plugin": random.choice(
+                        ["aws_ec2", "openstack", "vmware", None]
+                    ),
+                    "source_config": {
+                        "regions": (
+                            ["us-west-2", "us-east-1"]
+                            if inv_name == "production"
+                            else ["us-west-2"]
+                        ),
+                        "filters": {"tag:Environment": inv_name},
+                    },
+                    "status": "active",
+                    "created_by": random.choice(users),
+                },
+            )
+            if created:
+                self.stdout.write(f"✔️ Created inventory: {inv_name}")
+            inventories.append(inventory)
+
+        # Create Variable Sets
+        variable_sets = []
+
+        # Common variables
+        common_vars_content = """ansible_user: ubuntu
+ansible_ssh_private_key_file: ~/.ssh/id_rsa
+ansible_python_interpreter: /usr/bin/python3
+timezone: UTC
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org"""
+
+        common_var_set, created = models.AnsibleVariableSet.objects.get_or_create(
+            name="common_variables",
+            defaults={
+                "description": "Common variables for all environments",
+                "content": common_vars_content,
+                "content_type": "yaml",
+                "tags": ["common", "system"],
+                "priority": 10,
+                "status": "active",
+                "created_by": random.choice(users),
+            },
+        )
+        if created:
+            self.stdout.write("✔️ Created common variable set")
+        variable_sets.append(common_var_set)
+
+        # Database variables
+        db_vars_content = """{
+  "database_host": "db.example.com",
+  "database_port": 5432,
+  "database_name": "myapp",
+  "database_user": "app_user",
+  "database_pool_size": 20
+}"""
+
+        db_var_set, created = models.AnsibleVariableSet.objects.get_or_create(
+            name="database_variables",
+            defaults={
+                "description": "Database connection variables",
+                "content": db_vars_content,
+                "content_type": "json",
+                "tags": ["database", "production"],
+                "priority": 20,
+                "status": "active",
+                "created_by": random.choice(users),
+            },
+        )
+        if created:
+            self.stdout.write("✔️ Created database variable set")
+        variable_sets.append(db_var_set)
+
+        # Associate variable sets with inventories
+        for inventory in inventories:
+            for var_set in variable_sets:
+                association, created = (
+                    models.AnsibleInventoryVariableSetAssociation.objects.get_or_create(
+                        inventory=inventory,
+                        variable_set=var_set,
+                        defaults={
+                            "load_priority": var_set.priority,
+                            "enabled": True,
+                            "load_tags": [],
+                            "load_config": {"merge_strategy": "override"},
+                        },
+                    )
+                )
+                if created:
+                    self.stdout.write(
+                        f"✔️ Associated {var_set.name} with {inventory.name}"
+                    )
+
+        # Create Inventory Variables
+        for inventory in inventories:
+            env_vars = {
+                "environment": inventory.name,
+                "backup_enabled": inventory.name == "production",
+                "monitoring_level": (
+                    "high" if inventory.name == "production" else "medium"
+                ),
+                "log_level": "info" if inventory.name == "production" else "debug",
+            }
+
+            for key, value in env_vars.items():
+                inv_var, created = (
+                    models.AnsibleInventoryVariable.objects.get_or_create(
+                        inventory=inventory,
+                        key=key,
+                        defaults={
+                            "value": str(value),
+                            "value_type": (
+                                "string" if isinstance(value, str) else "boolean"
+                            ),
+                        },
+                    )
+                )
+                if created:
+                    self.stdout.write(
+                        f"✔️ Created inventory variable {key} for {inventory.name}"
+                    )
+
+        # Create Ansible Groups for each inventory
         ansible_groups = []
 
-        # Create special groups
-        all_group, created = models.AnsibleGroup.objects.get_or_create(
-            name="all",
-            defaults={
-                "description": "All hosts",
-                "is_special": True,
-                "status": "active",
-            },
-        )
-        if created:
-            self.stdout.write("✔️ Created special group: all")
-        ansible_groups.append(all_group)
+        for inventory in inventories:
+            # Create special groups
+            all_group, created = models.AnsibleGroup.objects.get_or_create(
+                inventory=inventory,
+                name="all",
+                defaults={
+                    "description": "All hosts",
+                    "is_special": True,
+                    "status": "active",
+                },
+            )
+            if created:
+                self.stdout.write(f"✔️ Created special group: all for {inventory.name}")
+            ansible_groups.append(all_group)
 
-        ungrouped_group, created = models.AnsibleGroup.objects.get_or_create(
-            name="ungrouped",
-            defaults={
-                "description": "Hosts not in any group",
-                "is_special": True,
-                "status": "active",
-            },
-        )
-        if created:
-            self.stdout.write("✔️ Created special group: ungrouped")
-        ansible_groups.append(ungrouped_group)
+            ungrouped_group, created = models.AnsibleGroup.objects.get_or_create(
+                inventory=inventory,
+                name="ungrouped",
+                defaults={
+                    "description": "Hosts not in any group",
+                    "is_special": True,
+                    "status": "active",
+                },
+            )
+            if created:
+                self.stdout.write(
+                    f"✔️ Created special group: ungrouped for {inventory.name}"
+                )
+            ansible_groups.append(ungrouped_group)
 
-        # Create regular groups
+        # Create regular groups for each inventory
         group_names = [
             "webservers",
             "dbservers",
@@ -533,24 +668,25 @@ class Command(BaseCommand):
             "bastion",
             "k8s_control_plane",
             "k8s_workers",
-            "production",
-            "staging",
-            "development",
             "management",
         ]
 
-        for group_name in group_names:
-            group, created = models.AnsibleGroup.objects.get_or_create(
-                name=group_name,
-                defaults={
-                    "description": fake.text(max_nb_chars=100),
-                    "is_special": False,
-                    "status": random.choice(["active", "inactive"]),
-                },
-            )
-            if created:
-                self.stdout.write(f"✔️ Created Ansible group: {group_name}")
-            ansible_groups.append(group)
+        for inventory in inventories:
+            for group_name in group_names:
+                group, created = models.AnsibleGroup.objects.get_or_create(
+                    inventory=inventory,
+                    name=group_name,
+                    defaults={
+                        "description": fake.text(max_nb_chars=100),
+                        "is_special": False,
+                        "status": random.choice(["active", "inactive"]),
+                    },
+                )
+                if created:
+                    self.stdout.write(
+                        f"✔️ Created Ansible group: {group_name} for {inventory.name}"
+                    )
+                ansible_groups.append(group)
 
         self.stdout.write("✔️ Ansible groups ready")
 
@@ -566,16 +702,6 @@ class Command(BaseCommand):
                 "max_connections": 100,
                 "postgres_version": "13.4",
             },
-            "production": {
-                "environment": "production",
-                "backup_enabled": True,
-                "monitoring_level": "high",
-            },
-            "staging": {
-                "environment": "staging",
-                "backup_enabled": False,
-                "monitoring_level": "medium",
-            },
             "k8s_control_plane": {
                 "kubernetes_version": "1.24.0",
                 "control_plane_endpoint": "10.0.0.10:6443",
@@ -588,77 +714,80 @@ class Command(BaseCommand):
             },
         }
 
-        for group_name, vars_dict in common_vars.items():
-            try:
-                group = models.AnsibleGroup.objects.get(name=group_name)
-                for key, value in vars_dict.items():
-                    if (
-                        not models.AnsibleGroupVariable.objects.filter(
-                            group=group, key=key
-                        ).exists()
-                        or not skip_existing
-                    ):
-                        value_type = "string"
-                        if isinstance(value, bool):
-                            value_type = "boolean"
-                        elif isinstance(value, int):
-                            value_type = "integer"
-                        elif isinstance(value, (list, dict)):
-                            value_type = "json"
-                            value = str(value)
-
-                        if models.AnsibleGroupVariable.objects.filter(
-                            group=group, key=key
-                        ).exists():
-                            var = models.AnsibleGroupVariable.objects.get(
+        for inventory in inventories:
+            for group_name, vars_dict in common_vars.items():
+                try:
+                    group = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name=group_name
+                    )
+                    for key, value in vars_dict.items():
+                        if (
+                            not models.AnsibleGroupVariable.objects.filter(
                                 group=group, key=key
-                            )
-                            var.value = str(value)
-                            var.value_type = value_type
-                            var.save()
-                        else:
-                            models.AnsibleGroupVariable.objects.create(
-                                group=group,
-                                key=key,
-                                value=str(value),
-                                value_type=value_type,
-                            )
-            except models.AnsibleGroup.DoesNotExist:
-                continue
+                            ).exists()
+                            or not skip_existing
+                        ):
+                            value_type = "string"
+                            if isinstance(value, bool):
+                                value_type = "boolean"
+                            elif isinstance(value, int):
+                                value_type = "integer"
+                            elif isinstance(value, (list, dict)):
+                                value_type = "json"
+                                value = str(value)
+
+                            if models.AnsibleGroupVariable.objects.filter(
+                                group=group, key=key
+                            ).exists():
+                                var = models.AnsibleGroupVariable.objects.get(
+                                    group=group, key=key
+                                )
+                                var.value = str(value)
+                                var.value_type = value_type
+                                var.save()
+                            else:
+                                models.AnsibleGroupVariable.objects.create(
+                                    group=group,
+                                    key=key,
+                                    value=str(value),
+                                    value_type=value_type,
+                                )
+                except models.AnsibleGroup.DoesNotExist:
+                    continue
 
         self.stdout.write("✔️ Group variables ready")
 
         # Create group relationships (parent-child)
         relationships = [
-            ("production", "webservers"),
-            ("production", "dbservers"),
-            ("production", "loadbalancers"),
-            ("staging", "webservers"),
-            ("staging", "dbservers"),
-            ("management", "bastion"),
-            ("management", "monitoring"),
+            ("webservers", "loadbalancers"),
+            ("dbservers", "monitoring"),
             ("k8s_control_plane", "management"),
             ("k8s_workers", "appservers"),
         ]
 
-        for parent_name, child_name in relationships:
-            try:
-                parent = models.AnsibleGroup.objects.get(name=parent_name)
-                child = models.AnsibleGroup.objects.get(name=child_name)
-                if (
-                    not models.AnsibleGroupRelationship.objects.filter(
-                        parent_group=parent, child_group=child
-                    ).exists()
-                    or not skip_existing
-                ):
-                    if not models.AnsibleGroupRelationship.objects.filter(
-                        parent_group=parent, child_group=child
-                    ).exists():
-                        models.AnsibleGroupRelationship.objects.create(
+        for inventory in inventories:
+            for parent_name, child_name in relationships:
+                try:
+                    parent = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name=parent_name
+                    )
+                    child = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name=child_name
+                    )
+                    if (
+                        not models.AnsibleGroupRelationship.objects.filter(
                             parent_group=parent, child_group=child
-                        )
-            except models.AnsibleGroup.DoesNotExist:
-                continue
+                        ).exists()
+                        or not skip_existing
+                    ):
+                        if not models.AnsibleGroupRelationship.objects.filter(
+                            parent_group=parent, child_group=child
+                        ).exists():
+                            models.AnsibleGroupRelationship.objects.create(
+                                parent_group=parent, child_group=child
+                            )
+                except models.AnsibleGroup.DoesNotExist:
+                    continue
 
         self.stdout.write("✔️ Group relationships ready")
 
@@ -672,8 +801,6 @@ class Command(BaseCommand):
             if random.random() < 0.1:  # 10% chance to be ungrouped
                 continue
 
-            group = random.choice([g for g in ansible_groups if not g.is_special])
-
             # Get primary network interface for ansible_host
             primary_interface = models.NetworkInterface.objects.filter(
                 content_type=ContentType.objects.get_for_model(baremetal),
@@ -682,56 +809,67 @@ class Command(BaseCommand):
             ).first()
             ansible_host = primary_interface.ipv4_address if primary_interface else None
 
-            if (
-                not models.AnsibleHost.objects.filter(
-                    content_type=baremetal_content_type, object_id=baremetal.id
-                ).exists()
-                or not skip_existing
-            ):
-                if models.AnsibleHost.objects.filter(
-                    content_type=baremetal_content_type, object_id=baremetal.id
-                ).exists():
-                    host = models.AnsibleHost.objects.get(
-                        content_type=baremetal_content_type, object_id=baremetal.id
-                    )
-                    host.group = group
-                    host.ansible_host = ansible_host
-                    host.host_vars = {
-                        "server_type": "baremetal",
-                        "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
-                        "serial_number": baremetal.serial_number,
-                    }
-                    host.save()
-                else:
-                    models.AnsibleHost.objects.create(
-                        group=group,
+            # Assign to each inventory
+            for inventory in inventories:
+                group = random.choice(
+                    [
+                        g
+                        for g in ansible_groups
+                        if not g.is_special and g.inventory == inventory
+                    ]
+                )
+
+                if (
+                    not models.AnsibleHost.objects.filter(
+                        inventory=inventory,
                         content_type=baremetal_content_type,
                         object_id=baremetal.id,
-                        ansible_host=ansible_host,
-                        ansible_port=22,
-                        ansible_user="root",
-                        host_vars={
+                    ).exists()
+                    or not skip_existing
+                ):
+                    if models.AnsibleHost.objects.filter(
+                        inventory=inventory,
+                        content_type=baremetal_content_type,
+                        object_id=baremetal.id,
+                    ).exists():
+                        host = models.AnsibleHost.objects.get(
+                            inventory=inventory,
+                            content_type=baremetal_content_type,
+                            object_id=baremetal.id,
+                        )
+                        host.group = group
+                        host.ansible_host = ansible_host
+                        host.aliases = [f"{baremetal.name}-{inventory.name}"]
+                        host.status = "active"
+                        host.metadata = {
                             "server_type": "baremetal",
                             "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
                             "serial_number": baremetal.serial_number,
-                        },
-                    )
+                        }
+                        host.save()
+                    else:
+                        models.AnsibleHost.objects.create(
+                            inventory=inventory,
+                            group=group,
+                            content_type=baremetal_content_type,
+                            object_id=baremetal.id,
+                            ansible_host=ansible_host,
+                            ansible_port=22,
+                            ansible_user="root",
+                            aliases=[f"{baremetal.name}-{inventory.name}"],
+                            status="active",
+                            metadata={
+                                "server_type": "baremetal",
+                                "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
+                                "serial_number": baremetal.serial_number,
+                            },
+                        )
 
         # Assign VMs to groups
         for vm in vms:
             # Skip some VMs to simulate ungrouped hosts
             if random.random() < 0.1:  # 10% chance to be ungrouped
                 continue
-
-            # Assign VMs to appropriate groups based on their type
-            if vm.type == "control-plane":
-                group = models.AnsibleGroup.objects.get(name="k8s_control_plane")
-            elif vm.type == "worker":
-                group = models.AnsibleGroup.objects.get(name="k8s_workers")
-            elif vm.type == "management":
-                group = models.AnsibleGroup.objects.get(name="management")
-            else:
-                group = random.choice([g for g in ansible_groups if not g.is_special])
 
             # Get primary network interface for ansible_host
             primary_interface = None
@@ -743,52 +881,169 @@ class Command(BaseCommand):
                 ).first()
             ansible_host = primary_interface.ipv4_address if primary_interface else None
 
-            if (
-                not models.AnsibleHost.objects.filter(
-                    content_type=vm_content_type, object_id=vm.id
-                ).exists()
-                or not skip_existing
-            ):
-                if models.AnsibleHost.objects.filter(
-                    content_type=vm_content_type, object_id=vm.id
-                ).exists():
-                    host = models.AnsibleHost.objects.get(
-                        content_type=vm_content_type, object_id=vm.id
+            # Assign to each inventory
+            for inventory in inventories:
+                # Assign VMs to appropriate groups based on their type
+                if vm.type == "control-plane":
+                    group = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name="k8s_control_plane"
                     )
-                    host.group = group
-                    host.ansible_host = ansible_host
-                    host.host_vars = {
-                        "server_type": "virtual_machine",
-                        "vm_type": vm.type,
-                        "tenant": vm.tenant.name,
-                        "k8s_cluster": vm.k8s_cluster.name if vm.k8s_cluster else None,
-                    }
-                    host.save()
+                elif vm.type == "worker":
+                    group = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name="k8s_workers"
+                    )
+                elif vm.type == "management":
+                    group = models.AnsibleGroup.objects.get(
+                        inventory=inventory, name="management"
+                    )
                 else:
-                    models.AnsibleHost.objects.create(
-                        group=group,
+                    group = random.choice(
+                        [
+                            g
+                            for g in ansible_groups
+                            if not g.is_special and g.inventory == inventory
+                        ]
+                    )
+
+                if (
+                    not models.AnsibleHost.objects.filter(
+                        inventory=inventory,
                         content_type=vm_content_type,
                         object_id=vm.id,
-                        ansible_host=ansible_host,
-                        ansible_port=22,
-                        ansible_user="ubuntu",
-                        host_vars={
+                    ).exists()
+                    or not skip_existing
+                ):
+                    if models.AnsibleHost.objects.filter(
+                        inventory=inventory,
+                        content_type=vm_content_type,
+                        object_id=vm.id,
+                    ).exists():
+                        host = models.AnsibleHost.objects.get(
+                            inventory=inventory,
+                            content_type=vm_content_type,
+                            object_id=vm.id,
+                        )
+                        host.group = group
+                        host.ansible_host = ansible_host
+                        host.aliases = [f"{vm.name}-{inventory.name}"]
+                        host.status = "active"
+                        host.metadata = {
                             "server_type": "virtual_machine",
                             "vm_type": vm.type,
                             "tenant": vm.tenant.name,
                             "k8s_cluster": (
                                 vm.k8s_cluster.name if vm.k8s_cluster else None
                             ),
-                        },
-                    )
+                        }
+                        host.save()
+                    else:
+                        models.AnsibleHost.objects.create(
+                            inventory=inventory,
+                            group=group,
+                            content_type=vm_content_type,
+                            object_id=vm.id,
+                            ansible_host=ansible_host,
+                            ansible_port=22,
+                            ansible_user="ubuntu",
+                            aliases=[f"{vm.name}-{inventory.name}"],
+                            status="active",
+                            metadata={
+                                "server_type": "virtual_machine",
+                                "vm_type": vm.type,
+                                "tenant": vm.tenant.name,
+                                "k8s_cluster": (
+                                    vm.k8s_cluster.name if vm.k8s_cluster else None
+                                ),
+                            },
+                        )
 
         self.stdout.write("✔️ Assigned hosts to Ansible groups")
+
+        # Create Host Variables
+        for inventory in inventories:
+            hosts = models.AnsibleHost.objects.filter(inventory=inventory)
+            for host in hosts[:5]:  # Limit to first 5 hosts per inventory
+                host_vars = {
+                    "app_version": f"1.{random.randint(0, 9)}.{random.randint(0, 9)}",
+                    "deployment_id": fake.uuid4(),
+                    "last_backup": fake.date_time_this_month().isoformat(),
+                }
+
+                for key, value in host_vars.items():
+                    host_var, created = (
+                        models.AnsibleHostVariable.objects.get_or_create(
+                            host=host,
+                            key=key,
+                            defaults={
+                                "value": str(value),
+                                "value_type": "string",
+                            },
+                        )
+                    )
+                    if created:
+                        self.stdout.write(f"✔️ Created host variable {key} for {host}")
+
+        # Create Inventory Plugins
+        for inventory in inventories:
+            if inventory.source_type in ["dynamic", "hybrid"]:
+                plugin_config = {
+                    "regions": inventory.source_config.get("regions", ["us-west-2"]),
+                    "filters": inventory.source_config.get("filters", {}),
+                    "keyed_groups": [
+                        {"key": "tags.Environment", "prefix": "env"},
+                        {"key": "instance_type", "prefix": "type"},
+                    ],
+                }
+
+                plugin, created = models.AnsibleInventoryPlugin.objects.get_or_create(
+                    inventory=inventory,
+                    name=inventory.source_plugin or "aws_ec2",
+                    defaults={
+                        "config": plugin_config,
+                        "enabled": True,
+                        "priority": 1,
+                        "cache_timeout": 300,
+                    },
+                )
+                if created:
+                    self.stdout.write(
+                        f"✔️ Created plugin {plugin.name} for {inventory.name}"
+                    )
+
+        # Create Inventory Templates
+        template_content = """all:
+  children:
+    {% for group in groups %}
+    {{ group.name }}:
+      hosts:
+        {% for host in group.hosts %}
+        {{ host.name }}:
+          ansible_host: {{ host.ansible_host }}
+          ansible_user: {{ host.ansible_user }}
+        {% endfor %}
+      vars:
+        {% for key, value in group.variables.items() %}
+        {{ key }}: {{ value }}
+        {% endfor %}
+    {% endfor %}"""
+
+        template, created = models.AnsibleInventoryTemplate.objects.get_or_create(
+            name="yaml_inventory_template",
+            defaults={
+                "description": "YAML format inventory template",
+                "template_type": "yaml",
+                "template_content": template_content,
+                "variables": {"groups": [], "hosts": []},
+            },
+        )
+        if created:
+            self.stdout.write("✔️ Created inventory template")
 
         self.stdout.write(self.style.SUCCESS("🎉 Fake data generation complete!"))
 
     def _create_or_get_models(
         self, model_class, data_generator, count, skip_existing, model_name
-    ):
+    ) -> list:
         """Helper method to create or get models with proper handling of existing data"""
         models_list = []
         for _ in range(count):
@@ -836,13 +1091,23 @@ class Command(BaseCommand):
 
         return models_list
 
-    def _clear_all_data(self):
+    def _clear_all_data(self) -> None:
         """Clear all data from all models"""
         # Clear in reverse dependency order to avoid foreign key constraints
+        # Clear new Ansible models first
+        models.AnsibleHostVariable.objects.all().delete()
+        models.AnsibleInventoryPlugin.objects.all().delete()
+        models.AnsibleInventoryTemplate.objects.all().delete()
+        models.AnsibleInventoryVariableSetAssociation.objects.all().delete()
+        models.AnsibleVariableSet.objects.all().delete()
+        models.AnsibleInventoryVariable.objects.all().delete()
         models.AnsibleHost.objects.all().delete()
         models.AnsibleGroupVariable.objects.all().delete()
         models.AnsibleGroupRelationship.objects.all().delete()
         models.AnsibleGroup.objects.all().delete()
+        models.AnsibleInventory.objects.all().delete()
+
+        # Clear existing models
         models.BastionClusterAssociation.objects.all().delete()
         models.K8sClusterToServiceMesh.objects.all().delete()
         models.ServiceMesh.objects.all().delete()
