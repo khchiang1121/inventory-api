@@ -120,28 +120,28 @@ class Command(BaseCommand):
         # Create Fabrications, Phases, Data Centers, Rooms
         fabrications = self._create_or_get_models(
             models.Fabrication,
-            lambda: {"name": f"Fab-{fake.word()}", "old_system_id": fake.uuid4()},
+            lambda: {"name": f"Fab-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
             skip_existing,
             "Fabrication",
         )
         phases = self._create_or_get_models(
             models.Phase,
-            lambda: {"name": f"Phase-{fake.word()}", "old_system_id": fake.uuid4()},
+            lambda: {"name": f"Phase-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
             skip_existing,
             "Phase",
         )
         data_centers = self._create_or_get_models(
             models.DataCenter,
-            lambda: {"name": f"DC-{fake.word()}", "old_system_id": fake.uuid4()},
+            lambda: {"name": f"DC-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
             skip_existing,
             "DataCenter",
         )
         rooms = self._create_or_get_models(
             models.Room,
-            lambda: {"name": f"Room-{fake.word()}", "old_system_id": fake.uuid4()},
+            lambda: {"name": f"Room-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
             skip_existing,
             "Room",
@@ -154,7 +154,7 @@ class Command(BaseCommand):
                 "name": f"Rack-{fake.word()}",
                 "bgp_number": str(fake.random_int(min=1000, max=9999)),
                 "as_number": fake.random_int(min=10000, max=99999),
-                "old_system_id": fake.uuid4(),
+                "external_system_id": fake.uuid4(),
             },
             5,
             skip_existing,
@@ -248,7 +248,7 @@ class Command(BaseCommand):
                 "group": random.choice(host_groups),
                 "pr": random.choice(prs),
                 "po": random.choice(pos),
-                "old_system_id": fake.uuid4(),
+                "external_system_id": fake.uuid4(),
             },
             10,
             skip_existing,
@@ -388,9 +388,7 @@ class Command(BaseCommand):
                 "baremetal": random.choice(baremetals),
                 "specification": random.choice(vm_specs),
                 "k8s_cluster": random.choice(clusters + [None]),
-                "type": random.choice(
-                    ["control-plane", "worker", "management", "other"]
-                ),
+                "type": random.choice(["control-plane", "worker", "management", "other"]),
                 "status": random.choice(["active", "inactive"]),
             },
             10,
@@ -415,9 +413,7 @@ class Command(BaseCommand):
                         plugin = models.K8sClusterPlugin.objects.get(
                             cluster=cluster, name=plugin_name
                         )
-                        plugin.version = (
-                            f"v{random.randint(1, 3)}.{random.randint(0, 9)}"
-                        )
+                        plugin.version = f"v{random.randint(1, 3)}.{random.randint(0, 9)}"
                         plugin.status = random.choice(["active", "inactive", "error"])
                         plugin.additional_info = {"notes": fake.sentence()}
                         plugin.save()
@@ -504,9 +500,7 @@ class Command(BaseCommand):
                     "description": f"{inv_name.capitalize()} environment inventory",
                     "version": "1.0",
                     "source_type": random.choice(["static", "dynamic", "hybrid"]),
-                    "source_plugin": random.choice(
-                        ["aws_ec2", "openstack", "vmware", None]
-                    ),
+                    "source_plugin": random.choice(["aws_ec2", "openstack", "vmware", None]),
                     "source_config": {
                         "regions": (
                             ["us-west-2", "us-east-1"]
@@ -592,38 +586,28 @@ ntp_servers:
                     )
                 )
                 if created:
-                    self.stdout.write(
-                        f"✔️ Associated {var_set.name} with {inventory.name}"
-                    )
+                    self.stdout.write(f"✔️ Associated {var_set.name} with {inventory.name}")
 
         # Create Inventory Variables
         for inventory in inventories:
             env_vars = {
                 "environment": inventory.name,
                 "backup_enabled": inventory.name == "production",
-                "monitoring_level": (
-                    "high" if inventory.name == "production" else "medium"
-                ),
+                "monitoring_level": ("high" if inventory.name == "production" else "medium"),
                 "log_level": "info" if inventory.name == "production" else "debug",
             }
 
             for key, value in env_vars.items():
-                inv_var, created = (
-                    models.AnsibleInventoryVariable.objects.get_or_create(
-                        inventory=inventory,
-                        key=key,
-                        defaults={
-                            "value": str(value),
-                            "value_type": (
-                                "string" if isinstance(value, str) else "boolean"
-                            ),
-                        },
-                    )
+                inv_var, created = models.AnsibleInventoryVariable.objects.get_or_create(
+                    inventory=inventory,
+                    key=key,
+                    defaults={
+                        "value": str(value),
+                        "value_type": ("string" if isinstance(value, str) else "boolean"),
+                    },
                 )
                 if created:
-                    self.stdout.write(
-                        f"✔️ Created inventory variable {key} for {inventory.name}"
-                    )
+                    self.stdout.write(f"✔️ Created inventory variable {key} for {inventory.name}")
 
         # Create Ansible Groups for each inventory
         ansible_groups = []
@@ -653,9 +637,7 @@ ntp_servers:
                 },
             )
             if created:
-                self.stdout.write(
-                    f"✔️ Created special group: ungrouped for {inventory.name}"
-                )
+                self.stdout.write(f"✔️ Created special group: ungrouped for {inventory.name}")
             ansible_groups.append(ungrouped_group)
 
         # Create regular groups for each inventory
@@ -717,9 +699,7 @@ ntp_servers:
         for inventory in inventories:
             for group_name, vars_dict in common_vars.items():
                 try:
-                    group = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name=group_name
-                    )
+                    group = models.AnsibleGroup.objects.get(inventory=inventory, name=group_name)
                     for key, value in vars_dict.items():
                         if (
                             not models.AnsibleGroupVariable.objects.filter(
@@ -739,9 +719,7 @@ ntp_servers:
                             if models.AnsibleGroupVariable.objects.filter(
                                 group=group, key=key
                             ).exists():
-                                var = models.AnsibleGroupVariable.objects.get(
-                                    group=group, key=key
-                                )
+                                var = models.AnsibleGroupVariable.objects.get(group=group, key=key)
                                 var.value = str(value)
                                 var.value_type = value_type
                                 var.save()
@@ -768,12 +746,8 @@ ntp_servers:
         for inventory in inventories:
             for parent_name, child_name in relationships:
                 try:
-                    parent = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name=parent_name
-                    )
-                    child = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name=child_name
-                    )
+                    parent = models.AnsibleGroup.objects.get(inventory=inventory, name=parent_name)
+                    child = models.AnsibleGroup.objects.get(inventory=inventory, name=child_name)
                     if (
                         not models.AnsibleGroupRelationship.objects.filter(
                             parent_group=parent, child_group=child
@@ -812,11 +786,7 @@ ntp_servers:
             # Assign to each inventory
             for inventory in inventories:
                 group = random.choice(
-                    [
-                        g
-                        for g in ansible_groups
-                        if not g.is_special and g.inventory == inventory
-                    ]
+                    [g for g in ansible_groups if not g.is_special and g.inventory == inventory]
                 )
 
                 if (
@@ -893,9 +863,7 @@ ntp_servers:
                         inventory=inventory, name="k8s_workers"
                     )
                 elif vm.type == "management":
-                    group = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name="management"
-                    )
+                    group = models.AnsibleGroup.objects.get(inventory=inventory, name="management")
                 else:
                     group = random.choice(
                         [
@@ -931,9 +899,7 @@ ntp_servers:
                             "server_type": "virtual_machine",
                             "vm_type": vm.type,
                             "tenant": vm.tenant.name,
-                            "k8s_cluster": (
-                                vm.k8s_cluster.name if vm.k8s_cluster else None
-                            ),
+                            "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                         }
                         host.save()
                     else:
@@ -951,9 +917,7 @@ ntp_servers:
                                 "server_type": "virtual_machine",
                                 "vm_type": vm.type,
                                 "tenant": vm.tenant.name,
-                                "k8s_cluster": (
-                                    vm.k8s_cluster.name if vm.k8s_cluster else None
-                                ),
+                                "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                             },
                         )
 
@@ -970,15 +934,13 @@ ntp_servers:
                 }
 
                 for key, value in host_vars.items():
-                    host_var, created = (
-                        models.AnsibleHostVariable.objects.get_or_create(
-                            host=host,
-                            key=key,
-                            defaults={
-                                "value": str(value),
-                                "value_type": "string",
-                            },
-                        )
+                    host_var, created = models.AnsibleHostVariable.objects.get_or_create(
+                        host=host,
+                        key=key,
+                        defaults={
+                            "value": str(value),
+                            "value_type": "string",
+                        },
                     )
                     if created:
                         self.stdout.write(f"✔️ Created host variable {key} for {host}")
@@ -1006,9 +968,7 @@ ntp_servers:
                     },
                 )
                 if created:
-                    self.stdout.write(
-                        f"✔️ Created plugin {plugin.name} for {inventory.name}"
-                    )
+                    self.stdout.write(f"✔️ Created plugin {plugin.name} for {inventory.name}")
 
         # Create Inventory Templates
         template_content = """all:
@@ -1058,13 +1018,9 @@ ntp_servers:
                     serial_number=data["serial_number"]
                 ).first()
             elif "pr_number" in data:
-                existing_model = model_class.objects.filter(
-                    pr_number=data["pr_number"]
-                ).first()
+                existing_model = model_class.objects.filter(pr_number=data["pr_number"]).first()
             elif "po_number" in data:
-                existing_model = model_class.objects.filter(
-                    po_number=data["po_number"]
-                ).first()
+                existing_model = model_class.objects.filter(po_number=data["po_number"]).first()
 
             if existing_model and skip_existing:
                 models_list.append(existing_model)
@@ -1135,6 +1091,4 @@ ntp_servers:
         User.objects.filter(is_superuser=False).delete()
 
         # Clear groups (except built-in Django groups)
-        Group.objects.filter(
-            name__in=["admin", "maintainer", "viewer", "operator"]
-        ).delete()
+        Group.objects.filter(name__in=["admin", "maintainer", "viewer", "operator"]).delete()

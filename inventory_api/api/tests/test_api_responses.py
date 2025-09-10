@@ -88,19 +88,19 @@ class TestAPIResponseStructure:
 
         # Check individual result structure
         result = response.data["results"][0]
-        expected_fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        expected_fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
         for field in expected_fields:
             assert field in result, f"Missing field: {field}"
 
     def test_detail_response_structure(self, auth_client):
         """Test that detail endpoints return proper object structure"""
-        fab = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
+        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
 
         # Check all expected fields are present
-        expected_fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        expected_fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
         for field in expected_fields:
             assert field in response.data, f"Missing field: {field}"
 
@@ -112,18 +112,18 @@ class TestAPIResponseStructure:
 
     def test_create_response_structure(self, auth_client):
         """Test that create endpoints return proper response structure"""
-        data = {"name": "FAB003", "old_system_id": "legacy3"}
+        data = {"name": "FAB003", "external_system_id": "legacy3"}
         response = auth_client.post("/api/v1/fabrications", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
 
         # Check all fields are returned
-        expected_fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        expected_fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
         for field in expected_fields:
             assert field in response.data, f"Missing field: {field}"
 
         # Check created object matches input
         assert response.data["name"] == data["name"]
-        assert response.data["old_system_id"] == data["old_system_id"]
+        assert response.data["external_system_id"] == data["external_system_id"]
 
 
 @pytest.mark.django_db
@@ -132,14 +132,14 @@ class TestAPIResponseContent:
 
     def test_fabrication_response_content(self, auth_client):
         """Test fabrication response contains correct content"""
-        fab = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
+        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
 
         # Validate content
         assert response.data["name"] == "FAB001"
-        assert response.data["old_system_id"] == "legacy1"
+        assert response.data["external_system_id"] == "legacy1"
         assert response.data["id"] == str(fab.id)
 
     def test_rack_response_with_numeric_fields(self, auth_client):
@@ -356,13 +356,13 @@ class TestJSONResponseValidation:
         # Create object with unicode characters
         fab = Fabrication.objects.create(
             name="FAB-测试",  # Chinese characters
-            old_system_id="legacy-ñoño",  # Spanish characters
+            external_system_id="legacy-ñoño",  # Spanish characters
         )
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB-测试"
-        assert response.data["old_system_id"] == "legacy-ñoño"
+        assert response.data["external_system_id"] == "legacy-ñoño"
 
 
 @pytest.mark.django_db
@@ -371,9 +371,7 @@ class TestErrorResponseStructure:
 
     def test_404_error_response_structure(self, auth_client):
         """Test 404 error response structure"""
-        response = auth_client.get(
-            "/api/v1/fabrications/99999999-9999-9999-9999-999999999999"
-        )
+        response = auth_client.get("/api/v1/fabrications/99999999-9999-9999-9999-999999999999")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
         # Check error response structure

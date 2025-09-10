@@ -102,7 +102,7 @@ class TestInfrastructureSerializers:
 
     def test_fabrication_serializer_valid_data(self):
         """Test FabricationSerializer with valid data"""
-        data = {"name": "FAB001", "old_system_id": "legacy_001"}
+        data = {"name": "FAB001", "external_system_id": "legacy_001"}
         serializer = FabricationSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         fabrication = serializer.save()
@@ -369,6 +369,6 @@ class TestSerializerEdgeCases:
 
     def test_serializer_with_special_characters(self):
         """Test serializers handle special characters"""
-        data = {"name": "Test-Fab_001@#$", "old_system_id": "legacy!@#$%"}
+        data = {"name": "Test-Fab_001@#$", "external_system_id": "legacy!@#$%"}
         serializer = FabricationSerializer(data=data)
         assert serializer.is_valid()  # Should handle special characters

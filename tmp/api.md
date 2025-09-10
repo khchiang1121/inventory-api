@@ -455,7 +455,7 @@
     "dc": "DC1",
     "room": "Room 101",
     "rack": "Rack 5",
-    "old_system_id": "OLD-1234"
+    "external_system_id": "OLD-1234"
   }
   ```
 - **Response：**
@@ -475,7 +475,7 @@
     "dc": "DC1",
     "room": "Room 101",
     "rack": "Rack 5",
-    "old_system_id": "OLD-1234",
+    "external_system_id": "OLD-1234",
     "created_at": "2025-03-09T10:20:00Z",
     "updated_at": "2025-03-09T10:20:00Z"
   }
@@ -504,7 +504,7 @@
         "dc": "DC1",
         "room": "Room 101",
         "rack": "Rack 5",
-        "old_system_id": "OLD-1234",
+        "external_system_id": "OLD-1234",
         "created_at": "2025-03-09T10:20:00Z",
         "updated_at": "2025-03-09T10:20:00Z"
       }
@@ -533,7 +533,7 @@
     "dc": "DC1",
     "room": "Room 101",
     "rack": "Rack 5",
-    "old_system_id": "OLD-1234",
+    "external_system_id": "OLD-1234",
     "created_at": "2025-03-09T10:20:00Z",
     "updated_at": "2025-03-09T10:20:00Z"
   }
@@ -559,7 +559,7 @@
     "dc": "DC1",
     "room": "Room 101",
     "rack": "Rack 5",
-    "old_system_id": "OLD-1234"
+    "external_system_id": "OLD-1234"
   }
   ```
 - **Response：**
@@ -579,7 +579,7 @@
     "dc": "DC1",
     "room": "Room 101",
     "rack": "Rack 5",
-    "old_system_id": "OLD-1234",
+    "external_system_id": "OLD-1234",
     "created_at": "2025-03-09T10:20:00Z",
     "updated_at": "2025-03-09T11:20:00Z"
   }

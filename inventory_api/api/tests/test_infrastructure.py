@@ -8,11 +8,11 @@ import pytest
 @pytest.mark.django_db
 def test_fabrication_create(auth_client):
     """Test creating a fabrication"""
-    payload = {"name": "fab-create", "old_system_id": "legacy-create"}
+    payload = {"name": "fab-create", "external_system_id": "legacy-create"}
     r = auth_client.post("/api/v1/fabrications", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "fab-create"
-    assert r.data["old_system_id"] == "legacy-create"
+    assert r.data["external_system_id"] == "legacy-create"
 
 
 @pytest.mark.django_db
@@ -26,63 +26,63 @@ def test_fabrication_list(auth_client):
 @pytest.mark.django_db
 def test_fabrication_retrieve(auth_client):
     """Test retrieving a specific fabrication"""
-    payload = {"name": "fab-retrieve", "old_system_id": "legacy-retrieve"}
+    payload = {"name": "fab-retrieve", "external_system_id": "legacy-retrieve"}
     create_r = auth_client.post("/api/v1/fabrications", payload, format="json")
     fab_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/fabrications/{fab_id}")
     assert r.status_code == 200
     assert r.data["name"] == "fab-retrieve"
-    assert r.data["old_system_id"] == "legacy-retrieve"
+    assert r.data["external_system_id"] == "legacy-retrieve"
 
 
 @pytest.mark.django_db
 def test_fabrication_update_put(auth_client):
     """Test updating a fabrication with PUT"""
-    payload = {"name": "fab-put", "old_system_id": "legacy-put"}
+    payload = {"name": "fab-put", "external_system_id": "legacy-put"}
     create_r = auth_client.post("/api/v1/fabrications", payload, format="json")
     fab_id = create_r.data["id"]
 
-    put_payload = {"name": "fab-put-updated", "old_system_id": "legacy-put-updated"}
+    put_payload = {"name": "fab-put-updated", "external_system_id": "legacy-put-updated"}
     r = auth_client.put(f"/api/v1/fabrications/{fab_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "fab-put-updated"
-    assert r.data["old_system_id"] == "legacy-put-updated"
+    assert r.data["external_system_id"] == "legacy-put-updated"
 
     # Verify in database
     r = auth_client.get(f"/api/v1/fabrications/{fab_id}")
     assert r.status_code == 200
     assert r.data["name"] == "fab-put-updated"
-    assert r.data["old_system_id"] == "legacy-put-updated"
+    assert r.data["external_system_id"] == "legacy-put-updated"
 
 
 @pytest.mark.django_db
 def test_fabrication_update_patch(auth_client):
     """Test updating a fabrication with PATCH"""
-    payload = {"name": "fab-patch", "old_system_id": "legacy-patch"}
+    payload = {"name": "fab-patch", "external_system_id": "legacy-patch"}
     create_r = auth_client.post("/api/v1/fabrications", payload, format="json")
     fab_id = create_r.data["id"]
 
     r = auth_client.patch(
         f"/api/v1/fabrications/{fab_id}",
-        {"old_system_id": "legacy-patch-updated"},
+        {"external_system_id": "legacy-patch-updated"},
         format="json",
     )
     assert r.status_code == 200
-    assert r.data["old_system_id"] == "legacy-patch-updated"
+    assert r.data["external_system_id"] == "legacy-patch-updated"
     assert r.data["name"] == "fab-patch"  # Should remain unchanged
 
     # Verify in database
     r = auth_client.get(f"/api/v1/fabrications/{fab_id}")
     assert r.status_code == 200
-    assert r.data["old_system_id"] == "legacy-patch-updated"
+    assert r.data["external_system_id"] == "legacy-patch-updated"
     assert r.data["name"] == "fab-patch"
 
 
 @pytest.mark.django_db
 def test_fabrication_delete(auth_client):
     """Test deleting a fabrication"""
-    payload = {"name": "fab-delete", "old_system_id": "legacy-delete"}
+    payload = {"name": "fab-delete", "external_system_id": "legacy-delete"}
     create_r = auth_client.post("/api/v1/fabrications", payload, format="json")
     fab_id = create_r.data["id"]
 
@@ -451,9 +451,7 @@ def test_rack_update_patch(auth_client):
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
 
-    r = auth_client.patch(
-        f"/api/v1/racks/{rack_id}", {"status": "maintenance"}, format="json"
-    )
+    r = auth_client.patch(f"/api/v1/racks/{rack_id}", {"status": "maintenance"}, format="json")
     assert r.status_code == 200
     assert r.data["status"] == "maintenance"
     assert r.data["name"] == "rack-patch"  # Should remain unchanged

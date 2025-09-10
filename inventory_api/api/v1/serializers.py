@@ -27,25 +27,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class FabricationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Fabrication
-        fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
 class PhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phase
-        fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
 class DataCenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DataCenter
-        fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Room
-        fields = ["id", "name", "old_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
 # ------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class RackSerializer(serializers.ModelSerializer):
             "name",
             "bgp_number",
             "as_number",
-            "old_system_id",
+            "external_system_id",
             "height_units",
             "used_units",
             "available_units",
@@ -159,7 +159,7 @@ class RackCreateSerializer(serializers.ModelSerializer):
             "name",
             "bgp_number",
             "as_number",
-            "old_system_id",
+            "external_system_id",
             "height_units",
             "power_capacity",
             "status",
@@ -174,7 +174,7 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "name",
             "bgp_number",
             "as_number",
-            "old_system_id",
+            "external_system_id",
             "height_units",
             "power_capacity",
             "status",
@@ -352,7 +352,7 @@ class BaremetalSerializer(serializers.ModelSerializer):
             "group",
             "pr",
             "po",
-            "old_system_id",
+            "external_system_id",
             "created_at",
             "updated_at",
         ]
@@ -379,7 +379,7 @@ class BaremetalCreateSerializer(serializers.ModelSerializer):
             "group",
             "pr",
             "po",
-            "old_system_id",
+            "external_system_id",
         ]
 
 
@@ -404,7 +404,7 @@ class BaremetalUpdateSerializer(serializers.ModelSerializer):
             "group",
             "pr",
             "po",
-            "old_system_id",
+            "external_system_id",
         ]
 
 

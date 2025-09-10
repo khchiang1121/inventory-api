@@ -39,44 +39,38 @@ class CustomUser(GuardianUserMixin, AbstractUser):
 # Physical Infrastructure Models
 # --------------------------------------------------------------------------
 class Fabrication(AbstractBase):
-    name = models.CharField(
-        max_length=32, unique=True, help_text="Fabrication identifier"
-    )
-    old_system_id = models.CharField(
+    name = models.CharField(max_length=32, unique=True, help_text="Fabrication identifier")
+    external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
 
 
 class Phase(AbstractBase):
     name = models.CharField(max_length=32, unique=True, help_text="Phase identifier")
-    old_system_id = models.CharField(
+    external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
 
 
 class DataCenter(AbstractBase):
-    name = models.CharField(
-        max_length=32, unique=True, help_text="Data center identifier"
-    )
-    old_system_id = models.CharField(
+    name = models.CharField(max_length=32, unique=True, help_text="Data center identifier")
+    external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
 
 
 class Room(AbstractBase):
     name = models.CharField(max_length=32, unique=True, help_text="Room identifier")
-    old_system_id = models.CharField(
+    external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
 
 
 class Rack(AbstractBase):
     name = models.CharField(max_length=32, unique=True, help_text="Rack identifier")
-    bgp_number = models.CharField(
-        max_length=20, unique=True, help_text="Associated BGP number"
-    )
+    bgp_number = models.CharField(max_length=20, unique=True, help_text="Associated BGP number")
     as_number = models.PositiveIntegerField(help_text="Autonomous System Number")
-    old_system_id = models.CharField(
+    external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
     height_units = models.PositiveIntegerField(
@@ -143,18 +137,14 @@ class NetworkInterface(AbstractBase):
     ipv6_netmask = models.GenericIPAddressField(
         protocol="IPv6", null=True, blank=True, help_text="IPv6 netmask"
     )
-    gateway = models.GenericIPAddressField(
-        null=True, blank=True, help_text="Default gateway"
-    )
+    gateway = models.GenericIPAddressField(null=True, blank=True, help_text="Default gateway")
     dns_servers = models.CharField(
         max_length=255, blank=True, help_text="Comma-separated list of DNS servers"
     )
 
     vlan = models.ForeignKey(VLAN, null=True, blank=True, on_delete=models.SET_NULL)
     vrf = models.ForeignKey(VRF, null=True, blank=True, on_delete=models.SET_NULL)
-    bgp_config = models.OneToOneField(
-        BGPConfig, null=True, blank=True, on_delete=models.SET_NULL
-    )
+    bgp_config = models.OneToOneField(BGPConfig, null=True, blank=True, on_delete=models.SET_NULL)
 
 
 # --------------------------------------------------------------------------
@@ -163,21 +153,15 @@ class NetworkInterface(AbstractBase):
 class PurchaseRequisition(AbstractBase):
     pr_number = models.CharField(max_length=64, unique=True, help_text="PR number")
     requested_by = models.CharField(max_length=100, help_text="Requester name or ID")
-    department = models.CharField(
-        max_length=100, blank=True, help_text="Requesting department"
-    )
-    reason = models.TextField(
-        blank=True, help_text="Purpose or justification for the requisition"
-    )
+    department = models.CharField(max_length=100, blank=True, help_text="Requesting department")
+    reason = models.TextField(blank=True, help_text="Purpose or justification for the requisition")
     submit_date = models.DateField(auto_now_add=True)
 
 
 class PurchaseOrder(AbstractBase):
     po_number = models.CharField(max_length=64, unique=True, help_text="PO number")
     vendor_name = models.CharField(max_length=255, help_text="Vendor name")
-    payment_terms = models.CharField(
-        max_length=128, blank=True, help_text="Payment terms"
-    )
+    payment_terms = models.CharField(max_length=128, blank=True, help_text="Payment terms")
     delivery_date = models.DateField(null=True, blank=True)
     issued_by = models.CharField(
         max_length=100, blank=True, help_text="Procurement staff name or ID"
@@ -210,9 +194,7 @@ class Brand(AbstractBase):
 
 
 class BaremetalModel(AbstractBase):
-    name = models.CharField(
-        max_length=100, help_text="Model name, e.g., PowerEdge R740"
-    )
+    name = models.CharField(max_length=100, help_text="Model name, e.g., PowerEdge R740")
     brand = models.ForeignKey(
         Brand, on_delete=models.CASCADE, related_name="models", help_text="Server brand"
     )
@@ -223,12 +205,8 @@ class BaremetalModel(AbstractBase):
 
 class Baremetal(AbstractBase):
     name = models.CharField(max_length=255, help_text="Server name")
-    serial_number = models.CharField(
-        max_length=255, unique=True, help_text="Unique serial number"
-    )
-    model = models.ForeignKey(
-        BaremetalModel, on_delete=models.PROTECT, related_name="baremetals"
-    )
+    serial_number = models.CharField(max_length=255, unique=True, help_text="Unique serial number")
+    model = models.ForeignKey(BaremetalModel, on_delete=models.PROTECT, related_name="baremetals")
     fabrication = models.ForeignKey(
         Fabrication, on_delete=models.SET_NULL, null=True, related_name="baremetals"
     )
@@ -239,9 +217,7 @@ class Baremetal(AbstractBase):
         DataCenter, on_delete=models.SET_NULL, null=True, related_name="baremetals"
     )
     room = models.CharField(max_length=32, blank=True)
-    rack = models.ForeignKey(
-        Rack, on_delete=models.SET_NULL, null=True, related_name="baremetals"
-    )
+    rack = models.ForeignKey(Rack, on_delete=models.SET_NULL, null=True, related_name="baremetals")
     unit = models.CharField(max_length=32, blank=True)
     status = models.CharField(
         max_length=32,
@@ -255,16 +231,12 @@ class Baremetal(AbstractBase):
     available_cpu = models.IntegerField()
     available_memory = models.IntegerField()
     available_storage = models.IntegerField()
-    group = models.ForeignKey(
-        BaremetalGroup, on_delete=models.CASCADE, related_name="baremetals"
-    )
+    group = models.ForeignKey(BaremetalGroup, on_delete=models.CASCADE, related_name="baremetals")
     pr = models.ForeignKey(
         PurchaseRequisition, on_delete=models.PROTECT, related_name="baremetals"
     )
-    po = models.ForeignKey(
-        PurchaseOrder, on_delete=models.PROTECT, related_name="baremetals"
-    )
-    old_system_id = models.CharField(max_length=100, blank=True)
+    po = models.ForeignKey(PurchaseOrder, on_delete=models.PROTECT, related_name="baremetals")
+    external_system_id = models.CharField(max_length=100, blank=True)
 
 
 class Tenant(AbstractBase):
@@ -279,9 +251,7 @@ class BaremetalGroupTenantQuota(AbstractBase):
     group = models.ForeignKey(
         BaremetalGroup, on_delete=models.CASCADE, related_name="tenant_quotas"
     )
-    tenant = models.ForeignKey(
-        Tenant, on_delete=models.CASCADE, related_name="group_quotas"
-    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="group_quotas")
     cpu_quota_percentage = models.FloatField()
     memory_quota = models.IntegerField()
     storage_quota = models.IntegerField()
@@ -301,9 +271,7 @@ class VirtualMachineSpecification(AbstractBase):
 class K8sCluster(AbstractBase):
     name = models.CharField(max_length=255)
     version = models.CharField(max_length=255)
-    tenant = models.ForeignKey(
-        Tenant, on_delete=models.CASCADE, related_name="k8s_clusters"
-    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="k8s_clusters")
     scheduling_mode = models.CharField(
         max_length=50,
         choices=[
@@ -319,9 +287,7 @@ class K8sCluster(AbstractBase):
 
 
 class K8sClusterPlugin(AbstractBase):
-    cluster = models.ForeignKey(
-        K8sCluster, on_delete=models.CASCADE, related_name="plugins"
-    )
+    cluster = models.ForeignKey(K8sCluster, on_delete=models.CASCADE, related_name="plugins")
     name = models.CharField(max_length=255)
     version = models.CharField(max_length=255)
     status = models.CharField(
@@ -367,9 +333,7 @@ class K8sClusterToServiceMesh(AbstractBase):
 
 class VirtualMachine(AbstractBase):
     name = models.CharField(max_length=255)
-    tenant = models.ForeignKey(
-        Tenant, on_delete=models.CASCADE, related_name="virtual_machines"
-    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="virtual_machines")
     baremetal = models.ForeignKey(
         Baremetal, null=True, on_delete=models.CASCADE, related_name="virtual_machines"
     )
@@ -408,9 +372,7 @@ class AnsibleInventory(AbstractBase):
 
     name = models.CharField(max_length=255, unique=True, help_text="Inventory name")
     description = models.TextField(blank=True, help_text="Inventory description")
-    version = models.CharField(
-        max_length=32, default="1.0", help_text="Inventory version"
-    )
+    version = models.CharField(max_length=32, default="1.0", help_text="Inventory version")
     source_type = models.CharField(
         max_length=32,
         choices=[
@@ -593,9 +555,7 @@ class AnsibleGroup(AbstractBase):
 
 
 class AnsibleGroupVariable(AbstractBase):
-    group = models.ForeignKey(
-        AnsibleGroup, on_delete=models.CASCADE, related_name="variables"
-    )
+    group = models.ForeignKey(AnsibleGroup, on_delete=models.CASCADE, related_name="variables")
     key = models.CharField(max_length=255, help_text="Variable name")
     value = models.TextField(help_text="Variable value (can be JSON)")
     value_type = models.CharField(
@@ -665,20 +625,14 @@ class AnsibleGroupRelationship(AbstractBase):
             raise ValidationError("A group cannot be its own parent")
 
         if self.parent_group.inventory != self.child_group.inventory:
-            raise ValidationError(
-                "Parent and child groups must be in the same inventory"
-            )
+            raise ValidationError("Parent and child groups must be in the same inventory")
 
 
 class AnsibleHost(AbstractBase):
     """Enhanced host model with inventory support and aliases"""
 
-    inventory = models.ForeignKey(
-        AnsibleInventory, on_delete=models.CASCADE, related_name="hosts"
-    )
-    group = models.ForeignKey(
-        AnsibleGroup, on_delete=models.CASCADE, related_name="hosts"
-    )
+    inventory = models.ForeignKey(AnsibleInventory, on_delete=models.CASCADE, related_name="hosts")
+    group = models.ForeignKey(AnsibleGroup, on_delete=models.CASCADE, related_name="hosts")
 
     # Generic foreign key to either VM or Baremetal
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -686,18 +640,14 @@ class AnsibleHost(AbstractBase):
     host = GenericForeignKey("content_type", "object_id")
 
     # Host aliases (Ansible supports multiple aliases for the same host)
-    aliases = models.JSONField(
-        default=list, blank=True, help_text="List of host aliases"
-    )
+    aliases = models.JSONField(default=list, blank=True, help_text="List of host aliases")
 
     # Ansible connection parameters
     ansible_host = models.GenericIPAddressField(
         null=True, blank=True, help_text="Ansible connection IP"
     )
     ansible_port = models.PositiveIntegerField(default=22, help_text="SSH port")
-    ansible_user = models.CharField(
-        max_length=64, default="root", help_text="SSH username"
-    )
+    ansible_user = models.CharField(max_length=64, default="root", help_text="SSH username")
     ansible_ssh_private_key_file = models.CharField(
         max_length=255, blank=True, help_text="Path to SSH private key"
     )
@@ -707,9 +657,7 @@ class AnsibleHost(AbstractBase):
     ansible_ssh_extra_args = models.CharField(
         max_length=255, blank=True, help_text="SSH extra arguments"
     )
-    ansible_ssh_pipelining = models.BooleanField(
-        default=True, help_text="Enable SSH pipelining"
-    )
+    ansible_ssh_pipelining = models.BooleanField(default=True, help_text="Enable SSH pipelining")
     ansible_ssh_executable = models.CharField(
         max_length=255, blank=True, help_text="SSH executable path"
     )
@@ -734,9 +682,7 @@ class AnsibleHost(AbstractBase):
     )
 
     # Additional metadata
-    metadata = models.JSONField(
-        default=dict, blank=True, help_text="Additional host metadata"
-    )
+    metadata = models.JSONField(default=dict, blank=True, help_text="Additional host metadata")
 
     class Meta:
         unique_together = ["inventory", "group", "content_type", "object_id"]
@@ -827,9 +773,7 @@ class AnsibleInventoryPlugin(AbstractBase):
     config = models.JSONField(default=dict, help_text="Plugin configuration")
     enabled = models.BooleanField(default=True, help_text="Whether plugin is enabled")
     priority = models.PositiveIntegerField(default=100, help_text="Plugin priority")
-    cache_timeout = models.PositiveIntegerField(
-        default=3600, help_text="Cache timeout in seconds"
-    )
+    cache_timeout = models.PositiveIntegerField(default=3600, help_text="Cache timeout in seconds")
 
     class Meta:
         unique_together = ["inventory", "name"]
@@ -855,9 +799,7 @@ class AnsibleInventoryTemplate(AbstractBase):
         default="yaml",
     )
     template_content = models.TextField(help_text="Template content")
-    variables = models.JSONField(
-        default=dict, blank=True, help_text="Template variables"
-    )
+    variables = models.JSONField(default=dict, blank=True, help_text="Template variables")
 
     class Meta:
         ordering = ["name"]
@@ -974,9 +916,7 @@ class AnsibleInventoryVariableSetAssociation(AbstractBase):
         default=100,
         help_text="Variable loading priority, lower numbers have higher priority",
     )
-    enabled = models.BooleanField(
-        default=True, help_text="Whether this variable set is enabled"
-    )
+    enabled = models.BooleanField(default=True, help_text="Whether this variable set is enabled")
     load_tags = models.JSONField(
         default=list, blank=True, help_text="Conditional tags for loading"
     )

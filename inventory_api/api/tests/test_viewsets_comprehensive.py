@@ -72,8 +72,8 @@ class TestInfrastructureViewSets:
     def test_fabrication_list_endpoint(self, auth_client):
         """Test fabrication list endpoint returns correct data"""
         # Create test data
-        fab1 = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
-        fab2 = Fabrication.objects.create(name="FAB002", old_system_id="legacy2")
+        fab1 = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
+        fab2 = Fabrication.objects.create(name="FAB002", external_system_id="legacy2")
 
         # Test list endpoint
         response = auth_client.get("/api/v1/fabrications")
@@ -87,7 +87,7 @@ class TestInfrastructureViewSets:
 
     def test_fabrication_create_endpoint(self, auth_client):
         """Test fabrication create endpoint"""
-        data = {"name": "FAB003", "old_system_id": "legacy3"}
+        data = {"name": "FAB003", "external_system_id": "legacy3"}
         response = auth_client.post("/api/v1/fabrications", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "FAB003"
@@ -97,18 +97,18 @@ class TestInfrastructureViewSets:
 
     def test_fabrication_retrieve_endpoint(self, auth_client):
         """Test fabrication retrieve endpoint"""
-        fab = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
+        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB001"
-        assert response.data["old_system_id"] == "legacy1"
+        assert response.data["external_system_id"] == "legacy1"
 
     def test_fabrication_update_endpoint(self, auth_client):
         """Test fabrication update endpoint"""
-        fab = Fabrication.objects.create(name="FAB001", old_system_id="legacy1")
+        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
 
-        data = {"name": "FAB001_Updated", "old_system_id": "legacy1_updated"}
+        data = {"name": "FAB001_Updated", "external_system_id": "legacy1_updated"}
         response = auth_client.put(f"/api/v1/fabrications/{fab.id}", data, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB001_Updated"
