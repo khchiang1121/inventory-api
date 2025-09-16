@@ -384,7 +384,7 @@ class AnsibleInventory(AbstractBase):
         help_text="Type of inventory source",
     )
     source_plugin = models.CharField(
-        max_length=64, blank=True, help_text="Dynamic inventory plugin name"
+        max_length=64, null=True, help_text="Dynamic inventory plugin name"
     )
     source_config = models.JSONField(
         default=dict, blank=True, help_text="Configuration for dynamic inventory"
