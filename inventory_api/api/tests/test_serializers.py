@@ -17,10 +17,10 @@ from ..models import (
     BaremetalGroup,
     BaremetalModel,
     BGPConfig,
-    Brand,
     DataCenter,
     Fabrication,
     K8sCluster,
+    Manufacturer,
     NetworkInterface,
     Phase,
     PurchaseOrder,
@@ -39,11 +39,11 @@ from ..v1.serializers import (
     BaremetalModelCreateSerializer,
     BaremetalSerializer,
     BGPConfigSerializer,
-    BrandSerializer,
     CustomUserSerializer,
     DataCenterSerializer,
     FabricationSerializer,
     K8sClusterSerializer,
+    ManufacturerSerializer,
     NetworkInterfaceSerializer,
     PhaseSerializer,
     PurchaseOrderSerializer,
@@ -190,20 +190,21 @@ class TestNetworkSerializers:
 class TestBaremetalSerializers:
     """Test baremetal-related serializers"""
 
-    def test_brand_serializer_valid_data(self):
-        """Test BrandSerializer with valid data"""
+    def test_manufacturer_serializer_valid_data(self):
+        """Test ManufacturerSerializer with valid data"""
         data = {"name": "Dell"}
-        serializer = BrandSerializer(data=data)
+        serializer = ManufacturerSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
-        brand = serializer.save()
-        assert brand.name == "Dell"
+        manufacturer = serializer.save()
+        assert manufacturer.name == "Dell"
 
     def test_baremetal_model_serializer_with_specs(self):
         """Test BaremetalModelSerializer with specifications"""
-        brand = Brand.objects.create(name="Dell")
+        manufacturer = Manufacturer.objects.create(name="Dell")
         data = {
             "name": "PowerEdge R740",
-            "brand": str(brand.id),
+            "manufacturer": str(manufacturer.id),
+            "suppliers": [],
             "total_cpu": 64,
             "total_memory": 1024,
             "total_storage": 10000,
@@ -213,7 +214,7 @@ class TestBaremetalSerializers:
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         model = serializer.save()
         assert model.total_cpu == 64
-        assert model.brand == brand
+        assert model.manufacturer == manufacturer
 
 
 @pytest.mark.django_db

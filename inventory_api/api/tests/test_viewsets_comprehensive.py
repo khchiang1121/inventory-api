@@ -19,10 +19,10 @@ from ..models import (
     BaremetalGroup,
     BaremetalModel,
     BGPConfig,
-    Brand,
     DataCenter,
     Fabrication,
     K8sCluster,
+    Manufacturer,
     NetworkInterface,
     Phase,
     PurchaseOrder,
@@ -211,24 +211,25 @@ class TestNetworkViewSets:
 class TestBaremetalViewSets:
     """Test baremetal-related ViewSets"""
 
-    def test_brand_list_ordering(self, auth_client):
-        """Test brand list returns ordered results"""
+    def test_manufacturer_list_ordering(self, auth_client):
+        """Test manufacturer list returns ordered results"""
         # Create test data
-        Brand.objects.create(name="Dell")
-        Brand.objects.create(name="HP")
-        Brand.objects.create(name="IBM")
+        Manufacturer.objects.create(name="Dell")
+        Manufacturer.objects.create(name="HP")
+        Manufacturer.objects.create(name="IBM")
 
-        response = auth_client.get("/api/v1/brands")
+        response = auth_client.get("/api/v1/manufacturers")
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 3
 
-    def test_baremetal_model_creation_with_brand(self, auth_client):
-        """Test baremetal model creation with brand relationship"""
-        brand = Brand.objects.create(name="Dell")
+    def test_baremetal_model_creation_with_manufacturer(self, auth_client):
+        """Test baremetal model creation with manufacturer relationship"""
+        manufacturer = Manufacturer.objects.create(name="Dell")
 
         data = {
             "name": "PowerEdge R740",
-            "brand": str(brand.id),
+            "manufacturer": str(manufacturer.id),
+            "suppliers": [],
             "total_cpu": 64,
             "total_memory": 1024,
             "total_storage": 10000,

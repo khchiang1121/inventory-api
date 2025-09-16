@@ -17,7 +17,8 @@ from .baremetal import (
     BaremetalGroup,
     BaremetalGroupTenantQuota,
     BaremetalModel,
-    Brand,
+    Manufacturer,
+    Supplier,
     Tenant,
 )
 from .base import AbstractBase
@@ -57,7 +58,8 @@ __all__ = [
     "PurchaseOrder",
     # Baremetal
     "BaremetalGroup",
-    "Brand",
+    "Manufacturer",
+    "Supplier",
     "BaremetalModel",
     "Baremetal",
     "Tenant",

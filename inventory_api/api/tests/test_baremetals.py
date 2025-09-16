@@ -10,12 +10,13 @@ from django.contrib.contenttypes.models import ContentType
 def test_baremetal_create(auth_client):
     """Test creating a baremetal server"""
     # Setup dependencies
-    brand = auth_client.post("/api/v1/brands", {"name": "Dell"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "Dell"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "R740",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 64,
             "total_memory": 256,
             "total_storage": 4096,
@@ -103,12 +104,13 @@ def test_baremetal_list(auth_client):
 def test_baremetal_retrieve(auth_client):
     """Test retrieving a specific baremetal server"""
     # Setup and create baremetal
-    brand = auth_client.post("/api/v1/brands", {"name": "HP"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "HP"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "DL380",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 32,
             "total_memory": 128,
             "total_storage": 2048,
@@ -201,12 +203,13 @@ def test_baremetal_retrieve(auth_client):
 def test_baremetal_update(auth_client):
     """Test updating a baremetal server (PATCH)"""
     # Setup and create baremetal
-    brand = auth_client.post("/api/v1/brands", {"name": "IBM"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "IBM"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "x3650",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 24,
             "total_memory": 64,
             "total_storage": 1024,
@@ -300,12 +303,13 @@ def test_baremetal_update(auth_client):
 def test_baremetal_delete(auth_client):
     """Test deleting a baremetal server"""
     # Setup and create baremetal
-    brand = auth_client.post("/api/v1/brands", {"name": "Cisco"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "Cisco"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "UCS",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 16,
             "total_memory": 32,
             "total_storage": 512,
@@ -396,12 +400,15 @@ def test_baremetal_delete(auth_client):
 def test_baremetal_with_network_interface(auth_client):
     """Test creating a network interface for a baremetal server"""
     # Setup and create baremetal
-    brand = auth_client.post("/api/v1/brands", {"name": "Supermicro"}, format="json").data
+    manufacturer = auth_client.post(
+        "/api/v1/manufacturers", {"name": "Supermicro"}, format="json"
+    ).data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "X11",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 8,
             "total_memory": 16,
             "total_storage": 256,
@@ -495,80 +502,86 @@ def test_baremetal_with_network_interface(auth_client):
 
 
 # ============================================================================
-# BRAND TESTS
+# MANUFACTURER TESTS
 # ============================================================================
 
 
 @pytest.mark.django_db
-def test_brand_create(auth_client):
-    """Test creating a brand"""
-    r = auth_client.post("/api/v1/brands", {"name": "HP"}, format="json")
+def test_manufacturer_create(auth_client):
+    """Test creating a manufacturer"""
+    r = auth_client.post("/api/v1/manufacturers", {"name": "HP"}, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "HP"
 
 
 @pytest.mark.django_db
-def test_brand_list(auth_client):
-    """Test listing brands"""
-    r = auth_client.get("/api/v1/brands")
+def test_manufacturer_list(auth_client):
+    """Test listing manufacturers"""
+    r = auth_client.get("/api/v1/manufacturers")
     assert r.status_code == 200
     assert "results" in r.data
 
 
 @pytest.mark.django_db
-def test_brand_retrieve(auth_client):
-    """Test retrieving a specific brand"""
-    create_r = auth_client.post("/api/v1/brands", {"name": "Dell"}, format="json")
-    brand_id = create_r.data["id"]
+def test_manufacturer_retrieve(auth_client):
+    """Test retrieving a specific manufacturer"""
+    create_r = auth_client.post("/api/v1/manufacturers", {"name": "Dell"}, format="json")
+    manufacturer_id = create_r.data["id"]
 
-    r = auth_client.get(f"/api/v1/brands/{brand_id}")
+    r = auth_client.get(f"/api/v1/manufacturers/{manufacturer_id}")
     assert r.status_code == 200
     assert r.data["name"] == "Dell"
 
 
 @pytest.mark.django_db
-def test_brand_update_put(auth_client):
-    """Test updating a brand with PUT"""
-    create_r = auth_client.post("/api/v1/brands", {"name": "HP"}, format="json")
-    brand_id = create_r.data["id"]
+def test_manufacturer_update_put(auth_client):
+    """Test updating a manufacturer with PUT"""
+    create_r = auth_client.post("/api/v1/manufacturers", {"name": "HP"}, format="json")
+    manufacturer_id = create_r.data["id"]
 
-    r = auth_client.put(f"/api/v1/brands/{brand_id}", {"name": "HP Enterprise"}, format="json")
+    r = auth_client.put(
+        f"/api/v1/manufacturers/{manufacturer_id}", {"name": "HP Enterprise"}, format="json"
+    )
     assert r.status_code == 200
     assert r.data["name"] == "HP Enterprise"
 
     # Verify in database
-    r = auth_client.get(f"/api/v1/brands/{brand_id}")
+    r = auth_client.get(f"/api/v1/manufacturers/{manufacturer_id}")
     assert r.status_code == 200
     assert r.data["name"] == "HP Enterprise"
 
 
 @pytest.mark.django_db
-def test_brand_update_patch(auth_client):
-    """Test updating a brand with PATCH"""
-    create_r = auth_client.post("/api/v1/brands", {"name": "HP Enterprise"}, format="json")
-    brand_id = create_r.data["id"]
+def test_manufacturer_update_patch(auth_client):
+    """Test updating a manufacturer with PATCH"""
+    create_r = auth_client.post("/api/v1/manufacturers", {"name": "HP Enterprise"}, format="json")
+    manufacturer_id = create_r.data["id"]
 
-    r = auth_client.patch(f"/api/v1/brands/{brand_id}", {"name": "HPE"}, format="json")
+    r = auth_client.patch(
+        f"/api/v1/manufacturers/{manufacturer_id}", {"name": "HPE"}, format="json"
+    )
     assert r.status_code == 200
     assert r.data["name"] == "HPE"
 
     # Verify in database
-    r = auth_client.get(f"/api/v1/brands/{brand_id}")
+    r = auth_client.get(f"/api/v1/manufacturers/{manufacturer_id}")
     assert r.status_code == 200
     assert r.data["name"] == "HPE"
 
 
 @pytest.mark.django_db
-def test_brand_delete(auth_client):
-    """Test deleting a brand"""
-    create_r = auth_client.post("/api/v1/brands", {"name": "TestBrand"}, format="json")
-    brand_id = create_r.data["id"]
+def test_manufacturer_delete(auth_client):
+    """Test deleting a manufacturer"""
+    create_r = auth_client.post(
+        "/api/v1/manufacturers", {"name": "TestManufacturer"}, format="json"
+    )
+    manufacturer_id = create_r.data["id"]
 
-    r = auth_client.delete(f"/api/v1/brands/{brand_id}")
+    r = auth_client.delete(f"/api/v1/manufacturers/{manufacturer_id}")
     assert r.status_code in (204, 200)
 
     # Verify deletion
-    r = auth_client.get(f"/api/v1/brands/{brand_id}")
+    r = auth_client.get(f"/api/v1/manufacturers/{manufacturer_id}")
     assert r.status_code == 404
 
 
@@ -580,11 +593,16 @@ def test_brand_delete(auth_client):
 @pytest.mark.django_db
 def test_baremetal_model_create(auth_client):
     """Test creating a baremetal model"""
-    brand = auth_client.post("/api/v1/brands", {"name": "Lenovo"}, format="json").data
+    manufacturer = auth_client.post(
+        "/api/v1/manufacturers", {"name": "Lenovo"}, format="json"
+    ).data
+    s1 = auth_client.post("/api/v1/suppliers", {"name": "Supplier-A"}, format="json").data
+    s2 = auth_client.post("/api/v1/suppliers", {"name": "Supplier-B"}, format="json").data
 
     payload = {
         "name": "ThinkSystem SR650",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s1["id"], s2["id"]],
         "total_cpu": 48,
         "total_memory": 768,
         "total_storage": 8192,
@@ -593,6 +611,12 @@ def test_baremetal_model_create(auth_client):
     assert r.status_code == 201
     assert r.data["name"] == "ThinkSystem SR650"
     assert r.data["total_cpu"] == 48
+    model_id = r.data["id"]
+    # Fetch with read serializer to validate nested suppliers
+    r_detail = auth_client.get(f"/api/v1/baremetal-models/{model_id}")
+    assert r_detail.status_code == 200
+    resp_supplier_names = [s["name"] for s in r_detail.data.get("suppliers", [])]
+    assert "Supplier-A" in resp_supplier_names and "Supplier-B" in resp_supplier_names
 
 
 @pytest.mark.django_db
@@ -606,10 +630,12 @@ def test_baremetal_model_list(auth_client):
 @pytest.mark.django_db
 def test_baremetal_model_retrieve(auth_client):
     """Test retrieving a specific baremetal model"""
-    brand = auth_client.post("/api/v1/brands", {"name": "IBM"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "IBM"}, format="json").data
+    s = auth_client.post("/api/v1/suppliers", {"name": "Supplier-R"}, format="json").data
     payload = {
         "name": "x3650 M5",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s["id"]],
         "total_cpu": 32,
         "total_memory": 512,
         "total_storage": 4096,
@@ -626,10 +652,12 @@ def test_baremetal_model_retrieve(auth_client):
 @pytest.mark.django_db
 def test_baremetal_model_update_put(auth_client):
     """Test updating a baremetal model with PUT"""
-    brand = auth_client.post("/api/v1/brands", {"name": "Dell"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "Dell"}, format="json").data
+    s1 = auth_client.post("/api/v1/suppliers", {"name": "S-One"}, format="json").data
     payload = {
         "name": "PowerEdge R740",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s1["id"]],
         "total_cpu": 64,
         "total_memory": 1024,
         "total_storage": 10240,
@@ -637,9 +665,11 @@ def test_baremetal_model_update_put(auth_client):
     create_r = auth_client.post("/api/v1/baremetal-models", payload, format="json")
     model_id = create_r.data["id"]
 
+    s2 = auth_client.post("/api/v1/suppliers", {"name": "S-Two"}, format="json").data
     put_payload = {
         "name": "PowerEdge R740xd",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s1["id"], s2["id"]],
         "total_cpu": 128,
         "total_memory": 2048,
         "total_storage": 20480,
@@ -648,15 +678,22 @@ def test_baremetal_model_update_put(auth_client):
     assert r.status_code == 200
     assert r.data["name"] == "PowerEdge R740xd"
     assert r.data["total_cpu"] == 128
+    # Fetch with read serializer to validate nested suppliers
+    r_detail = auth_client.get(f"/api/v1/baremetal-models/{model_id}")
+    assert r_detail.status_code == 200
+    resp_supplier_names = [s["name"] for s in r_detail.data.get("suppliers", [])]
+    assert "S-One" in resp_supplier_names and "S-Two" in resp_supplier_names
 
 
 @pytest.mark.django_db
 def test_baremetal_model_update_patch(auth_client):
     """Test updating a baremetal model with PATCH"""
-    brand = auth_client.post("/api/v1/brands", {"name": "HP"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "HP"}, format="json").data
+    s = auth_client.post("/api/v1/suppliers", {"name": "SP-1"}, format="json").data
     payload = {
         "name": "ProLiant DL380",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s["id"]],
         "total_cpu": 48,
         "total_memory": 768,
         "total_storage": 8192,
@@ -675,10 +712,14 @@ def test_baremetal_model_update_patch(auth_client):
 @pytest.mark.django_db
 def test_baremetal_model_delete(auth_client):
     """Test deleting a baremetal model"""
-    brand = auth_client.post("/api/v1/brands", {"name": "Supermicro"}, format="json").data
+    manufacturer = auth_client.post(
+        "/api/v1/manufacturers", {"name": "Supermicro"}, format="json"
+    ).data
+    s = auth_client.post("/api/v1/suppliers", {"name": "Sup-Del"}, format="json").data
     payload = {
         "name": "SuperServer",
-        "brand": brand["id"],
+        "manufacturer": manufacturer["id"],
+        "suppliers": [s["id"]],
         "total_cpu": 16,
         "total_memory": 256,
         "total_storage": 2048,
@@ -691,6 +732,67 @@ def test_baremetal_model_delete(auth_client):
 
     # Verify deletion
     r = auth_client.get(f"/api/v1/baremetal-models/{model_id}")
+    assert r.status_code == 404
+
+
+# ============================================================================
+# SUPPLIER TESTS
+# ============================================================================
+
+
+@pytest.mark.django_db
+def test_supplier_create(auth_client):
+    """Test creating a supplier"""
+    r = auth_client.post(
+        "/api/v1/suppliers",
+        {"name": "Acme Supply", "contact_email": "a@ac.me"},
+        format="json",
+    )
+    assert r.status_code == 201
+    assert r.data["name"] == "Acme Supply"
+
+
+@pytest.mark.django_db
+def test_supplier_list(auth_client):
+    """Test listing suppliers"""
+    auth_client.post("/api/v1/suppliers", {"name": "S-1"}, format="json")
+    auth_client.post("/api/v1/suppliers", {"name": "S-2"}, format="json")
+    r = auth_client.get("/api/v1/suppliers")
+    assert r.status_code == 200
+    assert "results" in r.data
+    names = [row["name"] for row in r.data["results"]]
+    assert "S-1" in names and "S-2" in names
+
+
+@pytest.mark.django_db
+def test_supplier_retrieve_update_delete(auth_client):
+    """Test retrieve, update, patch and delete of supplier"""
+    create_r = auth_client.post("/api/v1/suppliers", {"name": "Orig"}, format="json")
+    sid = create_r.data["id"]
+
+    # Retrieve
+    r = auth_client.get(f"/api/v1/suppliers/{sid}")
+    assert r.status_code == 200
+    assert r.data["name"] == "Orig"
+
+    # PUT
+    r = auth_client.put(
+        f"/api/v1/suppliers/{sid}",
+        {"name": "Orig-Updated", "website": "https://ex.com"},
+        format="json",
+    )
+    assert r.status_code == 200
+    assert r.data["name"] == "Orig-Updated"
+
+    # PATCH
+    r = auth_client.patch(f"/api/v1/suppliers/{sid}", {"contact_phone": "+1-555"}, format="json")
+    assert r.status_code == 200
+    assert r.data["contact_phone"] == "+1-555"
+
+    # DELETE
+    r = auth_client.delete(f"/api/v1/suppliers/{sid}")
+    assert r.status_code in (204, 200)
+    r = auth_client.get(f"/api/v1/suppliers/{sid}")
     assert r.status_code == 404
 
 

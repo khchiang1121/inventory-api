@@ -211,16 +211,30 @@ class Command(BaseCommand):
             "PurchaseOrder",
         )
 
-        # Create Brands and Models
-        brands = self._create_or_get_models(
-            models.Brand, lambda: {"name": fake.company()}, 3, skip_existing, "Brand"
+        # Create Manufacturers and Suppliers
+        manufacturers = self._create_or_get_models(
+            models.Manufacturer, lambda: {"name": fake.company()}, 3, skip_existing, "Manufacturer"
+        )
+
+        suppliers = self._create_or_get_models(
+            models.Supplier,
+            lambda: {
+                "name": fake.company(),
+                "contact_email": fake.email(),
+                "contact_phone": fake.phone_number(),
+                "address": fake.address(),
+                "website": fake.url(),
+            },
+            3,
+            skip_existing,
+            "Supplier",
         )
 
         baremetal_models = self._create_or_get_models(
             models.BaremetalModel,
             lambda: {
                 "name": f"Model-{fake.word()}",
-                "brand": random.choice(brands),
+                "manufacturer": random.choice(manufacturers),
                 "total_cpu": 64,
                 "total_memory": 65536,
                 "total_storage": 10000,
@@ -230,6 +244,13 @@ class Command(BaseCommand):
             skip_existing,
             "BaremetalModel",
         )
+        
+        # Add suppliers to baremetal models after creation
+        for model in baremetal_models:
+            # Randomly assign 1-3 suppliers to each model
+            num_suppliers = random.randint(1, min(3, len(suppliers)))
+            selected_suppliers = random.sample(suppliers, num_suppliers)
+            model.suppliers.set(selected_suppliers)
 
         # Create Baremetal Servers
         baremetals = self._create_or_get_models(
@@ -1082,7 +1103,8 @@ ntp_servers:
         models.NetworkInterface.objects.all().delete()
         models.Baremetal.objects.all().delete()
         models.BaremetalModel.objects.all().delete()
-        models.Brand.objects.all().delete()
+        models.Manufacturer.objects.all().delete()
+        models.Supplier.objects.all().delete()
         models.PurchaseOrder.objects.all().delete()
         models.PurchaseRequisition.objects.all().delete()
         models.BaremetalGroup.objects.all().delete()

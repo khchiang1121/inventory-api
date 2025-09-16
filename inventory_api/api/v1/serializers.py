@@ -276,21 +276,38 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 # ------------------------------------------------------------------------------
 # Baremetal Serializers
 # ------------------------------------------------------------------------------
-class BrandSerializer(serializers.ModelSerializer):
+class ManufacturerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Brand
+        model = models.Manufacturer
         fields = ["id", "name", "created_at", "updated_at"]
 
 
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Supplier
+        fields = [
+            "id",
+            "name",
+            "contact_email",
+            "contact_phone",
+            "address",
+            "website",
+            "created_at",
+            "updated_at",
+        ]
+
+
 class BaremetalModelSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(read_only=True)
+    manufacturer = ManufacturerSerializer(read_only=True)
+    suppliers = SupplierSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.BaremetalModel
         fields = [
             "id",
             "name",
-            "brand",
+            "manufacturer",
+            "suppliers",
             "total_cpu",
             "total_memory",
             "total_storage",
@@ -306,7 +323,8 @@ class BaremetalModelCreateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "brand",
+            "manufacturer",
+            "suppliers",
             "total_cpu",
             "total_memory",
             "total_storage",
@@ -321,7 +339,8 @@ class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "brand",
+            "manufacturer",
+            "suppliers",
             "total_cpu",
             "total_memory",
             "total_storage",

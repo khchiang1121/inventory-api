@@ -89,9 +89,14 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
 # ------------------------------------------------------------------------------
 # Baremetal ViewSets
 # ------------------------------------------------------------------------------
-class BrandViewSet(viewsets.ModelViewSet):
-    queryset = models.Brand.objects.all().order_by("id")
-    serializer_class = serializers.BrandSerializer
+class ManufacturerViewSet(viewsets.ModelViewSet):
+    queryset = models.Manufacturer.objects.all().order_by("id")
+    serializer_class = serializers.ManufacturerSerializer
+
+
+class SupplierViewSet(viewsets.ModelViewSet):
+    queryset = models.Supplier.objects.all().order_by("id")
+    serializer_class = serializers.SupplierSerializer
 
 
 class BaremetalModelViewSet(viewsets.ModelViewSet):

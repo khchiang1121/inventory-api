@@ -20,10 +20,10 @@ from ..models import (
     BaremetalGroup,
     BaremetalModel,
     BGPConfig,
-    Brand,
     DataCenter,
     Fabrication,
     K8sCluster,
+    Manufacturer,
     NetworkInterface,
     Phase,
     PurchaseOrder,
@@ -203,12 +203,12 @@ class TestAPIResponseContent:
 class TestComplexObjectResponses:
     """Test responses for objects with relationships"""
 
-    def test_baremetal_model_with_brand_response(self, auth_client):
-        """Test baremetal model response includes brand information"""
-        brand = Brand.objects.create(name="Dell")
+    def test_baremetal_model_with_manufacturer_response(self, auth_client):
+        """Test baremetal model response includes manufacturer information"""
+        manufacturer = Manufacturer.objects.create(name="Dell")
         model = BaremetalModel.objects.create(
             name="PowerEdge R740",
-            brand=brand,
+            manufacturer=manufacturer,
             total_cpu=64,
             total_memory=1024,
             total_storage=10000,
@@ -217,19 +217,19 @@ class TestComplexObjectResponses:
         response = auth_client.get(f"/api/v1/baremetal-models/{model.id}")
         assert response.status_code == status.HTTP_200_OK
 
-        # Check brand relationship is included
-        assert "brand" in response.data
-        # Brand is returned as a nested object, not just an ID
-        assert response.data["brand"]["id"] == str(brand.id)
-        assert response.data["brand"]["name"] == "Dell"
+        # Check manufacturer relationship is included
+        assert "manufacturer" in response.data
+        # Manufacturer is returned as a nested object, not just an ID
+        assert response.data["manufacturer"]["id"] == str(manufacturer.id)
+        assert response.data["manufacturer"]["name"] == "Dell"
 
     def test_network_interface_response_structure(self, auth_client):
         """Test network interface response includes all network fields"""
         # Create a baremetal to associate with network interface
-        brand = Brand.objects.create(name="Dell")
+        manufacturer = Manufacturer.objects.create(name="Dell")
         model = BaremetalModel.objects.create(
             name="PowerEdge R740",
-            brand=brand,
+            manufacturer=manufacturer,
             total_cpu=64,
             total_memory=1024,
             total_storage=10000,
@@ -331,7 +331,7 @@ class TestJSONResponseValidation:
             "/api/v1/racks",
             "/api/v1/vlans",
             "/api/v1/vrfs",
-            "/api/v1/brands",
+            "/api/v1/manufacturers",
             "/api/v1/tenants",
         ]
 

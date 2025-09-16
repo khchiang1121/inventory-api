@@ -17,21 +17,20 @@ from .base import auth_client
 def test_network_interface_create(auth_client):
     """Test creating a network interface"""
     # Setup baremetal as the host
-    brand = auth_client.post("/api/v1/brands", {"name": "Cisco"}, format="json").data
+    manufacturer = auth_client.post("/api/v1/manufacturers", {"name": "Cisco"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
             "name": "UCS",
-            "brand": brand["id"],
+            "manufacturer": manufacturer["id"],
+            "suppliers": [],
             "total_cpu": 16,
             "total_memory": 32,
             "total_storage": 512,
         },
         format="json",
     ).data
-    fab = auth_client.post(
-        "/api/v1/fabrications", {"name": "fab-ni"}, format="json"
-    ).data
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-ni"}, format="json").data
     phase = auth_client.post("/api/v1/phases", {"name": "phase-ni"}, format="json").data
     dc = auth_client.post("/api/v1/data-centers", {"name": "dc-ni"}, format="json").data
     rack = auth_client.post(
@@ -192,9 +191,7 @@ def test_network_interface_update_put(auth_client):
         "ipv4_address": "192.168.1.200",
         "is_primary": True,
     }
-    r = auth_client.put(
-        f"/api/v1/network-interfaces/{ni_id}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/network-interfaces/{ni_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "eth0-put-updated"
     assert r.data["mac_address"] == "00:11:22:33:44:88"

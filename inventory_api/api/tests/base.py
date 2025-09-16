@@ -36,9 +36,9 @@ from ..models import (
     Baremetal,
     BaremetalGroup,
     BaremetalModel,
-    Brand,
     DataCenter,
     Fabrication,
+    Manufacturer,
     Phase,
     PurchaseOrder,
     PurchaseRequisition,
@@ -87,10 +87,10 @@ class APITestSetup(APITestCase):
         )
 
         # Create required related objects for baremetal
-        self.brand = Brand.objects.create(name="Dell")
+        self.manufacturer = Manufacturer.objects.create(name="Dell")
         self.baremetal_model = BaremetalModel.objects.create(
             name="PowerEdge R740",
-            brand=self.brand,
+            manufacturer=self.manufacturer,
             total_cpu=64,
             total_memory=1024,
             total_storage=10000,

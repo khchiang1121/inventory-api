@@ -30,13 +30,12 @@ router.register(r"purchase-requisitions", views.PurchaseRequisitionViewSet)
 router.register(r"purchase-orders", views.PurchaseOrderViewSet)
 
 # Baremetal routes
-router.register(r"brands", views.BrandViewSet)
+router.register(r"manufacturers", views.ManufacturerViewSet)
+router.register(r"suppliers", views.SupplierViewSet)
 router.register(r"baremetal-models", views.BaremetalModelViewSet)
 router.register(r"baremetal-groups", views.BaremetalGroupViewSet)
 router.register(r"baremetals", views.BaremetalViewSet)
-router.register(
-    r"baremetal-group-tenant-quotas", views.BaremetalGroupTenantQuotaViewSet
-)
+router.register(r"baremetal-group-tenant-quotas", views.BaremetalGroupTenantQuotaViewSet)
 
 # Tenant and VM routes
 router.register(r"tenants", views.TenantViewSet)

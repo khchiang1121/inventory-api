@@ -23,20 +23,39 @@ class BaremetalGroup(AbstractBase):
     )
 
 
-class Brand(AbstractBase):
-    """Hardware brand/vendor model"""
+class Manufacturer(AbstractBase):
+    """Hardware manufacturer model"""
 
     name = models.CharField(
-        max_length=100, unique=True, help_text="Vendor brand, e.g., Dell, HPE, etc."
+        max_length=100, unique=True, help_text="Manufacturer name, e.g., Dell, HPE, etc."
     )
+
+
+class Supplier(AbstractBase):
+    """Supplier/vendor model"""
+
+    name = models.CharField(max_length=100, unique=True, help_text="Supplier/vendor name")
+    contact_email = models.EmailField(blank=True, help_text="Supplier contact email")
+    contact_phone = models.CharField(max_length=20, blank=True, help_text="Supplier contact phone")
+    address = models.TextField(blank=True, help_text="Supplier address")
+    website = models.URLField(blank=True, help_text="Supplier website")
 
 
 class BaremetalModel(AbstractBase):
     """Baremetal hardware model"""
 
     name = models.CharField(max_length=100, help_text="Model name, e.g., PowerEdge R740")
-    brand = models.ForeignKey(
-        Brand, on_delete=models.CASCADE, related_name="models", help_text="Server brand"
+    manufacturer = models.ForeignKey(
+        Manufacturer,
+        on_delete=models.CASCADE,
+        related_name="models",
+        help_text="Server manufacturer",
+    )
+    suppliers = models.ManyToManyField(
+        Supplier,
+        related_name="models",
+        blank=True,
+        help_text="Hardware suppliers",
     )
     total_cpu = models.IntegerField(help_text="Total CPU capacity")
     total_memory = models.IntegerField(help_text="Total memory capacity")
