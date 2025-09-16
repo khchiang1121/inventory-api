@@ -232,6 +232,7 @@ class TestBaremetalViewSets:
             "total_cpu": 64,
             "total_memory": 1024,
             "total_storage": 10000,
+            "total_gpu": 4,
         }
         response = auth_client.post("/api/v1/baremetal-models", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
@@ -245,9 +246,11 @@ class TestBaremetalViewSets:
             "total_cpu": 1000,
             "total_memory": 10000,
             "total_storage": 100000,
+            "total_gpu": 16,
             "available_cpu": 500,
             "available_memory": 5000,
             "available_storage": 50000,
+            "available_gpu": 8,
             "status": "active",
         }
         response = auth_client.post("/api/v1/baremetal-groups", data, format="json")

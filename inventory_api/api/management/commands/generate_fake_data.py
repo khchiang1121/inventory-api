@@ -171,9 +171,11 @@ class Command(BaseCommand):
                 "total_cpu": 256,
                 "total_memory": 131072,
                 "total_storage": 50000,
+                "total_gpu": random.randint(8, 32),
                 "available_cpu": 128,
                 "available_memory": 65536,
                 "available_storage": 25000,
+                "available_gpu": random.randint(4, 16),
                 "status": random.choice(["active", "inactive"]),
             },
             3,
@@ -222,6 +224,7 @@ class Command(BaseCommand):
                 "total_cpu": 64,
                 "total_memory": 65536,
                 "total_storage": 10000,
+                "total_gpu": random.randint(0, 8),
             },
             5,
             skip_existing,
@@ -245,6 +248,7 @@ class Command(BaseCommand):
                 "available_cpu": random.randint(8, 64),
                 "available_memory": random.randint(8192, 65536),
                 "available_storage": random.randint(500, 5000),
+                "available_gpu": random.randint(0, 4),
                 "group": random.choice(host_groups),
                 "pr": random.choice(prs),
                 "po": random.choice(pos),
@@ -333,6 +337,7 @@ class Command(BaseCommand):
                     quota.cpu_quota_percentage = random.uniform(0.1, 1.0)
                     quota.memory_quota = random.randint(4096, 32768)
                     quota.storage_quota = random.randint(500, 5000)
+                    quota.gpu_quota = random.randint(0, 4)
                     quota.save()
                 else:
                     models.BaremetalGroupTenantQuota.objects.create(
@@ -341,6 +346,7 @@ class Command(BaseCommand):
                         cpu_quota_percentage=random.uniform(0.1, 1.0),
                         memory_quota=random.randint(4096, 32768),
                         storage_quota=random.randint(500, 5000),
+                        gpu_quota=random.randint(0, 4),
                     )
         self.stdout.write("✔️ Tenant quotas ready")
 

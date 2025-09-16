@@ -1,8 +1,7 @@
 from typing import Tuple
 
-from django.contrib.auth import get_user_model
-
 import pytest
+from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient, APITestCase
 
 
@@ -70,9 +69,7 @@ class APITestSetup(APITestCase):
         )
 
         # Create test rack
-        self.rack = Rack.objects.create(
-            name="Test Rack", bgp_number="AS12345", as_number=67890
-        )
+        self.rack = Rack.objects.create(name="Test Rack", bgp_number="AS12345", as_number=67890)
 
         # Create test baremetal group
         self.baremetal_group = BaremetalGroup.objects.create(
@@ -81,9 +78,11 @@ class APITestSetup(APITestCase):
             total_cpu=100,
             total_memory=1000,
             total_storage=10000,
+            total_gpu=8,
             available_cpu=100,
             available_memory=1000,
             available_storage=10000,
+            available_gpu=4,
             status="active",
         )
 
@@ -95,6 +94,7 @@ class APITestSetup(APITestCase):
             total_cpu=64,
             total_memory=1024,
             total_storage=10000,
+            total_gpu=4,
         )
         self.fabrication = Fabrication.objects.create(name="FAB1")
         self.phase = Phase.objects.create(name="PHASE1")

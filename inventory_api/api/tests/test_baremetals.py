@@ -19,12 +19,11 @@ def test_baremetal_create(auth_client):
             "total_cpu": 64,
             "total_memory": 256,
             "total_storage": 4096,
+            "total_gpu": 4,
         },
         format="json",
     ).data
-    fab = auth_client.post(
-        "/api/v1/fabrications", {"name": "fab-x"}, format="json"
-    ).data
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-x"}, format="json").data
     phase = auth_client.post("/api/v1/phases", {"name": "p1"}, format="json").data
     dc = auth_client.post("/api/v1/data-centers", {"name": "dc1"}, format="json").data
     rack = auth_client.post(
@@ -57,9 +56,11 @@ def test_baremetal_create(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -137,9 +138,11 @@ def test_baremetal_retrieve(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -233,9 +236,11 @@ def test_baremetal_update(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -280,9 +285,7 @@ def test_baremetal_update(auth_client):
     bm_id = create_r.data["id"]
 
     # Update status
-    r = auth_client.patch(
-        f"/api/v1/baremetals/{bm_id}", {"status": "inactive"}, format="json"
-    )
+    r = auth_client.patch(f"/api/v1/baremetals/{bm_id}", {"status": "inactive"}, format="json")
     assert r.status_code == 200
     assert r.data["status"] == "inactive"
     assert r.data["name"] == "bm-update"  # Should remain unchanged
@@ -332,9 +335,11 @@ def test_baremetal_delete(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -391,9 +396,7 @@ def test_baremetal_delete(auth_client):
 def test_baremetal_with_network_interface(auth_client):
     """Test creating a network interface for a baremetal server"""
     # Setup and create baremetal
-    brand = auth_client.post(
-        "/api/v1/brands", {"name": "Supermicro"}, format="json"
-    ).data
+    brand = auth_client.post("/api/v1/brands", {"name": "Supermicro"}, format="json").data
     model = auth_client.post(
         "/api/v1/baremetal-models",
         {
@@ -428,9 +431,11 @@ def test_baremetal_with_network_interface(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -527,9 +532,7 @@ def test_brand_update_put(auth_client):
     create_r = auth_client.post("/api/v1/brands", {"name": "HP"}, format="json")
     brand_id = create_r.data["id"]
 
-    r = auth_client.put(
-        f"/api/v1/brands/{brand_id}", {"name": "HP Enterprise"}, format="json"
-    )
+    r = auth_client.put(f"/api/v1/brands/{brand_id}", {"name": "HP Enterprise"}, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "HP Enterprise"
 
@@ -542,9 +545,7 @@ def test_brand_update_put(auth_client):
 @pytest.mark.django_db
 def test_brand_update_patch(auth_client):
     """Test updating a brand with PATCH"""
-    create_r = auth_client.post(
-        "/api/v1/brands", {"name": "HP Enterprise"}, format="json"
-    )
+    create_r = auth_client.post("/api/v1/brands", {"name": "HP Enterprise"}, format="json")
     brand_id = create_r.data["id"]
 
     r = auth_client.patch(f"/api/v1/brands/{brand_id}", {"name": "HPE"}, format="json")
@@ -643,9 +644,7 @@ def test_baremetal_model_update_put(auth_client):
         "total_memory": 2048,
         "total_storage": 20480,
     }
-    r = auth_client.put(
-        f"/api/v1/baremetal-models/{model_id}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/baremetal-models/{model_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "PowerEdge R740xd"
     assert r.data["total_cpu"] == 128
@@ -676,9 +675,7 @@ def test_baremetal_model_update_patch(auth_client):
 @pytest.mark.django_db
 def test_baremetal_model_delete(auth_client):
     """Test deleting a baremetal model"""
-    brand = auth_client.post(
-        "/api/v1/brands", {"name": "Supermicro"}, format="json"
-    ).data
+    brand = auth_client.post("/api/v1/brands", {"name": "Supermicro"}, format="json").data
     payload = {
         "name": "SuperServer",
         "brand": brand["id"],
@@ -716,9 +713,11 @@ def test_baremetal_group_quota_create(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -730,10 +729,9 @@ def test_baremetal_group_quota_create(auth_client):
         "cpu_quota_percentage": 50.0,
         "memory_quota": 50,
         "storage_quota": 50,
+        "gpu_quota": 2,
     }
-    r = auth_client.post(
-        "/api/v1/baremetal-group-tenant-quotas", payload, format="json"
-    )
+    r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     assert r.status_code == 201
     assert r.data["cpu_quota_percentage"] == 50.0
     assert r.data["memory_quota"] == 50
@@ -763,9 +761,11 @@ def test_baremetal_group_quota_retrieve(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -777,10 +777,9 @@ def test_baremetal_group_quota_retrieve(auth_client):
         "cpu_quota_percentage": 75.0,
         "memory_quota": 75,
         "storage_quota": 75,
+        "gpu_quota": 3,
     }
-    create_r = auth_client.post(
-        "/api/v1/baremetal-group-tenant-quotas", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     qid = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/baremetal-group-tenant-quotas/{qid}")
@@ -803,9 +802,11 @@ def test_baremetal_group_quota_update_put(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -817,10 +818,9 @@ def test_baremetal_group_quota_update_put(auth_client):
         "cpu_quota_percentage": 30.0,
         "memory_quota": 30,
         "storage_quota": 30,
+        "gpu_quota": 1,
     }
-    create_r = auth_client.post(
-        "/api/v1/baremetal-group-tenant-quotas", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     qid = create_r.data["id"]
 
     put_payload = {
@@ -829,10 +829,9 @@ def test_baremetal_group_quota_update_put(auth_client):
         "cpu_quota_percentage": 80.0,
         "memory_quota": 80,
         "storage_quota": 80,
+        "gpu_quota": 4,
     }
-    r = auth_client.put(
-        f"/api/v1/baremetal-group-tenant-quotas/{qid}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/baremetal-group-tenant-quotas/{qid}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["cpu_quota_percentage"] == 80.0
     assert r.data["memory_quota"] == 80
@@ -857,9 +856,11 @@ def test_baremetal_group_quota_update_patch(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -871,10 +872,9 @@ def test_baremetal_group_quota_update_patch(auth_client):
         "cpu_quota_percentage": 40.0,
         "memory_quota": 40,
         "storage_quota": 40,
+        "gpu_quota": 2,
     }
-    create_r = auth_client.post(
-        "/api/v1/baremetal-group-tenant-quotas", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     qid = create_r.data["id"]
 
     r = auth_client.patch(
@@ -907,9 +907,11 @@ def test_baremetal_group_quota_delete(auth_client):
             "total_cpu": 100,
             "total_memory": 100,
             "total_storage": 100,
+            "total_gpu": 8,
             "available_cpu": 100,
             "available_memory": 100,
             "available_storage": 100,
+            "available_gpu": 4,
             "status": "active",
         },
         format="json",
@@ -921,10 +923,9 @@ def test_baremetal_group_quota_delete(auth_client):
         "cpu_quota_percentage": 25.0,
         "memory_quota": 25,
         "storage_quota": 25,
+        "gpu_quota": 1,
     }
-    create_r = auth_client.post(
-        "/api/v1/baremetal-group-tenant-quotas", payload, format="json"
-    )
+    create_r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     qid = create_r.data["id"]
 
     r = auth_client.delete(f"/api/v1/baremetal-group-tenant-quotas/{qid}")

@@ -11,9 +11,11 @@ class BaremetalGroup(AbstractBase):
     total_cpu = models.IntegerField(help_text="Total CPU capacity")
     total_memory = models.IntegerField(help_text="Total memory capacity")
     total_storage = models.IntegerField(help_text="Total storage capacity")
+    total_gpu = models.IntegerField(default=0, help_text="Total GPU capacity")
     available_cpu = models.IntegerField(help_text="Available CPU capacity")
     available_memory = models.IntegerField(help_text="Available memory capacity")
     available_storage = models.IntegerField(help_text="Available storage capacity")
+    available_gpu = models.IntegerField(default=0, help_text="Available GPU capacity")
     status = models.CharField(
         max_length=32,
         choices=[("active", "Active"), ("inactive", "Inactive")],
@@ -39,6 +41,7 @@ class BaremetalModel(AbstractBase):
     total_cpu = models.IntegerField(help_text="Total CPU capacity")
     total_memory = models.IntegerField(help_text="Total memory capacity")
     total_storage = models.IntegerField(help_text="Total storage capacity")
+    total_gpu = models.IntegerField(default=0, help_text="Total GPU capacity")
 
 
 class Baremetal(AbstractBase):
@@ -73,6 +76,7 @@ class Baremetal(AbstractBase):
     available_cpu = models.IntegerField()
     available_memory = models.IntegerField()
     available_storage = models.IntegerField()
+    available_gpu = models.IntegerField(default=0)
     group = models.ForeignKey(BaremetalGroup, on_delete=models.CASCADE, related_name="baremetals")
     pr = models.ForeignKey(
         "PurchaseRequisition", on_delete=models.PROTECT, related_name="baremetals"
@@ -101,6 +105,7 @@ class BaremetalGroupTenantQuota(AbstractBase):
     cpu_quota_percentage = models.IntegerField(default=0, help_text="CPU quota for tenant")
     memory_quota = models.IntegerField(default=0, help_text="Memory quota for tenant")
     storage_quota = models.IntegerField(default=0, help_text="Storage quota for tenant")
+    gpu_quota = models.IntegerField(default=0, help_text="GPU quota for tenant")
 
     class Meta:
         unique_together = ["group", "tenant"]

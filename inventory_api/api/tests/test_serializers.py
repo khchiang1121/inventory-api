@@ -207,6 +207,7 @@ class TestBaremetalSerializers:
             "total_cpu": 64,
             "total_memory": 1024,
             "total_storage": 10000,
+            "total_gpu": 4,
         }
         serializer = BaremetalModelCreateSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"

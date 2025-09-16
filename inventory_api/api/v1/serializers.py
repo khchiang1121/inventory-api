@@ -192,9 +192,11 @@ class BaremetalGroupSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "status",
             "created_at",
             "updated_at",
@@ -211,9 +213,11 @@ class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "status",
         ]
 
@@ -227,9 +231,11 @@ class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "status",
         ]
 
@@ -288,6 +294,7 @@ class BaremetalModelSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
             "created_at",
             "updated_at",
         ]
@@ -303,6 +310,7 @@ class BaremetalModelCreateSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
         ]
         read_only_fields = ["id"]
 
@@ -317,6 +325,7 @@ class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
             "total_cpu",
             "total_memory",
             "total_storage",
+            "total_gpu",
         ]
         read_only_fields = ["id"]
 
@@ -349,6 +358,7 @@ class BaremetalSerializer(serializers.ModelSerializer):
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "group",
             "pr",
             "po",
@@ -376,6 +386,7 @@ class BaremetalCreateSerializer(serializers.ModelSerializer):
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "group",
             "pr",
             "po",
@@ -401,6 +412,7 @@ class BaremetalUpdateSerializer(serializers.ModelSerializer):
             "available_cpu",
             "available_memory",
             "available_storage",
+            "available_gpu",
             "group",
             "pr",
             "po",
@@ -419,6 +431,7 @@ class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
             "cpu_quota_percentage",
             "memory_quota",
             "storage_quota",
+            "gpu_quota",
             "created_at",
             "updated_at",
         ]
@@ -434,6 +447,7 @@ class BaremetalGroupTenantQuotaCreateSerializer(serializers.ModelSerializer):
             "cpu_quota_percentage",
             "memory_quota",
             "storage_quota",
+            "gpu_quota",
         ]
 
 
@@ -447,6 +461,7 @@ class BaremetalGroupTenantQuotaUpdateSerializer(serializers.ModelSerializer):
             "cpu_quota_percentage",
             "memory_quota",
             "storage_quota",
+            "gpu_quota",
         ]
 
 
