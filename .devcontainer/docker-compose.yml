@@ -15,11 +15,6 @@ services:
           deb [trusted=yes] http://ppa.launchpad.net/apt-fast/stable/ubuntu focal main
           deb [trusted=yes] https://packages.microsoft.com/repos/vscode stable main
           deb [trusted=yes] https://baltocdn.com/helm/stable/debian/ all main
-
     volumes:
       - ~/.ssh:/home/vscode/.ssh:ro
-      # - ~/.vscode-server:/home/vscode/.vscode-server
-      # - ./:/workspaces/${PROJECT_BASE_DIR}:cached
-      # - ~/.gitconfig:/home/vscode/.gitconfig:ro
-    # entrypoint: /usr/local/share/docker-init.sh
     command: sleep infinity

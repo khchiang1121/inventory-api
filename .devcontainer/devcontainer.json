@@ -9,26 +9,29 @@
     "shutdownAction": "stopCompose",
     "containerUser": "vscode",
     "remoteUser": "vscode",
-    "features": {
-        "ghcr.io/devcontainers/features/git:1": {},
-        "ghcr.io/devcontainers/features/github-cli:1": {},
-        // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
-        "ghcr.io/devcontainers/features/node:1": {},
-        "ghcr.io/devcontainers/features/sshd:1": {},
-        "ghcr.io/mpriscella/features/kind:1": {},
-        "ghcr.io/dhoeric/features/k9s:1": {},
-        "ghcr.io/devcontainers/features/common-utils:2": {
-            "installZsh": true,
-            "configureZshAsDefaultShell": true,
-            "installOhMyZsh": true,
-            "upgradePackages": true,
-            "username": "vscode",
-            "userUid": "1000",
-            "userGid": "1000"
-        }
-    },
+    // These features are already pre-installed in the base image khchiang1121/python-api-devcontainer:latest
+    // You don't need to uncomment these features as they are already enabled
+    // The comments are left for documentation purposes.
+    // "features": {
+    //     "ghcr.io/devcontainers/features/git:1": {},
+    //     "ghcr.io/devcontainers/features/github-cli:1": {},
+    //     // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    //     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    //     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+    //     "ghcr.io/devcontainers/features/node:1": {},
+    //     "ghcr.io/devcontainers/features/sshd:1": {},
+    //     "ghcr.io/mpriscella/features/kind:1": {},
+    //     "ghcr.io/dhoeric/features/k9s:1": {},
+    //     "ghcr.io/devcontainers/features/common-utils:2": {
+    //         "installZsh": true,
+    //         "configureZshAsDefaultShell": true,
+    //         "installOhMyZsh": true,
+    //         "upgradePackages": true,
+    //         "username": "vscode",
+    //         "userUid": "1000",
+    //         "userGid": "1000"
+    //     }
+    // },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -83,19 +86,8 @@
                     "**/.mypy_cache": true
                 },
                 "terminal.integrated.defaultProfile.linux": "zsh",
-                "sqltools.connections": [
-                    {
-                        "name": "PostgreSQL Local",
-                        "driver": "PostgreSQL",
-                        "previewLimit": 50,
-                        "server": "postgres",
-                        "port": 5432
-                        // "database": "${POSTGRES_DB}",
-                        // "username": "${POSTGRES_USER}",
-                        // "password": "${POSTGRES_PASSWORD}"
-                    }
-                ],
-                "http.proxy": "${localEnv:http_proxy}"
+                "http.proxy": "${localEnv:http_proxy}",
+                "telemetry.telemetryLevel": "off"
             }
         }
     },
@@ -112,11 +104,13 @@
             "label": "pgAdmin"
         }
     },
-    "onCreateCommand": "echo 'Welcome to the Inventory API Development Container!' && echo 'Make sure to run migrations and start the server after setup.'",
+    "onCreateCommand": "echo 'Welcome to the Development Container!'",
     "postCreateCommand": {
         "init": "./entrypoint.sh && make reset"
     },
+    // "postStartCommand": "sudo chown -R vscode:vscode /home/vscode/.vscode-server",
     "mounts": [
+        // "source=${env:HOME}/.vscode-server/bin,target=/home/vscode/.vscode-server/bin,type=bind,consistency=cached",
         "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached"
     ]
 }

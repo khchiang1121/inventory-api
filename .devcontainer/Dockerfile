@@ -1,5 +1,5 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
-# FROM khchiang1121/inventory-api-devcontainer:latest
+# FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+FROM khchiang1121/python-api-devcontainer:latest
 
 USER root
 
@@ -14,7 +14,7 @@ RUN [ ! -e /usr/bin/python ] && ln -s /usr/bin/python3 /usr/bin/python || true
 
 #===================================================================================================
 # setup apt sources to use the local mirror
-# Uncomment the following lines to use a local mirror (e.g., Aliyun) for faster package downloads
+# Uncomment the following lines to use a local mirror
 # Remove the current sources.list and replace it with the mirror sources
 #===================================================================================================
 
@@ -80,7 +80,7 @@ RUN apt-get update && apt-get install -y \
 RUN echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Copy requirements and install Python dependencies
-COPY requirements.txt .
+COPY requirements.txt* ./
 
 # Setup pip index URL if needed
 ARG PIP_INDEX_URL
@@ -92,8 +92,12 @@ RUN if [ -n "$PIP_INDEX_URL" ]; then \
     echo "index = $PIP_INDEX_URL" >> /etc/pip.conf; \
     fi
 
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN if [ -f "requirements.txt" ]; then \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt; \
+    else \
+    echo "No requirements.txt found, skipping pip install"; \
+    fi
 
 # Switch to developer user
 USER vscode
@@ -101,7 +105,10 @@ USER vscode
 # Set up Python environment
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
-# Expose the port the app runs on
-EXPOSE 8201 8202 5432
+# Expose commonly used ports for development
+# These can be overridden in docker-compose.yml
+# EXPOSE 8000-9000 5432
 
-CMD ["uvicorn", "inventory_api.asgi:application", "--host", "0.0.0.0", "--port", "8201"]
+# Use a default command that keeps the container running
+# Actual application command should be specified in docker-compose.yml
+CMD ["sleep", "infinity"]
