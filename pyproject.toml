@@ -5,6 +5,10 @@ target-version = ["py310"]
 [tool.isort]
 profile = "black"
 
+[tool.pylint.main]
+load-plugins = "pylint_django"
+django-settings-module = "inventory_api.settings"
+
 [tool.pylint.format]
 max-line-length = 99
 ignore-long-lines = "^\\s*(# )?<?https?://\\S+>?$"
