@@ -17,6 +17,7 @@ router.register(r"fabrications", views.FabricationViewSet)
 router.register(r"phases", views.PhaseViewSet)
 router.register(r"data-centers", views.DataCenterViewSet)
 router.register(r"rooms", views.RoomViewSet)
+router.register(r"units", views.UnitViewSet)
 router.register(r"racks", views.RackViewSet)
 
 # Network routes

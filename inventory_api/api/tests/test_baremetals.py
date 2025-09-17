@@ -39,6 +39,14 @@ def test_baremetal_create(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U1",
+        },
+        format="json",
+    ).data
     pr = auth_client.post(
         "/api/v1/purchase-requisitions",
         {"pr_number": "PR-100", "requested_by": "ops"},
@@ -76,7 +84,7 @@ def test_baremetal_create(auth_client):
         "phase": phase["id"],
         "data_center": dc["id"],
         "rack": rack["id"],
-        "unit": "U1",
+        "unit": unit["id"],
         "status": "active",
         "available_cpu": 64,
         "available_memory": 128,
@@ -132,6 +140,14 @@ def test_baremetal_retrieve(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U2",
+        },
+        format="json",
+    ).data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -179,7 +195,7 @@ def test_baremetal_retrieve(auth_client):
         "phase": phase["id"],
         "data_center": dc["id"],
         "rack": rack["id"],
-        "unit": "U2",
+        "unit": unit["id"],
         "status": "active",
         "available_cpu": 32,
         "available_memory": 64,
@@ -231,6 +247,14 @@ def test_baremetal_update(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U3",
+        },
+        format="json",
+    ).data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -274,7 +298,7 @@ def test_baremetal_update(auth_client):
         "phase": phase["id"],
         "data_center": dc["id"],
         "rack": rack["id"],
-        "unit": "U3",
+        "unit": unit["id"],
         "status": "active",
         "available_cpu": 24,
         "available_memory": 32,
@@ -331,6 +355,14 @@ def test_baremetal_delete(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U4",
+        },
+        format="json",
+    ).data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -374,7 +406,7 @@ def test_baremetal_delete(auth_client):
         "phase": phase["id"],
         "data_center": dc["id"],
         "rack": rack["id"],
-        "unit": "U4",
+        "unit": unit["id"],
         "status": "active",
         "available_cpu": 16,
         "available_memory": 16,
@@ -430,6 +462,14 @@ def test_baremetal_with_network_interface(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U5",
+        },
+        format="json",
+    ).data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -473,7 +513,7 @@ def test_baremetal_with_network_interface(auth_client):
         "phase": phase["id"],
         "data_center": dc["id"],
         "rack": rack["id"],
-        "unit": "U5",
+        "unit": unit["id"],
         "status": "active",
         "available_cpu": 8,
         "available_memory": 8,

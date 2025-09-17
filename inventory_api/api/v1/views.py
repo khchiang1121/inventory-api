@@ -50,6 +50,18 @@ class RoomViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RoomSerializer
 
 
+class UnitViewSet(viewsets.ModelViewSet):
+    queryset = models.Unit.objects.all().order_by("id")
+    serializer_class = serializers.UnitSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.UnitCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.UnitUpdateSerializer
+        return serializers.UnitSerializer
+
+
 # ------------------------------------------------------------------------------
 # Network ViewSets
 # ------------------------------------------------------------------------------

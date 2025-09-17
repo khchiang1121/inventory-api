@@ -484,3 +484,316 @@ def test_rack_delete(auth_client):
     # Verify deletion
     r = auth_client.get(f"/api/v1/racks/{rack_id}")
     assert r.status_code == 404
+
+
+# ============================================================================
+# UNIT TESTS
+# ============================================================================
+
+
+@pytest.mark.django_db
+def test_unit_create(auth_client):
+    """Test creating a unit"""
+    # First create a rack to associate the unit with
+    rack_payload = {
+        "name": "rack-for-unit",
+        "bgp_number": "65010",
+        "as_number": 65010,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    assert rack_r.status_code == 201
+    rack_id = rack_r.data["id"]
+
+    # Now create a unit
+    unit_payload = {"rack": rack_id, "name": "U1"}
+    r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    assert r.status_code == 201
+    assert r.data["name"] == "U1"
+    assert str(r.data["rack"]) == str(rack_id)
+    assert "id" in r.data
+
+
+@pytest.mark.django_db
+def test_unit_list(auth_client):
+    """Test listing units"""
+    r = auth_client.get("/api/v1/units")
+    assert r.status_code == 200
+    assert "results" in r.data or isinstance(r.data, list)
+
+
+@pytest.mark.django_db
+def test_unit_retrieve(auth_client):
+    """Test retrieving a specific unit"""
+    # First create a rack
+    rack_payload = {
+        "name": "rack-for-retrieve",
+        "bgp_number": "65011",
+        "as_number": 65011,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create a unit
+    unit_payload = {"rack": rack_id, "name": "U2"}
+    create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    unit_id = create_r.data["id"]
+
+    # Retrieve the unit
+    r = auth_client.get(f"/api/v1/units/{unit_id}")
+    assert r.status_code == 200
+    assert r.data["name"] == "U2"
+    assert str(r.data["rack"]) == str(rack_id)
+
+
+@pytest.mark.django_db
+def test_unit_update_put(auth_client):
+    """Test updating a unit with PUT"""
+    # First create a rack
+    rack_payload = {
+        "name": "rack-for-put",
+        "bgp_number": "65012",
+        "as_number": 65012,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create another rack for updating
+    rack2_payload = {
+        "name": "rack-for-put-2",
+        "bgp_number": "65013",
+        "as_number": 65013,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack2_r = auth_client.post("/api/v1/racks", rack2_payload, format="json")
+    rack2_id = rack2_r.data["id"]
+
+    # Create a unit
+    unit_payload = {"rack": rack_id, "name": "U3"}
+    create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    unit_id = create_r.data["id"]
+
+    # Update with PUT
+    put_payload = {"rack": rack2_id, "name": "U3-updated"}
+    r = auth_client.put(f"/api/v1/units/{unit_id}", put_payload, format="json")
+    assert r.status_code == 200
+    assert r.data["name"] == "U3-updated"
+    assert str(r.data["rack"]) == str(rack2_id)
+
+    # Verify in database
+    r = auth_client.get(f"/api/v1/units/{unit_id}")
+    assert r.status_code == 200
+    assert r.data["name"] == "U3-updated"
+    assert str(r.data["rack"]) == str(rack2_id)
+
+
+@pytest.mark.django_db
+def test_unit_update_patch(auth_client):
+    """Test updating a unit with PATCH"""
+    # First create a rack
+    rack_payload = {
+        "name": "rack-for-patch",
+        "bgp_number": "65014",
+        "as_number": 65014,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create a unit
+    unit_payload = {"rack": rack_id, "name": "U4"}
+    create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    unit_id = create_r.data["id"]
+
+    # Update with PATCH (only name)
+    r = auth_client.patch(f"/api/v1/units/{unit_id}", {"name": "U4-patched"}, format="json")
+    assert r.status_code == 200
+    assert r.data["name"] == "U4-patched"
+    assert str(r.data["rack"]) == str(rack_id)  # Should remain unchanged
+
+    # Verify in database
+    r = auth_client.get(f"/api/v1/units/{unit_id}")
+    assert r.status_code == 200
+    assert r.data["name"] == "U4-patched"
+    assert str(r.data["rack"]) == str(rack_id)
+
+
+@pytest.mark.django_db
+def test_unit_delete(auth_client):
+    """Test deleting a unit"""
+    # First create a rack
+    rack_payload = {
+        "name": "rack-for-delete",
+        "bgp_number": "65015",
+        "as_number": 65015,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create a unit
+    unit_payload = {"rack": rack_id, "name": "U5"}
+    create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    unit_id = create_r.data["id"]
+
+    # Delete the unit
+    r = auth_client.delete(f"/api/v1/units/{unit_id}")
+    assert r.status_code in (204, 200)
+
+    # Verify deletion
+    r = auth_client.get(f"/api/v1/units/{unit_id}")
+    assert r.status_code == 404
+
+
+@pytest.mark.django_db
+def test_unit_unique_constraint(auth_client):
+    """Test that rack + name combination must be unique"""
+    # First create a rack
+    rack_payload = {
+        "name": "rack-for-unique",
+        "bgp_number": "65016",
+        "as_number": 65016,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create first unit
+    unit_payload = {"rack": rack_id, "name": "U10"}
+    r1 = auth_client.post("/api/v1/units", unit_payload, format="json")
+    assert r1.status_code == 201
+
+    # Try to create another unit with same rack + name (should fail)
+    r2 = auth_client.post("/api/v1/units", unit_payload, format="json")
+    assert r2.status_code == 400  # Should fail due to unique constraint
+
+
+@pytest.mark.django_db
+def test_unit_same_name_different_racks(auth_client):
+    """Test that same unit name can exist in different racks"""
+    # Create first rack
+    rack1_payload = {
+        "name": "rack-1-for-same-name",
+        "bgp_number": "65017",
+        "as_number": 65017,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack1_r = auth_client.post("/api/v1/racks", rack1_payload, format="json")
+    rack1_id = rack1_r.data["id"]
+
+    # Create second rack
+    rack2_payload = {
+        "name": "rack-2-for-same-name",
+        "bgp_number": "65018",
+        "as_number": 65018,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack2_r = auth_client.post("/api/v1/racks", rack2_payload, format="json")
+    rack2_id = rack2_r.data["id"]
+
+    # Create unit in first rack
+    unit1_payload = {"rack": rack1_id, "name": "U1"}
+    r1 = auth_client.post("/api/v1/units", unit1_payload, format="json")
+    assert r1.status_code == 201
+
+    # Create unit with same name in second rack (should succeed)
+    unit2_payload = {"rack": rack2_id, "name": "U1"}
+    r2 = auth_client.post("/api/v1/units", unit2_payload, format="json")
+    assert r2.status_code == 201
+    assert r2.data["name"] == "U1"
+    assert str(r2.data["rack"]) == str(rack2_id)
+
+
+@pytest.mark.django_db
+def test_unit_invalid_rack(auth_client):
+    """Test creating a unit with invalid rack ID"""
+    import uuid
+
+    fake_rack_id = str(uuid.uuid4())
+    unit_payload = {"rack": fake_rack_id, "name": "U99"}
+    r = auth_client.post("/api/v1/units", unit_payload, format="json")
+    assert r.status_code == 400  # Should fail due to invalid foreign key
+
+
+@pytest.mark.django_db
+def test_unit_missing_required_fields(auth_client):
+    """Test creating a unit with missing required fields"""
+    # Test missing rack
+    r1 = auth_client.post("/api/v1/units", {"name": "U100"}, format="json")
+    assert r1.status_code == 400
+
+    # Test missing name
+    rack_payload = {
+        "name": "rack-for-missing-fields",
+        "bgp_number": "65019",
+        "as_number": 65019,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    r2 = auth_client.post("/api/v1/units", {"rack": rack_id}, format="json")
+    assert r2.status_code == 400
+
+
+@pytest.mark.django_db
+def test_unit_cascade_delete_with_rack(auth_client):
+    """Test that units are deleted when their parent rack is deleted"""
+    # Create a rack
+    rack_payload = {
+        "name": "rack-for-cascade",
+        "bgp_number": "65020",
+        "as_number": 65020,
+        "height_units": 42,
+        "power_capacity": "4.00",
+        "status": "active",
+    }
+    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_id = rack_r.data["id"]
+
+    # Create units in the rack
+    unit1_payload = {"rack": rack_id, "name": "U1"}
+    unit1_r = auth_client.post("/api/v1/units", unit1_payload, format="json")
+    unit1_id = unit1_r.data["id"]
+
+    unit2_payload = {"rack": rack_id, "name": "U2"}
+    unit2_r = auth_client.post("/api/v1/units", unit2_payload, format="json")
+    unit2_id = unit2_r.data["id"]
+
+    # Verify units exist
+    r1 = auth_client.get(f"/api/v1/units/{unit1_id}")
+    assert r1.status_code == 200
+    r2 = auth_client.get(f"/api/v1/units/{unit2_id}")
+    assert r2.status_code == 200
+
+    # Delete the rack
+    rack_delete_r = auth_client.delete(f"/api/v1/racks/{rack_id}")
+    assert rack_delete_r.status_code in (204, 200)
+
+    # Verify units are also deleted (cascade delete)
+    r1 = auth_client.get(f"/api/v1/units/{unit1_id}")
+    assert r1.status_code == 404
+    r2 = auth_client.get(f"/api/v1/units/{unit2_id}")
+    assert r2.status_code == 404

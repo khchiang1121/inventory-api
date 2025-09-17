@@ -48,6 +48,7 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
+# Unit Serializers
 # ------------------------------------------------------------------------------
 # Network Serializers
 # ------------------------------------------------------------------------------
@@ -178,6 +179,38 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "height_units",
             "power_capacity",
             "status",
+        ]
+
+
+# Unit Serializers (placed after Rack serializers to avoid forward refs)
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = [
+            "id",
+            "rack",
+            "name",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class UnitCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = [
+            "id",
+            "rack",
+            "name",
+        ]
+
+
+class UnitUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = [
+            "rack",
+            "name",
         ]
 
 
@@ -352,6 +385,7 @@ class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
 # Baremetal Serializers
 class BaremetalSerializer(serializers.ModelSerializer):
     rack = RackSerializer(read_only=True)
+    unit = UnitSerializer(read_only=True)
     group = BaremetalGroupSerializer(read_only=True)
     model = BaremetalModelSerializer(read_only=True)
     fabrication = FabricationSerializer(read_only=True)

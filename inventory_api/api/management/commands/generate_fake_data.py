@@ -244,13 +244,23 @@ class Command(BaseCommand):
             skip_existing,
             "BaremetalModel",
         )
-        
+
         # Add suppliers to baremetal models after creation
         for model in baremetal_models:
             # Randomly assign 1-3 suppliers to each model
             num_suppliers = random.randint(1, min(3, len(suppliers)))
             selected_suppliers = random.sample(suppliers, num_suppliers)
             model.suppliers.set(selected_suppliers)
+
+        # Create Units per rack
+        units_by_rack = {}
+        for rack in racks:
+            rack_units = []
+            for i in range(1, rack.height_units + 1):
+                name = f"U{i}"
+                unit_obj, _ = models.Unit.objects.get_or_create(rack=rack, name=name)
+                rack_units.append(unit_obj)
+            units_by_rack[rack.id] = rack_units
 
         # Create Baremetal Servers
         baremetals = self._create_or_get_models(
@@ -263,8 +273,8 @@ class Command(BaseCommand):
                 "phase": random.choice(phases),
                 "data_center": random.choice(data_centers),
                 "room": random.choice(rooms).name,
-                "rack": random.choice(racks),
-                "unit": f"U{random.randint(1, 48)}",
+                "rack": (selected_rack := random.choice(racks)),
+                "unit": random.choice(units_by_rack[selected_rack.id]),
                 "status": random.choice(["active", "inactive", "pending", "retired"]),
                 "available_cpu": random.randint(8, 64),
                 "available_memory": random.randint(8192, 65536),
@@ -840,7 +850,7 @@ ntp_servers:
                         host.status = "active"
                         host.metadata = {
                             "server_type": "baremetal",
-                            "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
+                            "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
                             "serial_number": baremetal.serial_number,
                         }
                         host.save()
@@ -857,7 +867,7 @@ ntp_servers:
                             status="active",
                             metadata={
                                 "server_type": "baremetal",
-                                "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit}",
+                                "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
                                 "serial_number": baremetal.serial_number,
                             },
                         )

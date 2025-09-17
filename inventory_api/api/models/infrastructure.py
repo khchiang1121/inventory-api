@@ -71,3 +71,21 @@ class Rack(AbstractBase):
         default="active",
         help_text="Rack status",
     )
+
+
+class Unit(AbstractBase):
+    """Individual rack unit position (e.g., U1..U42) within a rack."""
+
+    rack = models.ForeignKey(
+        Rack,
+        on_delete=models.CASCADE,
+        related_name="units",
+        help_text="Rack that this unit belongs to",
+    )
+    name = models.CharField(
+        max_length=32,
+        help_text="Unit label within the rack, e.g., U1, U2",
+    )
+
+    class Meta:
+        unique_together = ["rack", "name"]

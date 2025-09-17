@@ -22,7 +22,7 @@ from .baremetal import (
     Tenant,
 )
 from .base import AbstractBase
-from .infrastructure import DataCenter, Fabrication, Phase, Rack, Room
+from .infrastructure import DataCenter, Fabrication, Phase, Rack, Room, Unit
 from .network import VLAN, VRF, BGPConfig, NetworkInterface
 from .purchase import PurchaseOrder, PurchaseRequisition
 from .users import CustomUser
@@ -48,6 +48,7 @@ __all__ = [
     "DataCenter",
     "Room",
     "Rack",
+    "Unit",
     # Network
     "VLAN",
     "VRF",

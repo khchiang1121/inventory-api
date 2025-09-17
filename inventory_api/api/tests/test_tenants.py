@@ -45,6 +45,14 @@ def test_network_interface_create(auth_client):
         },
         format="json",
     ).data
+    unit = auth_client.post(
+        "/api/v1/units",
+        {
+            "rack": rack["id"],
+            "name": "U1",
+        },
+        format="json",
+    ).data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -92,7 +100,7 @@ def test_network_interface_create(auth_client):
             "phase": phase["id"],
             "data_center": dc["id"],
             "rack": rack["id"],
-            "unit": "U1",
+            "unit": unit["id"],
             "status": "active",
             "available_cpu": 16,
             "available_memory": 16,

@@ -82,7 +82,9 @@ class Baremetal(AbstractBase):
     rack = models.ForeignKey(
         "Rack", on_delete=models.SET_NULL, null=True, related_name="baremetals"
     )
-    unit = models.CharField(max_length=32, blank=True)
+    unit = models.ForeignKey(
+        "Unit", on_delete=models.SET_NULL, null=True, blank=True, related_name="baremetals"
+    )
     status = models.CharField(
         max_length=32,
         choices=[
