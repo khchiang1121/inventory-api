@@ -19,6 +19,14 @@ class Phase(AbstractBase):
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
+    fab = models.ForeignKey(
+        "Fabrication",
+        on_delete=models.CASCADE,
+        related_name="phases",
+        help_text="Fabrication that this phase belongs to",
+        null=True,
+        blank=True,
+    )
 
 
 class DataCenter(AbstractBase):
@@ -28,6 +36,14 @@ class DataCenter(AbstractBase):
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
+    phase = models.ForeignKey(
+        Phase,
+        on_delete=models.CASCADE,
+        related_name="datacenters",
+        help_text="Phase that this datacenter belongs to",
+        null=True,
+        blank=True,
+    )
 
 
 class Room(AbstractBase):
@@ -36,6 +52,14 @@ class Room(AbstractBase):
     name = models.CharField(max_length=32, unique=True, help_text="Room identifier")
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
+    )
+    datacenter = models.ForeignKey(
+        DataCenter,
+        on_delete=models.CASCADE,
+        related_name="rooms",
+        help_text="Datacenter that this room belongs to",
+        null=True,
+        blank=True,
     )
 
 
@@ -47,6 +71,14 @@ class Rack(AbstractBase):
     as_number = models.PositiveIntegerField(help_text="Autonomous System Number")
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
+    )
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name="racks",
+        help_text="Room that this rack belongs to",
+        null=True,
+        blank=True,
     )
     height_units = models.PositiveIntegerField(
         default=42, help_text="Total height units in the rack"

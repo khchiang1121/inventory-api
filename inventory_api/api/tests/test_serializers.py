@@ -117,6 +117,14 @@ class TestInfrastructureSerializers:
 
     def test_rack_serializer_with_all_fields(self):
         """Test RackSerializer with all fields"""
+        # Create required dependencies
+        from ..models import DataCenter, Fabrication, Phase, Room
+
+        fab = Fabrication.objects.create(name="FAB001")
+        phase = Phase.objects.create(name="PHASE001", fab=fab)
+        dc = DataCenter.objects.create(name="DC001", phase=phase)
+        room = Room.objects.create(name="ROOM001", datacenter=dc)
+
         data = {
             "name": "RACK001",
             "bgp_number": "AS12345",
@@ -126,20 +134,31 @@ class TestInfrastructureSerializers:
             "available_units": 32,
             "power_capacity": "10.50",
             "status": "active",
+            "room": room.id,
         }
         serializer = RackSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         rack = serializer.save()
         assert rack.height_units == 42
         assert rack.power_capacity == 10.50
+        assert rack.room == room
 
     def test_rack_serializer_invalid_status(self):
         """Test RackSerializer with invalid status"""
+        # Create required dependencies
+        from ..models import DataCenter, Fabrication, Phase, Room
+
+        fab = Fabrication.objects.create(name="FAB002")
+        phase = Phase.objects.create(name="PHASE002", fab=fab)
+        dc = DataCenter.objects.create(name="DC002", phase=phase)
+        room = Room.objects.create(name="ROOM002", datacenter=dc)
+
         data = {
             "name": "RACK001",
             "bgp_number": "AS12345",
             "as_number": 65001,
             "status": "invalid_status",
+            "room": room.id,
         }
         serializer = RackSerializer(data=data)
         assert not serializer.is_valid()

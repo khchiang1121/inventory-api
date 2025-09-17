@@ -33,19 +33,19 @@ class FabricationSerializer(serializers.ModelSerializer):
 class PhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phase
-        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
 
 
 class DataCenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DataCenter
-        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "phase", "created_at", "updated_at"]
 
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Room
-        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
 
 
 # Rack Serializers
@@ -58,6 +58,7 @@ class RackSerializer(serializers.ModelSerializer):
             "bgp_number",
             "as_number",
             "external_system_id",
+            "room",
             "height_units",
             "used_units",
             "available_units",
@@ -77,6 +78,7 @@ class RackCreateSerializer(serializers.ModelSerializer):
             "bgp_number",
             "as_number",
             "external_system_id",
+            "room",
             "height_units",
             "power_capacity",
             "status",
@@ -92,6 +94,7 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "bgp_number",
             "as_number",
             "external_system_id",
+            "room",
             "height_units",
             "power_capacity",
             "status",

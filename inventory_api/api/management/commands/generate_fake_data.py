@@ -117,7 +117,7 @@ class Command(BaseCommand):
 
         self.stdout.write("✔️ Users ready")
 
-        # Create Fabrications, Phases, Data Centers, Rooms
+        # Create Infrastructure Hierarchy: Fabrications → Phases → DataCenters → Rooms → Racks
         fabrications = self._create_or_get_models(
             models.Fabrication,
             lambda: {"name": f"Fab-{fake.word()}", "external_system_id": fake.uuid4()},
@@ -125,41 +125,96 @@ class Command(BaseCommand):
             skip_existing,
             "Fabrication",
         )
-        phases = self._create_or_get_models(
-            models.Phase,
-            lambda: {"name": f"Phase-{fake.word()}", "external_system_id": fake.uuid4()},
-            3,
-            skip_existing,
-            "Phase",
-        )
-        data_centers = self._create_or_get_models(
-            models.DataCenter,
-            lambda: {"name": f"DC-{fake.word()}", "external_system_id": fake.uuid4()},
-            3,
-            skip_existing,
-            "DataCenter",
-        )
-        rooms = self._create_or_get_models(
-            models.Room,
-            lambda: {"name": f"Room-{fake.word()}", "external_system_id": fake.uuid4()},
-            3,
-            skip_existing,
-            "Room",
-        )
 
-        # Create Racks
-        racks = self._create_or_get_models(
-            models.Rack,
-            lambda: {
+        # Create Phases (each belongs to a fabrication)
+        phases = []
+        for i in range(5):  # Create 5 phases across the fabrications
+            fab = random.choice(fabrications)
+            phase_data = {
+                "name": f"Phase-{fake.word()}",
+                "external_system_id": fake.uuid4(),
+                "fab": fab,
+            }
+            if skip_existing:
+                phase, created = models.Phase.objects.get_or_create(
+                    name=phase_data["name"], defaults=phase_data
+                )
+                if created:
+                    self.stdout.write(f"✔️ Created Phase: {phase.name}")
+                else:
+                    self.stdout.write(f"⚠️ Phase already exists: {phase.name}")
+            else:
+                phase = models.Phase.objects.create(**phase_data)
+                self.stdout.write(f"✔️ Created Phase: {phase.name}")
+            phases.append(phase)
+
+        # Create DataCenters (each belongs to a phase)
+        data_centers = []
+        for i in range(4):  # Create 4 datacenters across the phases
+            phase = random.choice(phases)
+            dc_data = {
+                "name": f"DC-{fake.word()}",
+                "external_system_id": fake.uuid4(),
+                "phase": phase,
+            }
+            if skip_existing:
+                dc, created = models.DataCenter.objects.get_or_create(
+                    name=dc_data["name"], defaults=dc_data
+                )
+                if created:
+                    self.stdout.write(f"✔️ Created DataCenter: {dc.name}")
+                else:
+                    self.stdout.write(f"⚠️ DataCenter already exists: {dc.name}")
+            else:
+                dc = models.DataCenter.objects.create(**dc_data)
+                self.stdout.write(f"✔️ Created DataCenter: {dc.name}")
+            data_centers.append(dc)
+
+        # Create Rooms (each belongs to a datacenter)
+        rooms = []
+        for i in range(8):  # Create 8 rooms across the datacenters
+            dc = random.choice(data_centers)
+            room_data = {
+                "name": f"Room-{fake.word()}",
+                "external_system_id": fake.uuid4(),
+                "datacenter": dc,
+            }
+            if skip_existing:
+                room, created = models.Room.objects.get_or_create(
+                    name=room_data["name"], defaults=room_data
+                )
+                if created:
+                    self.stdout.write(f"✔️ Created Room: {room.name}")
+                else:
+                    self.stdout.write(f"⚠️ Room already exists: {room.name}")
+            else:
+                room = models.Room.objects.create(**room_data)
+                self.stdout.write(f"✔️ Created Room: {room.name}")
+            rooms.append(room)
+
+        # Create Racks (each belongs to a room)
+        racks = []
+        for i in range(12):  # Create 12 racks across the rooms
+            room = random.choice(rooms)
+            rack_data = {
                 "name": f"Rack-{fake.word()}",
                 "bgp_number": str(fake.random_int(min=1000, max=9999)),
                 "as_number": fake.random_int(min=10000, max=99999),
                 "external_system_id": fake.uuid4(),
-            },
-            5,
-            skip_existing,
-            "Rack",
-        )
+                "room": room,
+            }
+            if skip_existing:
+                rack, created = models.Rack.objects.get_or_create(
+                    name=rack_data["name"], defaults=rack_data
+                )
+                if created:
+                    self.stdout.write(f"✔️ Created Rack: {rack.name}")
+                else:
+                    self.stdout.write(f"⚠️ Rack already exists: {rack.name}")
+            else:
+                rack = models.Rack.objects.create(**rack_data)
+                self.stdout.write(f"✔️ Created Rack: {rack.name}")
+            racks.append(rack)
         self.stdout.write("✔️ Racks ready")
 
         # Create Baremetal Groups

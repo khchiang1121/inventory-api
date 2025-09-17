@@ -102,10 +102,14 @@ def test_fabrication_delete(auth_client):
 @pytest.mark.django_db
 def test_phase_create(auth_client):
     """Test creating a phase"""
-    payload = {"name": "phase-create"}
+    # First create a fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-test"}, format="json").data
+
+    payload = {"name": "phase-create", "fab": fab["id"]}
     r = auth_client.post("/api/v1/phases", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "phase-create"
+    assert str(r.data["fab"]) == str(fab["id"])
 
 
 @pytest.mark.django_db
@@ -119,37 +123,49 @@ def test_phase_list(auth_client):
 @pytest.mark.django_db
 def test_phase_retrieve(auth_client):
     """Test retrieving a specific phase"""
-    payload = {"name": "phase-retrieve"}
+    # First create a fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-retrieve"}, format="json").data
+
+    payload = {"name": "phase-retrieve", "fab": fab["id"]}
     create_r = auth_client.post("/api/v1/phases", payload, format="json")
     phase_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-retrieve"
+    assert str(r.data["fab"]) == str(fab["id"])
 
 
 @pytest.mark.django_db
 def test_phase_update_put(auth_client):
     """Test updating a phase with PUT"""
-    payload = {"name": "phase-put"}
+    # First create a fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-put"}, format="json").data
+
+    payload = {"name": "phase-put", "fab": fab["id"]}
     create_r = auth_client.post("/api/v1/phases", payload, format="json")
     phase_id = create_r.data["id"]
 
-    put_payload = {"name": "phase-put-updated"}
+    put_payload = {"name": "phase-put-updated", "fab": fab["id"]}
     r = auth_client.put(f"/api/v1/phases/{phase_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "phase-put-updated"
+    assert str(r.data["fab"]) == str(fab["id"])
 
     # Verify in database
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-put-updated"
+    assert str(r.data["fab"]) == str(fab["id"])
 
 
 @pytest.mark.django_db
 def test_phase_update_patch(auth_client):
     """Test updating a phase with PATCH"""
-    payload = {"name": "phase-patch"}
+    # First create a fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-patch"}, format="json").data
+
+    payload = {"name": "phase-patch", "fab": fab["id"]}
     create_r = auth_client.post("/api/v1/phases", payload, format="json")
     phase_id = create_r.data["id"]
 
@@ -158,17 +174,22 @@ def test_phase_update_patch(auth_client):
     )
     assert r.status_code == 200
     assert r.data["name"] == "phase-patch-updated"
+    assert str(r.data["fab"]) == str(fab["id"])
 
     # Verify in database
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-patch-updated"
+    assert str(r.data["fab"]) == str(fab["id"])
 
 
 @pytest.mark.django_db
 def test_phase_delete(auth_client):
     """Test deleting a phase"""
-    payload = {"name": "phase-delete"}
+    # First create a fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-delete"}, format="json").data
+
+    payload = {"name": "phase-delete", "fab": fab["id"]}
     create_r = auth_client.post("/api/v1/phases", payload, format="json")
     phase_id = create_r.data["id"]
 
@@ -188,10 +209,17 @@ def test_phase_delete(auth_client):
 @pytest.mark.django_db
 def test_data_center_create(auth_client):
     """Test creating a data center"""
-    payload = {"name": "dc-create"}
+    # First create fabrication and phase
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-dc-test"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-dc-test", "fab": fab["id"]}, format="json"
+    ).data
+
+    payload = {"name": "dc-create", "phase": phase["id"]}
     r = auth_client.post("/api/v1/data-centers", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "dc-create"
+    assert str(r.data["phase"]) == str(phase["id"])
 
 
 @pytest.mark.django_db
@@ -274,10 +302,20 @@ def test_data_center_delete(auth_client):
 @pytest.mark.django_db
 def test_room_create(auth_client):
     """Test creating a room"""
-    payload = {"name": "room-create"}
+    # First create fabrication, phase, and datacenter
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-room-test"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-room-test", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-room-test", "phase": phase["id"]}, format="json"
+    ).data
+
+    payload = {"name": "room-create", "datacenter": dc["id"]}
     r = auth_client.post("/api/v1/rooms", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "room-create"
+    assert str(r.data["datacenter"]) == str(dc["id"])
 
 
 @pytest.mark.django_db
@@ -291,13 +329,25 @@ def test_room_list(auth_client):
 @pytest.mark.django_db
 def test_room_retrieve(auth_client):
     """Test retrieving a specific room"""
-    payload = {"name": "room-retrieve"}
+    # First create fabrication, phase, and datacenter
+    fab = auth_client.post(
+        "/api/v1/fabrications", {"name": "fab-room-retrieve"}, format="json"
+    ).data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-room-retrieve", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-room-retrieve", "phase": phase["id"]}, format="json"
+    ).data
+
+    payload = {"name": "room-retrieve", "datacenter": dc["id"]}
     create_r = auth_client.post("/api/v1/rooms", payload, format="json")
     room_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/rooms/{room_id}")
     assert r.status_code == 200
     assert r.data["name"] == "room-retrieve"
+    assert str(r.data["datacenter"]) == str(dc["id"])
 
 
 @pytest.mark.django_db
@@ -360,6 +410,18 @@ def test_room_delete(auth_client):
 @pytest.mark.django_db
 def test_rack_create(auth_client):
     """Test creating a rack"""
+    # First create fabrication, phase, datacenter, and room
+    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-rack-test"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-rack-test", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-rack-test", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room-rack-test", "datacenter": dc["id"]}, format="json"
+    ).data
+
     payload = {
         "name": "rack-create",
         "bgp_number": "65001",
@@ -367,11 +429,13 @@ def test_rack_create(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room["id"],
     }
     r = auth_client.post("/api/v1/racks", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "rack-create"
     assert r.data["as_number"] == 65001
+    assert str(r.data["room"]) == str(room["id"])
 
 
 @pytest.mark.django_db
@@ -385,6 +449,20 @@ def test_rack_list(auth_client):
 @pytest.mark.django_db
 def test_rack_retrieve(auth_client):
     """Test retrieving a specific rack"""
+    # First create fabrication, phase, datacenter, and room
+    fab = auth_client.post(
+        "/api/v1/fabrications", {"name": "fab-rack-retrieve"}, format="json"
+    ).data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-rack-retrieve", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-rack-retrieve", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room-rack-retrieve", "datacenter": dc["id"]}, format="json"
+    ).data
+
     payload = {
         "name": "rack-retrieve",
         "bgp_number": "65002",
@@ -392,6 +470,7 @@ def test_rack_retrieve(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room["id"],
     }
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
@@ -400,6 +479,7 @@ def test_rack_retrieve(auth_client):
     assert r.status_code == 200
     assert r.data["name"] == "rack-retrieve"
     assert r.data["as_number"] == 65002
+    assert str(r.data["room"]) == str(room["id"])
 
 
 @pytest.mark.django_db
@@ -484,6 +564,90 @@ def test_rack_delete(auth_client):
     # Verify deletion
     r = auth_client.get(f"/api/v1/racks/{rack_id}")
     assert r.status_code == 404
+
+
+# ============================================================================
+# HIERARCHICAL RELATIONSHIP TESTS
+# ============================================================================
+
+
+@pytest.mark.django_db
+def test_infrastructure_hierarchy_chain(auth_client):
+    """Test the complete infrastructure hierarchy: Fab → Phase → DC → Room → Rack → Unit"""
+    # Create fabrication
+    fab = auth_client.post("/api/v1/fabrications", {"name": "FAB-HIERARCHY"}, format="json").data
+
+    # Create phase under fabrication
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "PHASE-HIERARCHY", "fab": fab["id"]}, format="json"
+    ).data
+
+    # Create datacenter under phase
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "DC-HIERARCHY", "phase": phase["id"]}, format="json"
+    ).data
+
+    # Create room under datacenter
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "ROOM-HIERARCHY", "datacenter": dc["id"]}, format="json"
+    ).data
+
+    # Create rack under room
+    rack = auth_client.post(
+        "/api/v1/racks",
+        {"name": "RACK-HIERARCHY", "bgp_number": "65100", "as_number": 65100, "room": room["id"]},
+        format="json",
+    ).data
+
+    # Create unit under rack
+    unit = auth_client.post(
+        "/api/v1/units", {"name": "U1", "rack": rack["id"]}, format="json"
+    ).data
+
+    # Verify all relationships are correctly established
+    assert str(phase["fab"]) == str(fab["id"])
+    assert str(dc["phase"]) == str(phase["id"])
+    assert str(room["datacenter"]) == str(dc["id"])
+    assert str(rack["room"]) == str(room["id"])
+    assert str(unit["rack"]) == str(rack["id"])
+
+    # Test retrieval to ensure relationships are persisted
+    phase_check = auth_client.get(f"/api/v1/phases/{phase['id']}").data
+    dc_check = auth_client.get(f"/api/v1/data-centers/{dc['id']}").data
+    room_check = auth_client.get(f"/api/v1/rooms/{room['id']}").data
+    rack_check = auth_client.get(f"/api/v1/racks/{rack['id']}").data
+    unit_check = auth_client.get(f"/api/v1/units/{unit['id']}").data
+
+    assert str(phase_check["fab"]) == str(fab["id"])
+    assert str(dc_check["phase"]) == str(phase["id"])
+    assert str(room_check["datacenter"]) == str(dc["id"])
+    assert str(rack_check["room"]) == str(room["id"])
+    assert str(unit_check["rack"]) == str(rack["id"])
+
+
+@pytest.mark.django_db
+def test_infrastructure_cascade_relationships(auth_client):
+    """Test that deleting a parent cascades to children (when applicable)"""
+    # Create the hierarchy
+    fab = auth_client.post("/api/v1/fabrications", {"name": "FAB-CASCADE"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "PHASE-CASCADE", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "DC-CASCADE", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "ROOM-CASCADE", "datacenter": dc["id"]}, format="json"
+    ).data
+
+    # Delete the fabrication - this should cascade to phase, datacenter, and room
+    auth_client.delete(f"/api/v1/fabrications/{fab['id']}")
+
+    # Verify cascaded deletion
+    assert auth_client.get(f"/api/v1/fabrications/{fab['id']}").status_code == 404
+    assert auth_client.get(f"/api/v1/phases/{phase['id']}").status_code == 404
+    assert auth_client.get(f"/api/v1/data-centers/{dc['id']}").status_code == 404
+    assert auth_client.get(f"/api/v1/rooms/{room['id']}").status_code == 404
 
 
 # ============================================================================

@@ -43,6 +43,7 @@ from ..models import (
     PurchaseOrder,
     PurchaseRequisition,
     Rack,
+    Room,
     Tenant,
     VirtualMachineSpecification,
 )
@@ -68,8 +69,14 @@ class APITestSetup(APITestCase):
             name="Test Tenant", description="Test Description", status="active"
         )
 
-        # Create test rack
-        self.rack = Rack.objects.create(name="Test Rack", bgp_number="AS12345", as_number=67890)
+        # Create test infrastructure hierarchy
+        self.fabrication = Fabrication.objects.create(name="Test Fab")
+        self.phase = Phase.objects.create(name="Test Phase", fab=self.fabrication)
+        self.data_center = DataCenter.objects.create(name="Test DC", phase=self.phase)
+        self.room = Room.objects.create(name="Test Room", datacenter=self.data_center)
+        self.rack = Rack.objects.create(
+            name="Test Rack", bgp_number="AS12345", as_number=67890, room=self.room
+        )
 
         # Create test baremetal group
         self.baremetal_group = BaremetalGroup.objects.create(
@@ -96,9 +103,8 @@ class APITestSetup(APITestCase):
             total_storage=10000,
             total_gpu=4,
         )
-        self.fabrication = Fabrication.objects.create(name="FAB1")
-        self.phase = Phase.objects.create(name="PHASE1")
-        self.data_center = DataCenter.objects.create(name="DC1")
+        # Use the already created infrastructure objects
+        # self.fabrication, self.phase, self.data_center already created above
         self.purchase_requisition = PurchaseRequisition.objects.create(
             pr_number="PR-2024-001",
             requested_by="John Doe",
