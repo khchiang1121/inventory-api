@@ -844,7 +844,6 @@ ntp_servers:
                             content_type=baremetal_content_type,
                             object_id=baremetal.id,
                         )
-                        host.group = group
                         host.ansible_host = ansible_host
                         host.aliases = [f"{baremetal.name}-{inventory.name}"]
                         host.status = "active"
@@ -854,10 +853,10 @@ ntp_servers:
                             "serial_number": baremetal.serial_number,
                         }
                         host.save()
+                        host.groups.set([group])
                     else:
-                        models.AnsibleHost.objects.create(
+                        host = models.AnsibleHost.objects.create(
                             inventory=inventory,
-                            group=group,
                             content_type=baremetal_content_type,
                             object_id=baremetal.id,
                             ansible_host=ansible_host,
@@ -871,6 +870,7 @@ ntp_servers:
                                 "serial_number": baremetal.serial_number,
                             },
                         )
+                        host.groups.set([group])
 
         # Assign VMs to groups
         for vm in vms:
@@ -928,7 +928,6 @@ ntp_servers:
                             content_type=vm_content_type,
                             object_id=vm.id,
                         )
-                        host.group = group
                         host.ansible_host = ansible_host
                         host.aliases = [f"{vm.name}-{inventory.name}"]
                         host.status = "active"
@@ -939,10 +938,10 @@ ntp_servers:
                             "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                         }
                         host.save()
+                        host.groups.set([group])
                     else:
-                        models.AnsibleHost.objects.create(
+                        host = models.AnsibleHost.objects.create(
                             inventory=inventory,
-                            group=group,
                             content_type=vm_content_type,
                             object_id=vm.id,
                             ansible_host=ansible_host,
@@ -957,6 +956,7 @@ ntp_servers:
                                 "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                             },
                         )
+                        host.groups.set([group])
 
         self.stdout.write("✔️ Assigned hosts to Ansible groups")
 

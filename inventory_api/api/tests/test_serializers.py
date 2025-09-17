@@ -327,7 +327,7 @@ class TestAnsibleSerializers:
 
         data = {
             "inventory": str(inventory.id),
-            "group": str(group.id),
+            "groups": [str(group.id)],
             "content_type": content_type.id,
             "object_id": str(tenant.id),
             "ansible_host": "192.168.1.10",

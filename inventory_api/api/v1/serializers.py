@@ -1217,7 +1217,7 @@ class AnsibleGroupUpdateSerializer(serializers.ModelSerializer):
 
 
 class AnsibleHostSerializer(serializers.ModelSerializer):
-    group = AnsibleGroupSerializer(read_only=True)
+    groups = AnsibleGroupSerializer(many=True, read_only=True)
     host = ResourceRelatedField(read_only=True)
     content_type = serializers.PrimaryKeyRelatedField(
         queryset=ContentType.objects.all(), write_only=True
@@ -1228,7 +1228,7 @@ class AnsibleHostSerializer(serializers.ModelSerializer):
         model = models.AnsibleHost
         fields = [
             "id",
-            "group",
+            "groups",
             "host",
             "content_type",
             "object_id",
@@ -1243,12 +1243,16 @@ class AnsibleHostSerializer(serializers.ModelSerializer):
 
 
 class AnsibleHostCreateSerializer(serializers.ModelSerializer):
+    groups = serializers.PrimaryKeyRelatedField(
+        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
+    )
+
     class Meta:
         model = models.AnsibleHost
         fields = [
             "id",
             "inventory",
-            "group",
+            "groups",
             "content_type",
             "object_id",
             "ansible_host",
@@ -1258,16 +1262,41 @@ class AnsibleHostCreateSerializer(serializers.ModelSerializer):
             "metadata",
         ]
 
+    def create(self, validated_data):
+        groups = validated_data.pop("groups", [])
+        host = models.AnsibleHost.objects.create(**validated_data)
+        if groups:
+            host.groups.set(groups)
+        return host
+
 
 class AnsibleHostUpdateSerializer(serializers.ModelSerializer):
+    groups = serializers.PrimaryKeyRelatedField(
+        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
+    )
+
     class Meta:
         model = models.AnsibleHost
         fields = [
             "inventory",
-            "group",
+            "groups",
             "ansible_host",
             "ansible_port",
             "ansible_user",
             "ansible_ssh_private_key_file",
             "metadata",
         ]
+
+    def update(self, instance, validated_data):
+        groups = validated_data.pop("groups", None)
+
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update groups if provided
+        if groups is not None:
+            instance.groups.set(groups)
+
+        return instance

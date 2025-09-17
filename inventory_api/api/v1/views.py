@@ -402,7 +402,7 @@ class AnsibleInventoryVariableSetAssociationViewSet(viewsets.ModelViewSet):
 
 
 class AnsibleHostVariableViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleHostVariable.objects.all().order_by("host__group__name", "key")
+    queryset = models.AnsibleHostVariable.objects.all().order_by("host__id", "key")
     serializer_class = serializers.AnsibleHostVariableSerializer
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
@@ -519,7 +519,7 @@ class AnsibleGroupRelationshipViewSet(viewsets.ModelViewSet):
 
 
 class AnsibleHostViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleHost.objects.all().order_by("group__name")
+    queryset = models.AnsibleHost.objects.all().order_by("id")
     serializer_class = serializers.AnsibleHostSerializer
 
     def get_serializer_class(self) -> Type[BaseSerializer]:

@@ -274,7 +274,7 @@ class AnsibleHost(AbstractBase):
     """Enhanced host model with inventory support and aliases"""
 
     inventory = models.ForeignKey(AnsibleInventory, on_delete=models.CASCADE, related_name="hosts")
-    group = models.ForeignKey(AnsibleGroup, on_delete=models.CASCADE, related_name="hosts")
+    groups = models.ManyToManyField(AnsibleGroup, related_name="hosts", blank=True)
 
     # Generic foreign key to either VM or Baremetal
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -327,19 +327,23 @@ class AnsibleHost(AbstractBase):
     metadata = models.JSONField(default=dict, blank=True, help_text="Additional host metadata")
 
     class Meta:
-        unique_together = ["inventory", "group", "content_type", "object_id"]
+        unique_together = ["inventory", "content_type", "object_id"]
         verbose_name = "Ansible Host"
         verbose_name_plural = "Ansible Hosts"
 
     def __str__(self) -> str:
-        return f"{self.host} in {self.group.name}"
+        if hasattr(self, "_state") and self._state.adding:
+            # Object is being created, groups not available yet
+            return f"{self.host if self.host else 'Host'}"
+        group_names = ", ".join([group.name for group in self.groups.all()])
+        return f"{self.host} in [{group_names}]" if group_names else f"{self.host}"
 
     @property
     def host_name(self) -> str:
         """Get the name of the host (VM or Baremetal)"""
-        if hasattr(self.host, "name"):
+        if self.host and hasattr(self.host, "name"):
             return self.host.name
-        return str(self.host)
+        return str(self.host) if self.host else "Unknown"
 
     @property
     def host_type(self) -> str:
