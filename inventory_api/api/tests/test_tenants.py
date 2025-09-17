@@ -30,7 +30,7 @@ def test_network_interface_create(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-ni"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab-ni"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "phase-ni", "fab": fab["id"]}, format="json"
     ).data

@@ -73,7 +73,7 @@ class TestAPIResponseStructure:
         Fab.objects.create(name="FAB001")
         Fab.objects.create(name="FAB002")
 
-        response = auth_client.get("/api/v1/fabrications")
+        response = auth_client.get("/api/v1/fab")
         assert response.status_code == status.HTTP_200_OK
 
         # Check pagination structure
@@ -96,7 +96,7 @@ class TestAPIResponseStructure:
         """Test that detail endpoints return proper object structure"""
         fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
-        response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
+        response = auth_client.get(f"/api/v1/fab/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
 
         # Check all expected fields are present
@@ -113,7 +113,7 @@ class TestAPIResponseStructure:
     def test_create_response_structure(self, auth_client):
         """Test that create endpoints return proper response structure"""
         data = {"name": "FAB003", "external_system_id": "legacy3"}
-        response = auth_client.post("/api/v1/fabrications", data, format="json")
+        response = auth_client.post("/api/v1/fab", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
 
         # Check all fields are returned
@@ -134,7 +134,7 @@ class TestAPIResponseContent:
         """Test fabrication response contains correct content"""
         fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
-        response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
+        response = auth_client.get(f"/api/v1/fab/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
 
         # Validate content
@@ -324,7 +324,7 @@ class TestJSONResponseValidation:
     def test_response_is_valid_json(self, auth_client):
         """Test that all responses are valid JSON"""
         endpoints = [
-            "/api/v1/fabrications",
+            "/api/v1/fab",
             "/api/v1/phases",
             "/api/v1/data-centers",
             "/api/v1/rooms",
@@ -347,7 +347,7 @@ class TestJSONResponseValidation:
 
     def test_response_content_type(self, auth_client):
         """Test that responses have correct content type"""
-        response = auth_client.get("/api/v1/fabrications")
+        response = auth_client.get("/api/v1/fab")
         assert response.status_code == status.HTTP_200_OK
         assert response["content-type"] == "application/json"
 
@@ -359,7 +359,7 @@ class TestJSONResponseValidation:
             external_system_id="legacy-ñoño",  # Spanish characters
         )
 
-        response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
+        response = auth_client.get(f"/api/v1/fab/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB-测试"
         assert response.data["external_system_id"] == "legacy-ñoño"
@@ -371,7 +371,7 @@ class TestErrorResponseStructure:
 
     def test_404_error_response_structure(self, auth_client):
         """Test 404 error response structure"""
-        response = auth_client.get("/api/v1/fabrications/99999999-9999-9999-9999-999999999999")
+        response = auth_client.get("/api/v1/fab/99999999-9999-9999-9999-999999999999")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
         # Check error response structure
@@ -382,7 +382,7 @@ class TestErrorResponseStructure:
         """Test 400 error response structure for validation errors"""
         # Send invalid data
         data = {"name": ""}  # Empty name should cause validation error
-        response = auth_client.post("/api/v1/fabrications", data, format="json")
+        response = auth_client.post("/api/v1/fab", data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         # Check error response has field-specific errors

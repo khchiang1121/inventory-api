@@ -13,7 +13,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register(r"users", views.CustomUserViewSet)
 
 # Infrastructure routes
-router.register(r"fabrications", views.FabViewSet)
+router.register(r"fab", views.FabViewSet)
 router.register(r"phases", views.PhaseViewSet)
 router.register(r"data-centers", views.DataCenterViewSet)
 router.register(r"rooms", views.RoomViewSet)

@@ -67,8 +67,6 @@ class Rack(AbstractBase):
     """Rack model for physical server racks"""
 
     name = models.CharField(max_length=32, unique=True, help_text="Rack identifier")
-    bgp_number = models.CharField(max_length=20, unique=True, help_text="Associated BGP number")
-    as_number = models.PositiveIntegerField(help_text="Autonomous System Number")
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
@@ -80,6 +78,8 @@ class Rack(AbstractBase):
         null=True,
         blank=True,
     )
+    bgp_number = models.CharField(max_length=20, unique=True, help_text="Associated BGP number")
+    as_number = models.PositiveIntegerField(help_text="Autonomous System Number")
     height_units = models.PositiveIntegerField(
         default=42, help_text="Total height units in the rack"
     )
@@ -108,16 +108,15 @@ class Rack(AbstractBase):
 class Unit(AbstractBase):
     """Individual rack unit position (e.g., U1..U42) within a rack."""
 
+    name = models.CharField(
+        max_length=32,
+        help_text="Unit label within the rack, e.g., U1, U2",
+    )
     rack = models.ForeignKey(
         Rack,
         on_delete=models.CASCADE,
         related_name="units",
         help_text="Rack that this unit belongs to",
     )
-    name = models.CharField(
-        max_length=32,
-        help_text="Unit label within the rack, e.g., U1, U2",
-    )
-
     class Meta:
         unique_together = ["rack", "name"]

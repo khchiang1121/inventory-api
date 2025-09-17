@@ -76,7 +76,7 @@ class TestInfrastructureViewSets:
         fab2 = Fab.objects.create(name="FAB002", external_system_id="legacy2")
 
         # Test list endpoint
-        response = auth_client.get("/api/v1/fabrications")
+        response = auth_client.get("/api/v1/fab")
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 2
 
@@ -88,7 +88,7 @@ class TestInfrastructureViewSets:
     def test_fabrication_create_endpoint(self, auth_client):
         """Test fabrication create endpoint"""
         data = {"name": "FAB003", "external_system_id": "legacy3"}
-        response = auth_client.post("/api/v1/fabrications", data, format="json")
+        response = auth_client.post("/api/v1/fab", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "FAB003"
 
@@ -99,7 +99,7 @@ class TestInfrastructureViewSets:
         """Test fabrication retrieve endpoint"""
         fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
-        response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
+        response = auth_client.get(f"/api/v1/fab/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB001"
         assert response.data["external_system_id"] == "legacy1"
@@ -109,7 +109,7 @@ class TestInfrastructureViewSets:
         fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
         data = {"name": "FAB001_Updated", "external_system_id": "legacy1_updated"}
-        response = auth_client.put(f"/api/v1/fabrications/{fab.id}", data, format="json")
+        response = auth_client.put(f"/api/v1/fab/{fab.id}", data, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "FAB001_Updated"
 
@@ -121,7 +121,7 @@ class TestInfrastructureViewSets:
         """Test fabrication delete endpoint"""
         fab = Fab.objects.create(name="FAB001")
 
-        response = auth_client.delete(f"/api/v1/fabrications/{fab.id}")
+        response = auth_client.delete(f"/api/v1/fab/{fab.id}")
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify object was deleted
@@ -441,7 +441,7 @@ class TestPaginationAndFiltering:
         for i in range(25):  # More than default page size
             Fab.objects.create(name=f"FAB{i:03d}")
 
-        response = auth_client.get("/api/v1/fabrications")
+        response = auth_client.get("/api/v1/fab")
         assert response.status_code == status.HTTP_200_OK
 
         # Check pagination structure
@@ -461,13 +461,13 @@ class TestPaginationAndFiltering:
             Fab.objects.create(name=f"FAB{i:03d}")
 
         # Test second page
-        response = auth_client.get("/api/v1/fabrications?page=2")
+        response = auth_client.get("/api/v1/fab?page=2")
         assert response.status_code == status.HTTP_200_OK
         assert "results" in response.data
 
     def test_invalid_page_parameter(self, auth_client):
         """Test invalid page parameter handling"""
-        response = auth_client.get("/api/v1/fabrications?page=invalid")
+        response = auth_client.get("/api/v1/fab?page=invalid")
         # Should return first page or appropriate error
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND]
 
@@ -478,12 +478,12 @@ class TestErrorHandling:
 
     def test_not_found_error(self, auth_client):
         """Test 404 error for non-existent resources"""
-        response = auth_client.get("/api/v1/fabrications/99999999-9999-9999-9999-999999999999")
+        response = auth_client.get("/api/v1/fab/99999999-9999-9999-9999-999999999999")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_invalid_uuid_format(self, auth_client):
         """Test invalid UUID format handling"""
-        response = auth_client.get("/api/v1/fabrications/invalid-uuid")
+        response = auth_client.get("/api/v1/fab/invalid-uuid")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_method_not_allowed(self, auth_client):
@@ -495,7 +495,7 @@ class TestErrorHandling:
     def test_invalid_json_data(self, auth_client):
         """Test invalid JSON data handling"""
         response = auth_client.post(
-            "/api/v1/fabrications", "invalid json data", content_type="application/json"
+            "/api/v1/fab", "invalid json data", content_type="application/json"
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -506,13 +506,13 @@ class TestPermissions:
 
     def test_unauthenticated_access_allowed(self, api_client):
         """Test that unauthenticated access is allowed when REQUIRE_API_AUTHENTICATION is False"""
-        response = api_client.get("/api/v1/fabrications")
+        response = api_client.get("/api/v1/fab")
         # Should be allowed since REQUIRE_API_AUTHENTICATION is False
         assert response.status_code == status.HTTP_200_OK
 
     def test_authenticated_user_access(self, auth_client):
         """Test that authenticated users can access resources"""
-        response = auth_client.get("/api/v1/fabrications")
+        response = auth_client.get("/api/v1/fab")
         assert response.status_code == status.HTTP_200_OK
 
     def test_token_authentication_works(self, api_client, authenticated_user):

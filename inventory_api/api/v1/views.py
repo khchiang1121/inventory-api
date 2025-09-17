@@ -50,6 +50,11 @@ class RoomViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RoomSerializer
 
 
+class RackViewSet(viewsets.ModelViewSet):
+    queryset = models.Rack.objects.all().order_by("id")
+    serializer_class = serializers.RackSerializer
+
+
 class UnitViewSet(viewsets.ModelViewSet):
     queryset = models.Unit.objects.all().order_by("id")
     serializer_class = serializers.UnitSerializer
@@ -119,18 +124,6 @@ class BaremetalModelViewSet(viewsets.ModelViewSet):
 # ------------------------------------------------------------------------------
 # Physical Infrastructure ViewSets
 # ------------------------------------------------------------------------------
-class RackViewSet(viewsets.ModelViewSet):
-    queryset = models.Rack.objects.all().order_by("id")
-    serializer_class = serializers.RackSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        # return serializers.RackSerializer
-
-        if self.action == "create":
-            return serializers.RackCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.RackUpdateSerializer
-        return serializers.RackSerializer
 
 
 # Baremetal Group ViewSet

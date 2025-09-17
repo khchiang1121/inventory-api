@@ -37,7 +37,7 @@ You are tasked with creating a comprehensive React frontend for **VirtFlow**, a 
 
 #### 1. Infrastructure Management
 
-- `GET/POST/PUT/DELETE /fabrications/` - Data center fabrication management
+- `GET/POST/PUT/DELETE /fab/` - Data center fabrication management
 - `GET/POST/PUT/DELETE /phases/` - Phase management
 - `GET/POST/PUT/DELETE /data-centers/` - Data center management
 - `GET/POST/PUT/DELETE /rooms/` - Room management

@@ -24,7 +24,7 @@ def test_baremetal_create(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab-x"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab-x"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "p1", "fab": fab["id"]}, format="json"
     ).data
@@ -133,7 +133,7 @@ def test_baremetal_retrieve(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab1"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab1"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "phase1", "fab": fab["id"]}, format="json"
     ).data
@@ -248,7 +248,7 @@ def test_baremetal_update(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab2"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab2"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "phase2", "fab": fab["id"]}, format="json"
     ).data
@@ -364,7 +364,7 @@ def test_baremetal_delete(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab3"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab3"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "phase3", "fab": fab["id"]}, format="json"
     ).data
@@ -479,7 +479,7 @@ def test_baremetal_with_network_interface(auth_client):
         },
         format="json",
     ).data
-    fab = auth_client.post("/api/v1/fabrications", {"name": "fab4"}, format="json").data
+    fab = auth_client.post("/api/v1/fab", {"name": "fab4"}, format="json").data
     phase = auth_client.post(
         "/api/v1/phases", {"name": "phase4", "fab": fab["id"]}, format="json"
     ).data
