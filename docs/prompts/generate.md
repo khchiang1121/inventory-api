@@ -94,7 +94,7 @@ You are tasked with creating a comprehensive React frontend for **VirtFlow**, a 
 
 ### 2. Infrastructure Management
 
-- **Data Center View**: Hierarchical view (Fabrication → Phase → Data Center → Room → Rack)
+- **Data Center View**: Hierarchical view (Fab → Phase → Data Center → Room → Rack)
 - **Rack Management**: Visual rack layout with server positions
 - **Network Configuration**: VLAN, VRF, BGP configuration management
 - **Physical Server Inventory**: Detailed server specifications and status

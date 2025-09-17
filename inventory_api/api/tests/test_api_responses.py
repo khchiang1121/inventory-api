@@ -21,7 +21,7 @@ from ..models import (
     BaremetalModel,
     BGPConfig,
     DataCenter,
-    Fabrication,
+    Fab,
     K8sCluster,
     Manufacturer,
     NetworkInterface,
@@ -70,8 +70,8 @@ class TestAPIResponseStructure:
     def test_list_response_structure(self, auth_client):
         """Test that list endpoints return proper pagination structure"""
         # Create some test data
-        Fabrication.objects.create(name="FAB001")
-        Fabrication.objects.create(name="FAB002")
+        Fab.objects.create(name="FAB001")
+        Fab.objects.create(name="FAB002")
 
         response = auth_client.get("/api/v1/fabrications")
         assert response.status_code == status.HTTP_200_OK
@@ -94,7 +94,7 @@ class TestAPIResponseStructure:
 
     def test_detail_response_structure(self, auth_client):
         """Test that detail endpoints return proper object structure"""
-        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
+        fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
@@ -132,7 +132,7 @@ class TestAPIResponseContent:
 
     def test_fabrication_response_content(self, auth_client):
         """Test fabrication response contains correct content"""
-        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
+        fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
@@ -236,7 +236,7 @@ class TestComplexObjectResponses:
         )
 
         # Create required objects for baremetal
-        fabrication = Fabrication.objects.create(name="FAB1")
+        fabrication = Fab.objects.create(name="FAB1")
         phase = Phase.objects.create(name="PHASE1")
         data_center = DataCenter.objects.create(name="DC1")
         rack = Rack.objects.create(name="RACK1", bgp_number="AS1", as_number=1)
@@ -354,7 +354,7 @@ class TestJSONResponseValidation:
     def test_response_encoding(self, auth_client):
         """Test that responses handle UTF-8 encoding correctly"""
         # Create object with unicode characters
-        fab = Fabrication.objects.create(
+        fab = Fab.objects.create(
             name="FAB-测试",  # Chinese characters
             external_system_id="legacy-ñoño",  # Spanish characters
         )

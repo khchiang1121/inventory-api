@@ -25,8 +25,15 @@ def test_baremetal_create(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab-x"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "p1"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc1"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "p1", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc1", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room1", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -36,6 +43,7 @@ def test_baremetal_create(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data
@@ -126,8 +134,15 @@ def test_baremetal_retrieve(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab1"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "phase1"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc1"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase1", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc1", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room1", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -137,6 +152,7 @@ def test_baremetal_retrieve(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data
@@ -233,8 +249,15 @@ def test_baremetal_update(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab2"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "phase2"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc2"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase2", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc2", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room2", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -244,6 +267,7 @@ def test_baremetal_update(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data
@@ -341,8 +365,15 @@ def test_baremetal_delete(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab3"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "phase3"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc3"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase3", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc3", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room3", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -352,6 +383,7 @@ def test_baremetal_delete(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data
@@ -448,8 +480,15 @@ def test_baremetal_with_network_interface(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab4"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "phase4"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc4"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase4", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc4", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room4", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -459,6 +498,7 @@ def test_baremetal_with_network_interface(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data

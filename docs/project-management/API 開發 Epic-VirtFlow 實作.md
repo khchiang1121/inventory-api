@@ -416,15 +416,15 @@
 
 ### ✔️ 驗收標準（Acceptance Criteria）  
 
-1. Fabrication / Phase / DataCenter / Room / Rack：可標示實體機所在位置  
+1. Fab / Phase / DataCenter / Room / Rack：可標示實體機所在位置  
 
 #### 🛠️ Sub-task 1: 主要模型  
 
-- Fabrication / Phase / DataCenter / Room / Rack：對應各級機房結構  
+- Fab / Phase / DataCenter / Room / Rack：對應各級機房結構  
 
 #### 🛠️ Sub-task 2: 與 Baremetal 的整合  
 
-- Baremetal 連上機房位置（Fabrication, DataCenter, Room, Rack 等）
+- Baremetal 連上機房位置（Fab, DataCenter, Room, Rack 等）
 
 #### 🛠️ Sub-task 5: 測試案例  
 

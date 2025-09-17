@@ -70,7 +70,7 @@ class Baremetal(AbstractBase):
     serial_number = models.CharField(max_length=255, unique=True, help_text="Unique serial number")
     model = models.ForeignKey(BaremetalModel, on_delete=models.PROTECT, related_name="baremetals")
     fabrication = models.ForeignKey(
-        "Fabrication", on_delete=models.SET_NULL, null=True, related_name="baremetals"
+        "Fab", on_delete=models.SET_NULL, null=True, related_name="baremetals"
     )
     phase = models.ForeignKey(
         "Phase", on_delete=models.SET_NULL, null=True, related_name="baremetals"

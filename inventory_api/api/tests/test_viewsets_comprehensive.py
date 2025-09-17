@@ -20,7 +20,7 @@ from ..models import (
     BaremetalModel,
     BGPConfig,
     DataCenter,
-    Fabrication,
+    Fab,
     K8sCluster,
     Manufacturer,
     NetworkInterface,
@@ -72,8 +72,8 @@ class TestInfrastructureViewSets:
     def test_fabrication_list_endpoint(self, auth_client):
         """Test fabrication list endpoint returns correct data"""
         # Create test data
-        fab1 = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
-        fab2 = Fabrication.objects.create(name="FAB002", external_system_id="legacy2")
+        fab1 = Fab.objects.create(name="FAB001", external_system_id="legacy1")
+        fab2 = Fab.objects.create(name="FAB002", external_system_id="legacy2")
 
         # Test list endpoint
         response = auth_client.get("/api/v1/fabrications")
@@ -93,11 +93,11 @@ class TestInfrastructureViewSets:
         assert response.data["name"] == "FAB003"
 
         # Verify object was created
-        assert Fabrication.objects.filter(name="FAB003").exists()
+        assert Fab.objects.filter(name="FAB003").exists()
 
     def test_fabrication_retrieve_endpoint(self, auth_client):
         """Test fabrication retrieve endpoint"""
-        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
+        fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
         response = auth_client.get(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_200_OK
@@ -106,7 +106,7 @@ class TestInfrastructureViewSets:
 
     def test_fabrication_update_endpoint(self, auth_client):
         """Test fabrication update endpoint"""
-        fab = Fabrication.objects.create(name="FAB001", external_system_id="legacy1")
+        fab = Fab.objects.create(name="FAB001", external_system_id="legacy1")
 
         data = {"name": "FAB001_Updated", "external_system_id": "legacy1_updated"}
         response = auth_client.put(f"/api/v1/fabrications/{fab.id}", data, format="json")
@@ -119,13 +119,13 @@ class TestInfrastructureViewSets:
 
     def test_fabrication_delete_endpoint(self, auth_client):
         """Test fabrication delete endpoint"""
-        fab = Fabrication.objects.create(name="FAB001")
+        fab = Fab.objects.create(name="FAB001")
 
         response = auth_client.delete(f"/api/v1/fabrications/{fab.id}")
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify object was deleted
-        assert not Fabrication.objects.filter(id=fab.id).exists()
+        assert not Fab.objects.filter(id=fab.id).exists()
 
     def test_rack_list_with_status_filter(self, auth_client):
         """Test rack list endpoint with status filtering"""
@@ -439,7 +439,7 @@ class TestPaginationAndFiltering:
         """Test that pagination works correctly"""
         # Create multiple objects
         for i in range(25):  # More than default page size
-            Fabrication.objects.create(name=f"FAB{i:03d}")
+            Fab.objects.create(name=f"FAB{i:03d}")
 
         response = auth_client.get("/api/v1/fabrications")
         assert response.status_code == status.HTTP_200_OK
@@ -458,7 +458,7 @@ class TestPaginationAndFiltering:
         """Test pagination with page parameter"""
         # Create test data
         for i in range(15):
-            Fabrication.objects.create(name=f"FAB{i:03d}")
+            Fab.objects.create(name=f"FAB{i:03d}")
 
         # Test second page
         response = auth_client.get("/api/v1/fabrications?page=2")

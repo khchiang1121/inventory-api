@@ -3,10 +3,10 @@ from django.db import models
 from .base import AbstractBase
 
 
-class Fabrication(AbstractBase):
-    """Fabrication model for physical infrastructure"""
+class Fab(AbstractBase):
+    """Fab model for physical infrastructure"""
 
-    name = models.CharField(max_length=32, unique=True, help_text="Fabrication identifier")
+    name = models.CharField(max_length=32, unique=True, help_text="Fab identifier")
     external_system_id = models.CharField(
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
@@ -20,10 +20,10 @@ class Phase(AbstractBase):
         max_length=100, blank=True, help_text="Identifier from legacy system"
     )
     fab = models.ForeignKey(
-        "Fabrication",
+        "Fab",
         on_delete=models.CASCADE,
         related_name="phases",
-        help_text="Fabrication that this phase belongs to",
+        help_text="Fab that this phase belongs to",
         null=True,
         blank=True,
     )

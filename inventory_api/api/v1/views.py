@@ -30,9 +30,9 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 # ------------------------------------------------------------------------------
 # Infrastructure ViewSets
 # ------------------------------------------------------------------------------
-class FabricationViewSet(viewsets.ModelViewSet):
-    queryset = models.Fabrication.objects.all().order_by("id")
-    serializer_class = serializers.FabricationSerializer
+class FabViewSet(viewsets.ModelViewSet):
+    queryset = models.Fab.objects.all().order_by("id")
+    serializer_class = serializers.FabSerializer
 
 
 class PhaseViewSet(viewsets.ModelViewSet):
@@ -108,12 +108,12 @@ class BaremetalModelViewSet(viewsets.ModelViewSet):
     queryset = models.BaremetalModel.objects.all().order_by("id")
     serializer_class = serializers.BaremetalModelSerializer
 
-    # def get_serializer_class(self) -> Type[BaseSerializer]:
-    #     if self.action == "create":
-    #         return serializers.BaremetalModelCreateSerializer
-    #     elif self.action in ["update", "partial_update"]:
-    #         return serializers.BaremetalModelUpdateSerializer
-    #     return serializers.BaremetalModelSerializer
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalModelCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalModelUpdateSerializer
+        return serializers.BaremetalModelSerializer
 
 
 # ------------------------------------------------------------------------------

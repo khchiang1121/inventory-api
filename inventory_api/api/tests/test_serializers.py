@@ -18,7 +18,7 @@ from ..models import (
     BaremetalModel,
     BGPConfig,
     DataCenter,
-    Fabrication,
+    Fab,
     K8sCluster,
     Manufacturer,
     NetworkInterface,
@@ -41,7 +41,7 @@ from ..v1.serializers import (
     BGPConfigSerializer,
     CustomUserSerializer,
     DataCenterSerializer,
-    FabricationSerializer,
+    FabSerializer,
     K8sClusterSerializer,
     ManufacturerSerializer,
     NetworkInterfaceSerializer,
@@ -101,26 +101,26 @@ class TestInfrastructureSerializers:
     """Test infrastructure-related serializers"""
 
     def test_fabrication_serializer_valid_data(self):
-        """Test FabricationSerializer with valid data"""
+        """Test FabSerializer with valid data"""
         data = {"name": "FAB001", "external_system_id": "legacy_001"}
-        serializer = FabricationSerializer(data=data)
+        serializer = FabSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         fabrication = serializer.save()
         assert fabrication.name == "FAB001"
 
     def test_fabrication_serializer_duplicate_name(self):
-        """Test FabricationSerializer with duplicate name"""
-        Fabrication.objects.create(name="FAB001")
+        """Test FabSerializer with duplicate name"""
+        Fab.objects.create(name="FAB001")
         data = {"name": "FAB001"}
-        serializer = FabricationSerializer(data=data)
+        serializer = FabSerializer(data=data)
         assert not serializer.is_valid()
 
     def test_rack_serializer_with_all_fields(self):
         """Test RackSerializer with all fields"""
         # Create required dependencies
-        from ..models import DataCenter, Fabrication, Phase, Room
+        from ..models import DataCenter, Fab, Phase, Room
 
-        fab = Fabrication.objects.create(name="FAB001")
+        fab = Fab.objects.create(name="FAB001")
         phase = Phase.objects.create(name="PHASE001", fab=fab)
         dc = DataCenter.objects.create(name="DC001", phase=phase)
         room = Room.objects.create(name="ROOM001", datacenter=dc)
@@ -146,9 +146,9 @@ class TestInfrastructureSerializers:
     def test_rack_serializer_invalid_status(self):
         """Test RackSerializer with invalid status"""
         # Create required dependencies
-        from ..models import DataCenter, Fabrication, Phase, Room
+        from ..models import DataCenter, Fab, Phase, Room
 
-        fab = Fabrication.objects.create(name="FAB002")
+        fab = Fab.objects.create(name="FAB002")
         phase = Phase.objects.create(name="PHASE002", fab=fab)
         dc = DataCenter.objects.create(name="DC002", phase=phase)
         room = Room.objects.create(name="ROOM002", datacenter=dc)
@@ -385,11 +385,11 @@ class TestSerializerEdgeCases:
         """Test serializers handle string length validation"""
         long_name = "x" * 1000  # Very long name
         data = {"name": long_name}
-        serializer = FabricationSerializer(data=data)
+        serializer = FabSerializer(data=data)
         assert not serializer.is_valid()  # Should fail due to max_length
 
     def test_serializer_with_special_characters(self):
         """Test serializers handle special characters"""
         data = {"name": "Test-Fab_001@#$", "external_system_id": "legacy!@#$%"}
-        serializer = FabricationSerializer(data=data)
+        serializer = FabSerializer(data=data)
         assert serializer.is_valid()  # Should handle special characters

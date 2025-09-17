@@ -117,13 +117,13 @@ class Command(BaseCommand):
 
         self.stdout.write("✔️ Users ready")
 
-        # Create Infrastructure Hierarchy: Fabrications → Phases → DataCenters → Rooms → Racks
+        # Create Infrastructure Hierarchy: Fabs → Phases → DataCenters → Rooms → Racks
         fabrications = self._create_or_get_models(
-            models.Fabrication,
+            models.Fab,
             lambda: {"name": f"Fab-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
             skip_existing,
-            "Fabrication",
+            "Fab",
         )
 
         # Create Phases (each belongs to a fabrication)
@@ -276,7 +276,7 @@ class Command(BaseCommand):
             lambda: {
                 "name": fake.company(),
                 "contact_email": fake.email(),
-                "contact_phone": fake.phone_number(),
+                "contact_phone": fake.phone_number()[:20],  # Truncate to 20 chars
                 "address": fake.address(),
                 "website": fake.url(),
             },
@@ -1177,7 +1177,7 @@ ntp_servers:
         models.Room.objects.all().delete()
         models.DataCenter.objects.all().delete()
         models.Phase.objects.all().delete()
-        models.Fabrication.objects.all().delete()
+        models.Fab.objects.all().delete()
 
         # Clear users (except superuser)
         User = get_user_model()

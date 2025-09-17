@@ -31,8 +31,15 @@ def test_network_interface_create(auth_client):
         format="json",
     ).data
     fab = auth_client.post("/api/v1/fabrications", {"name": "fab-ni"}, format="json").data
-    phase = auth_client.post("/api/v1/phases", {"name": "phase-ni"}, format="json").data
-    dc = auth_client.post("/api/v1/data-centers", {"name": "dc-ni"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-ni", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-ni", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room-ni", "datacenter": dc["id"]}, format="json"
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
         {
@@ -42,6 +49,7 @@ def test_network_interface_create(auth_client):
             "height_units": 42,
             "power_capacity": "4.00",
             "status": "active",
+            "room": room["id"],
         },
         format="json",
     ).data

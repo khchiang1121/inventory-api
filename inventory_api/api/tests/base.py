@@ -37,7 +37,7 @@ from ..models import (
     BaremetalGroup,
     BaremetalModel,
     DataCenter,
-    Fabrication,
+    Fab,
     Manufacturer,
     Phase,
     PurchaseOrder,
@@ -70,7 +70,7 @@ class APITestSetup(APITestCase):
         )
 
         # Create test infrastructure hierarchy
-        self.fabrication = Fabrication.objects.create(name="Test Fab")
+        self.fabrication = Fab.objects.create(name="Test Fab")
         self.phase = Phase.objects.create(name="Test Phase", fab=self.fabrication)
         self.data_center = DataCenter.objects.create(name="Test DC", phase=self.phase)
         self.room = Room.objects.create(name="Test Room", datacenter=self.data_center)

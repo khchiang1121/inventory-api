@@ -24,9 +24,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 # ------------------------------------------------------------------------------
 # Infrastructure Serializers
 # ------------------------------------------------------------------------------
-class FabricationSerializer(serializers.ModelSerializer):
+class FabSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Fabrication
+        model = models.Fab
         fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
@@ -372,7 +372,7 @@ class BaremetalSerializer(serializers.ModelSerializer):
     unit = UnitSerializer(read_only=True)
     group = BaremetalGroupSerializer(read_only=True)
     model = BaremetalModelSerializer(read_only=True)
-    fabrication = FabricationSerializer(read_only=True)
+    fabrication = FabSerializer(read_only=True)
     phase = PhaseSerializer(read_only=True)
     data_center = DataCenterSerializer(read_only=True)
     pr = PurchaseRequisitionSerializer(read_only=True)
