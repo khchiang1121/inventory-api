@@ -48,6 +48,69 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
+# Rack Serializers
+class RackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = [
+            "id",
+            "name",
+            "bgp_number",
+            "as_number",
+            "external_system_id",
+            "height_units",
+            "used_units",
+            "available_units",
+            "power_capacity",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class RackCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = [
+            "id",
+            "name",
+            "bgp_number",
+            "as_number",
+            "external_system_id",
+            "height_units",
+            "power_capacity",
+            "status",
+        ]
+
+
+class RackUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = [
+            "id",
+            "name",
+            "bgp_number",
+            "as_number",
+            "external_system_id",
+            "height_units",
+            "power_capacity",
+            "status",
+        ]
+
+
+# Unit Serializers (placed after Rack serializers to avoid forward refs)
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = [
+            "id",
+            "rack",
+            "name",
+            "created_at",
+            "updated_at",
+        ]
+
+
 # Unit Serializers
 # ------------------------------------------------------------------------------
 # Network Serializers
@@ -129,88 +192,6 @@ class NetworkInterfaceSerializer(serializers.ModelSerializer):
             "bgp_config",
             "created_at",
             "updated_at",
-        ]
-
-
-# Rack Serializers
-class RackSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Rack
-        fields = [
-            "id",
-            "name",
-            "bgp_number",
-            "as_number",
-            "external_system_id",
-            "height_units",
-            "used_units",
-            "available_units",
-            "power_capacity",
-            "status",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class RackCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Rack
-        fields = [
-            "id",
-            "name",
-            "bgp_number",
-            "as_number",
-            "external_system_id",
-            "height_units",
-            "power_capacity",
-            "status",
-        ]
-
-
-class RackUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Rack
-        fields = [
-            "id",
-            "name",
-            "bgp_number",
-            "as_number",
-            "external_system_id",
-            "height_units",
-            "power_capacity",
-            "status",
-        ]
-
-
-# Unit Serializers (placed after Rack serializers to avoid forward refs)
-class UnitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Unit
-        fields = [
-            "id",
-            "rack",
-            "name",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class UnitCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Unit
-        fields = [
-            "id",
-            "rack",
-            "name",
-        ]
-
-
-class UnitUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Unit
-        fields = [
-            "rack",
-            "name",
         ]
 
 
