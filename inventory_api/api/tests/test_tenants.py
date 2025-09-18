@@ -58,6 +58,7 @@ def test_network_interface_create(auth_client):
         {
             "rack": rack["id"],
             "name": "U1",
+            "unit_number": 1,
         },
         format="json",
     ).data

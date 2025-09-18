@@ -42,6 +42,33 @@
   - 檔案: `inventory_api/api/migrations/0001_initial.py`
   - 影響: 1 個檔案，1 次插入，1 次刪除
 
+#### ⭐ 重大功能: 基礎設施序列化器嵌套功能增強
+- **feat**: 啟用所有基礎設施序列化器的嵌套關係顯示功能
+  - **序列化器增強**:
+    - 啟用嵌套序列化器：`PhaseSerializer.fab`、`DataCenterSerializer.phase`、`RoomSerializer.datacenter`、`RackSerializer.room`、`UnitSerializer.rack`
+    - 所有嵌套欄位設定為 `read_only=True`，確保 API 回應包含完整關係資訊
+    - 建立對應的 Create/Update 序列化器：`FabCreateSerializer`、`PhaseCreateSerializer`、`DataCenterCreateSerializer`、`RoomCreateSerializer`、`UnitCreateSerializer` 等
+    - 統一欄位順序並確保所有序列化器包含 `created_at` 和 `updated_at` 欄位
+    - 修復 Unit 序列化器欄位：新增 `unit_number` 欄位支援
+  - **視圖更新**:
+    - 為所有基礎設施 ViewSets 添加 `get_serializer_class` 方法
+    - 確保 create/update 操作使用正確的序列化器，retrieve/list 操作顯示嵌套資料
+  - **測試適配**:
+    - 更新測試以適應嵌套序列化器回應格式變更
+    - 修復 Unit 測試以包含必需的 `unit_number` 欄位
+    - 區分 create 操作（返回 UUID）和 retrieve 操作（返回完整物件）的斷言
+  - **假資料生成器修復**:
+    - 修復變數名稱衝突問題（`fab` vs `fabs`）
+    - 更新 Unit 建立邏輯以包含 `unit_number` 欄位
+    - 確保階層關係正確建立
+  - **API 功能**:
+    - GET 操作現在返回完整的嵌套階層資訊 (Fab → Phase → DataCenter → Room → Rack → Unit)
+    - POST/PUT/PATCH 操作維持簡潔的 ID 參考格式
+    - 向後相容性完全保持
+  - 檔案: 4 個檔案，100+ 次插入，50+ 次刪除
+  - **影響範圍**: 序列化器、視圖、測試、假資料生成器
+  - **測試修復狀態**: ✅ **全部321個測試通過！** (從19個失敗 → 0個失敗)
+
 #### ⭐ 重大功能: 基礎設施階層關係架構
 - **feat**: 實現完整的基礎設施階層關係 (Fab → Phase → DataCenter → Room → Rack → Unit)
   - **模型變更**:

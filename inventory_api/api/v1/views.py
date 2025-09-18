@@ -34,30 +34,72 @@ class FabViewSet(viewsets.ModelViewSet):
     queryset = models.Fab.objects.all().order_by("id")
     serializer_class = serializers.FabSerializer
 
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.FabCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.FabUpdateSerializer
+        return serializers.FabSerializer
+
 
 class PhaseViewSet(viewsets.ModelViewSet):
     queryset = models.Phase.objects.all().order_by("id")
     serializer_class = serializers.PhaseSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PhaseCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PhaseUpdateSerializer
+        return serializers.PhaseSerializer
 
 
 class DataCenterViewSet(viewsets.ModelViewSet):
     queryset = models.DataCenter.objects.all().order_by("id")
     serializer_class = serializers.DataCenterSerializer
 
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.DataCenterCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.DataCenterUpdateSerializer
+        return serializers.DataCenterSerializer
+
 
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = models.Room.objects.all().order_by("id")
     serializer_class = serializers.RoomSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.RoomCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.RoomUpdateSerializer
+        return serializers.RoomSerializer
 
 
 class RackViewSet(viewsets.ModelViewSet):
     queryset = models.Rack.objects.all().order_by("id")
     serializer_class = serializers.RackSerializer
 
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.RackCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.RackUpdateSerializer
+        return serializers.RackSerializer
+
 
 class UnitViewSet(viewsets.ModelViewSet):
     queryset = models.Unit.objects.all().order_by("id")
     serializer_class = serializers.UnitSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.UnitCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.UnitUpdateSerializer
+        return serializers.UnitSerializer
 
 
 # ------------------------------------------------------------------------------

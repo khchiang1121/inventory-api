@@ -112,6 +112,7 @@ class Unit(AbstractBase):
         max_length=32,
         help_text="Unit label within the rack, e.g., U1, U2",
     )
+    unit_number = models.PositiveIntegerField(help_text="Unit number within the rack")
     rack = models.ForeignKey(
         Rack,
         on_delete=models.CASCADE,

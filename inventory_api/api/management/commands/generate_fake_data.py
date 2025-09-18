@@ -118,7 +118,7 @@ class Command(BaseCommand):
         self.stdout.write("✔️ Users ready")
 
         # Create Infrastructure Hierarchy: Fabs → Phases → DataCenters → Rooms → Racks
-        fab = self._create_or_get_models(
+        fabs = self._create_or_get_models(
             models.Fab,
             lambda: {"name": f"Fab-{fake.word()}", "external_system_id": fake.uuid4()},
             3,
@@ -128,12 +128,12 @@ class Command(BaseCommand):
 
         # Create Phases (each belongs to a fabrication)
         phases = []
-        for i in range(5):  # Create 5 phases across the fab
-            fab = random.choice(fab)
+        for i in range(5):  # Create 5 phases across the fabs
+            selected_fab = random.choice(fabs)
             phase_data = {
                 "name": f"Phase-{fake.word()}",
                 "external_system_id": fake.uuid4(),
-                "fab": fab,
+                "fab": selected_fab,
             }
             if skip_existing:
                 phase, created = models.Phase.objects.get_or_create(
@@ -313,7 +313,9 @@ class Command(BaseCommand):
             rack_units = []
             for i in range(1, rack.height_units + 1):
                 name = f"U{i}"
-                unit_obj, _ = models.Unit.objects.get_or_create(rack=rack, name=name)
+                unit_obj, _ = models.Unit.objects.get_or_create(
+                    rack=rack, name=name, defaults={"unit_number": i}
+                )
                 rack_units.append(unit_obj)
             units_by_rack[rack.id] = rack_units
 
@@ -324,7 +326,7 @@ class Command(BaseCommand):
                 "name": f"BM-{fake.domain_word()}",
                 "serial_number": fake.uuid4(),
                 "model": random.choice(baremetal_models),
-                "fabrication": random.choice(fab),
+                "fabrication": random.choice(fabs),
                 "phase": random.choice(phases),
                 "data_center": random.choice(data_centers),
                 "room": random.choice(rooms).name,

@@ -52,6 +52,7 @@ def test_baremetal_create(auth_client):
         {
             "rack": rack["id"],
             "name": "U1",
+            "unit_number": 1,
         },
         format="json",
     ).data
@@ -161,6 +162,7 @@ def test_baremetal_retrieve(auth_client):
         {
             "rack": rack["id"],
             "name": "U2",
+            "unit_number": 2,
         },
         format="json",
     ).data
@@ -276,6 +278,7 @@ def test_baremetal_update(auth_client):
         {
             "rack": rack["id"],
             "name": "U3",
+            "unit_number": 3,
         },
         format="json",
     ).data
@@ -392,6 +395,7 @@ def test_baremetal_delete(auth_client):
         {
             "rack": rack["id"],
             "name": "U4",
+            "unit_number": 4,
         },
         format="json",
     ).data
@@ -507,6 +511,7 @@ def test_baremetal_with_network_interface(auth_client):
         {
             "rack": rack["id"],
             "name": "U5",
+            "unit_number": 5,
         },
         format="json",
     ).data

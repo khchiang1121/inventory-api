@@ -48,6 +48,7 @@ from ..v1.serializers import (
     PhaseSerializer,
     PurchaseOrderSerializer,
     PurchaseRequisitionSerializer,
+    RackCreateSerializer,
     RackSerializer,
     RoomSerializer,
     ServiceMeshSerializer,
@@ -136,7 +137,7 @@ class TestInfrastructureSerializers:
             "status": "active",
             "room": room.id,
         }
-        serializer = RackSerializer(data=data)
+        serializer = RackCreateSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         rack = serializer.save()
         assert rack.height_units == 42
@@ -160,7 +161,7 @@ class TestInfrastructureSerializers:
             "status": "invalid_status",
             "room": room.id,
         }
-        serializer = RackSerializer(data=data)
+        serializer = RackCreateSerializer(data=data)
         assert not serializer.is_valid()
 
 

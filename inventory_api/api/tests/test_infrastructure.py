@@ -109,7 +109,7 @@ def test_phase_create(auth_client):
     r = auth_client.post("/api/v1/phases", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "phase-create"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]) == str(fab["id"])  # CREATE returns UUID
 
 
 @pytest.mark.django_db
@@ -133,7 +133,7 @@ def test_phase_retrieve(auth_client):
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-retrieve"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]["id"]) == str(fab["id"])  # GET returns nested object
 
 
 @pytest.mark.django_db
@@ -150,13 +150,13 @@ def test_phase_update_put(auth_client):
     r = auth_client.put(f"/api/v1/phases/{phase_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "phase-put-updated"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]) == str(fab["id"])  # PUT returns UUID
 
     # Verify in database
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-put-updated"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]["id"]) == str(fab["id"])  # GET returns nested object
 
 
 @pytest.mark.django_db
@@ -174,13 +174,13 @@ def test_phase_update_patch(auth_client):
     )
     assert r.status_code == 200
     assert r.data["name"] == "phase-patch-updated"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]) == str(fab["id"])  # PUT returns UUID
 
     # Verify in database
     r = auth_client.get(f"/api/v1/phases/{phase_id}")
     assert r.status_code == 200
     assert r.data["name"] == "phase-patch-updated"
-    assert str(r.data["fab"]) == str(fab["id"])
+    assert str(r.data["fab"]["id"]) == str(fab["id"])  # GET returns nested object
 
 
 @pytest.mark.django_db
@@ -315,7 +315,7 @@ def test_room_create(auth_client):
     r = auth_client.post("/api/v1/rooms", payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "room-create"
-    assert str(r.data["datacenter"]) == str(dc["id"])
+    assert str(r.data["datacenter"]) == str(dc["id"])  # CREATE returns UUID
 
 
 @pytest.mark.django_db
@@ -345,7 +345,7 @@ def test_room_retrieve(auth_client):
     r = auth_client.get(f"/api/v1/rooms/{room_id}")
     assert r.status_code == 200
     assert r.data["name"] == "room-retrieve"
-    assert str(r.data["datacenter"]) == str(dc["id"])
+    assert str(r.data["datacenter"]["id"]) == str(dc["id"])
 
 
 @pytest.mark.django_db
@@ -433,7 +433,7 @@ def test_rack_create(auth_client):
     assert r.status_code == 201
     assert r.data["name"] == "rack-create"
     assert r.data["as_number"] == 65001
-    assert str(r.data["room"]) == str(room["id"])
+    assert str(r.data["room"]) == str(room["id"])  # CREATE returns UUID
 
 
 @pytest.mark.django_db
@@ -475,7 +475,7 @@ def test_rack_retrieve(auth_client):
     assert r.status_code == 200
     assert r.data["name"] == "rack-retrieve"
     assert r.data["as_number"] == 65002
-    assert str(r.data["room"]) == str(room["id"])
+    assert str(r.data["room"]["id"]) == str(room["id"])
 
 
 @pytest.mark.django_db
@@ -597,7 +597,7 @@ def test_infrastructure_hierarchy_chain(auth_client):
 
     # Create unit under rack
     unit = auth_client.post(
-        "/api/v1/units", {"name": "U1", "rack": rack["id"]}, format="json"
+        "/api/v1/units", {"name": "U1", "unit_number": 1, "rack": rack["id"]}, format="json"
     ).data
 
     # Verify all relationships are correctly established
@@ -614,11 +614,11 @@ def test_infrastructure_hierarchy_chain(auth_client):
     rack_check = auth_client.get(f"/api/v1/racks/{rack['id']}").data
     unit_check = auth_client.get(f"/api/v1/units/{unit['id']}").data
 
-    assert str(phase_check["fab"]) == str(fab["id"])
-    assert str(dc_check["phase"]) == str(phase["id"])
-    assert str(room_check["datacenter"]) == str(dc["id"])
-    assert str(rack_check["room"]) == str(room["id"])
-    assert str(unit_check["rack"]) == str(rack["id"])
+    assert str(phase_check["fab"]["id"]) == str(fab["id"])
+    assert str(dc_check["phase"]["id"]) == str(phase["id"])
+    assert str(room_check["datacenter"]["id"]) == str(dc["id"])
+    assert str(rack_check["room"]["id"]) == str(room["id"])
+    assert str(unit_check["rack"]["id"]) == str(rack["id"])
 
 
 @pytest.mark.django_db
@@ -654,7 +654,18 @@ def test_infrastructure_cascade_relationships(auth_client):
 @pytest.mark.django_db
 def test_unit_create(auth_client):
     """Test creating a unit"""
-    # First create a rack to associate the unit with
+    # First create the infrastructure hierarchy
+    fab = auth_client.post("/api/v1/fab", {"name": "fab-unit-test"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-unit-test", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-unit-test", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room-unit-test", "datacenter": dc["id"]}, format="json"
+    ).data
+
     rack_payload = {
         "name": "rack-for-unit",
         "bgp_number": "65010",
@@ -662,18 +673,26 @@ def test_unit_create(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     assert rack_r.status_code == 201
     rack_id = rack_r.data["id"]
 
     # Now create a unit
-    unit_payload = {"rack": rack_id, "name": "U1"}
+    unit_payload = {"rack": rack_id, "name": "U1", "unit_number": 1}
     r = auth_client.post("/api/v1/units", unit_payload, format="json")
     assert r.status_code == 201
     assert r.data["name"] == "U1"
-    assert str(r.data["rack"]) == str(rack_id)
+    assert r.data["unit_number"] == 1
+    assert str(r.data["rack"]) == str(rack_id)  # PATCH returns UUID  # Create returns UUID
     assert "id" in r.data
+
+    # Test retrieve to verify nested data
+    unit_detail = auth_client.get(f"/api/v1/units/{r.data['id']}").data
+    assert unit_detail["name"] == "U1"
+    assert unit_detail["unit_number"] == 1
+    assert str(unit_detail["rack"]["id"]) == str(rack_id)  # Retrieve returns full object
 
 
 @pytest.mark.django_db
@@ -687,7 +706,18 @@ def test_unit_list(auth_client):
 @pytest.mark.django_db
 def test_unit_retrieve(auth_client):
     """Test retrieving a specific unit"""
-    # First create a rack
+    # First create the infrastructure hierarchy
+    fab = auth_client.post("/api/v1/fab", {"name": "fab-unit-retrieve"}, format="json").data
+    phase = auth_client.post(
+        "/api/v1/phases", {"name": "phase-unit-retrieve", "fab": fab["id"]}, format="json"
+    ).data
+    dc = auth_client.post(
+        "/api/v1/data-centers", {"name": "dc-unit-retrieve", "phase": phase["id"]}, format="json"
+    ).data
+    room = auth_client.post(
+        "/api/v1/rooms", {"name": "room-unit-retrieve", "datacenter": dc["id"]}, format="json"
+    ).data
+
     rack_payload = {
         "name": "rack-for-retrieve",
         "bgp_number": "65011",
@@ -695,12 +725,13 @@ def test_unit_retrieve(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     rack_id = rack_r.data["id"]
 
     # Create a unit
-    unit_payload = {"rack": rack_id, "name": "U2"}
+    unit_payload = {"rack": rack_id, "name": "U2", "unit_number": 2}
     create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
     unit_id = create_r.data["id"]
 
@@ -708,7 +739,8 @@ def test_unit_retrieve(auth_client):
     r = auth_client.get(f"/api/v1/units/{unit_id}")
     assert r.status_code == 200
     assert r.data["name"] == "U2"
-    assert str(r.data["rack"]) == str(rack_id)
+    assert r.data["unit_number"] == 2
+    assert str(r.data["rack"]["id"]) == str(rack_id)
 
 
 @pytest.mark.django_db
@@ -739,22 +771,22 @@ def test_unit_update_put(auth_client):
     rack2_id = rack2_r.data["id"]
 
     # Create a unit
-    unit_payload = {"rack": rack_id, "name": "U3"}
+    unit_payload = {"rack": rack_id, "name": "U3", "unit_number": 3}
     create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
     unit_id = create_r.data["id"]
 
     # Update with PUT
-    put_payload = {"rack": rack2_id, "name": "U3-updated"}
+    put_payload = {"rack": rack2_id, "name": "U3-updated", "unit_number": 3}
     r = auth_client.put(f"/api/v1/units/{unit_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "U3-updated"
-    assert str(r.data["rack"]) == str(rack2_id)
+    assert str(r.data["rack"]) == str(rack2_id)  # PUT returns UUID
 
     # Verify in database
     r = auth_client.get(f"/api/v1/units/{unit_id}")
     assert r.status_code == 200
     assert r.data["name"] == "U3-updated"
-    assert str(r.data["rack"]) == str(rack2_id)
+    assert str(r.data["rack"]["id"]) == str(rack2_id)  # GET returns nested object
 
 
 @pytest.mark.django_db
@@ -773,7 +805,7 @@ def test_unit_update_patch(auth_client):
     rack_id = rack_r.data["id"]
 
     # Create a unit
-    unit_payload = {"rack": rack_id, "name": "U4"}
+    unit_payload = {"rack": rack_id, "name": "U4", "unit_number": 4}
     create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
     unit_id = create_r.data["id"]
 
@@ -781,13 +813,13 @@ def test_unit_update_patch(auth_client):
     r = auth_client.patch(f"/api/v1/units/{unit_id}", {"name": "U4-patched"}, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "U4-patched"
-    assert str(r.data["rack"]) == str(rack_id)  # Should remain unchanged
+    assert str(r.data["rack"]) == str(rack_id)  # PATCH returns UUID
 
     # Verify in database
     r = auth_client.get(f"/api/v1/units/{unit_id}")
     assert r.status_code == 200
     assert r.data["name"] == "U4-patched"
-    assert str(r.data["rack"]) == str(rack_id)
+    assert str(r.data["rack"]["id"]) == str(rack_id)  # GET returns nested object
 
 
 @pytest.mark.django_db
@@ -806,7 +838,7 @@ def test_unit_delete(auth_client):
     rack_id = rack_r.data["id"]
 
     # Create a unit
-    unit_payload = {"rack": rack_id, "name": "U5"}
+    unit_payload = {"rack": rack_id, "name": "U5", "unit_number": 5}
     create_r = auth_client.post("/api/v1/units", unit_payload, format="json")
     unit_id = create_r.data["id"]
 
@@ -835,7 +867,7 @@ def test_unit_unique_constraint(auth_client):
     rack_id = rack_r.data["id"]
 
     # Create first unit
-    unit_payload = {"rack": rack_id, "name": "U10"}
+    unit_payload = {"rack": rack_id, "name": "U10", "unit_number": 10}
     r1 = auth_client.post("/api/v1/units", unit_payload, format="json")
     assert r1.status_code == 201
 
@@ -872,12 +904,12 @@ def test_unit_same_name_different_racks(auth_client):
     rack2_id = rack2_r.data["id"]
 
     # Create unit in first rack
-    unit1_payload = {"rack": rack1_id, "name": "U1"}
+    unit1_payload = {"rack": rack1_id, "name": "U1", "unit_number": 1}
     r1 = auth_client.post("/api/v1/units", unit1_payload, format="json")
     assert r1.status_code == 201
 
     # Create unit with same name in second rack (should succeed)
-    unit2_payload = {"rack": rack2_id, "name": "U1"}
+    unit2_payload = {"rack": rack2_id, "name": "U1", "unit_number": 1}
     r2 = auth_client.post("/api/v1/units", unit2_payload, format="json")
     assert r2.status_code == 201
     assert r2.data["name"] == "U1"
@@ -934,11 +966,11 @@ def test_unit_cascade_delete_with_rack(auth_client):
     rack_id = rack_r.data["id"]
 
     # Create units in the rack
-    unit1_payload = {"rack": rack_id, "name": "U1"}
+    unit1_payload = {"rack": rack_id, "name": "U1", "unit_number": 1}
     unit1_r = auth_client.post("/api/v1/units", unit1_payload, format="json")
     unit1_id = unit1_r.data["id"]
 
-    unit2_payload = {"rack": rack_id, "name": "U2"}
+    unit2_payload = {"rack": rack_id, "name": "U2", "unit_number": 2}
     unit2_r = auth_client.post("/api/v1/units", unit2_payload, format="json")
     unit2_id = unit2_r.data["id"]
 

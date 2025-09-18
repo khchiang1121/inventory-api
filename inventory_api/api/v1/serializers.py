@@ -30,96 +30,160 @@ class FabSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
 
 
+class FabCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Fab
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+
+
+class FabUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Fab
+        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+
+
 class PhaseSerializer(serializers.ModelSerializer):
-    # fab = FabSerializer()
+    fab = FabSerializer(read_only=True)
+
+    class Meta:
+        model = models.Phase
+        fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
+
+
+class PhaseCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Phase
+        fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
+
+
+class PhaseUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phase
         fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
 
 
 class DataCenterSerializer(serializers.ModelSerializer):
-    # phase = PhaseSerializer()
+    phase = PhaseSerializer(read_only=True)
+
+    class Meta:
+        model = models.DataCenter
+        fields = ["id", "name", "external_system_id", "phase", "created_at", "updated_at"]
+
+
+class DataCenterCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DataCenter
+        fields = ["id", "name", "external_system_id", "phase", "created_at", "updated_at"]
+
+
+class DataCenterUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DataCenter
         fields = ["id", "name", "external_system_id", "phase", "created_at", "updated_at"]
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    # datacenter = DataCenterSerializer()
+    datacenter = DataCenterSerializer(read_only=True)
+
     class Meta:
         model = models.Room
         fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
 
 
-# Rack Serializers
+class RoomCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Room
+        fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
+
+
+class RoomUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Room
+        fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
+
+
 class RackSerializer(serializers.ModelSerializer):
-    # room = RoomSerializer()
+    room = RoomSerializer(read_only=True)
+
     class Meta:
         model = models.Rack
         fields = [
             "id",
             "name",
+            "room",
             "external_system_id",
             "bgp_number",
             "as_number",
-            "room",
             "height_units",
             "used_units",
             "available_units",
             "power_capacity",
             "status",
             "created_at",
-            "updated_at",
+            "updated_at"
         ]
 
 
-# class RackCreateSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.Rack
-#         fields = [
-#             "id",
-#             "name",
-#             "bgp_number",
-#             "as_number",
-#             "external_system_id",
-#             "room",
-#             "height_units",
-#             "power_capacity",
-#             "status",
-#         ]
-
-
-# class RackUpdateSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.Rack
-#         fields = [
-#             "id",
-#             "name",
-#             "bgp_number",
-#             "as_number",
-#             "external_system_id",
-#             "room",
-#             "height_units",
-#             "power_capacity",
-#             "status",
-#         ]
-
-
-# Unit Serializers (placed after Rack serializers to avoid forward refs)
-class UnitSerializer(serializers.ModelSerializer):
-    # rack = RackSerializer()
+class RackCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Unit
+        model = models.Rack
         fields = [
             "id",
-            "rack",
             "name",
+            "external_system_id",
+            "room",
+            "bgp_number",
+            "as_number",
+            "height_units",
+            "used_units",
+            "available_units",
+            "power_capacity",
+            "status",
             "created_at",
-            "updated_at",
+            "updated_at"
         ]
 
 
-# Unit Serializers
+class RackUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rack
+        fields = [
+            "id",
+            "name",
+            "external_system_id",
+            "room",
+            "bgp_number",
+            "as_number",
+            "height_units",
+            "used_units",
+            "available_units",
+            "power_capacity",
+            "status",
+            "created_at",
+            "updated_at"
+        ]
+
+
+class UnitSerializer(serializers.ModelSerializer):
+    rack = RackSerializer(read_only=True)
+
+    class Meta:
+        model = models.Unit
+        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+
+
+class UnitCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+
+
+class UnitUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+
+
 # ------------------------------------------------------------------------------
 # Network Serializers
 # ------------------------------------------------------------------------------
