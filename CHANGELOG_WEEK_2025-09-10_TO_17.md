@@ -69,6 +69,26 @@
   - **影響範圍**: 序列化器、視圖、測試、假資料生成器
   - **測試修復狀態**: ✅ **全部321個測試通過！** (從19個失敗 → 0個失敗)
 
+#### 🛠️ 重大更新: 採購模型重構
+- **feat**: 完全重構採購訂單 (PurchaseOrder) 模型架構
+  - **模型變更**:
+    - 移除欄位: `vendor_name`, `delivery_date`, `issued_by`
+    - 新增欄位: `purchase_requisition` (ForeignKey), `supplier` (ForeignKey), `amount`, `used`, `description`
+    - 建立採購申請與採購訂單的關聯關係
+    - 整合供應商管理系統
+  - **序列化器更新**:
+    - `PurchaseOrderSerializer`: 新增嵌套顯示採購申請和供應商詳細資訊
+    - `PurchaseOrderCreateSerializer`: 處理建立操作的 ID 輸入
+    - `PurchaseOrderUpdateSerializer`: 處理更新操作的 ID 輸入
+  - **API 功能**:
+    - GET 操作現在返回完整的採購申請和供應商資訊
+    - POST/PUT/PATCH 操作接受 ID 參考格式
+    - 支援金額追蹤 (總額/已使用)
+  - **測試更新**: 12個採購相關測試全部更新以匹配新架構
+  - **假資料生成器**: 重新設計以正確建立採購申請→採購訂單→供應商關係
+  - 檔案: 4 個檔案，50+ 次插入，30+ 次刪除
+  - **影響範圍**: 模型、序列化器、視圖、測試、假資料生成器、資料庫遷移
+
 #### ⭐ 重大功能: 基礎設施階層關係架構
 - **feat**: 實現完整的基礎設施階層關係 (Fab → Phase → DataCenter → Room → Rack → Unit)
   - **模型變更**:

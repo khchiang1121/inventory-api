@@ -46,6 +46,7 @@ from ..v1.serializers import (
     ManufacturerSerializer,
     NetworkInterfaceSerializer,
     PhaseSerializer,
+    PurchaseOrderCreateSerializer,
     PurchaseOrderSerializer,
     PurchaseRequisitionSerializer,
     RackCreateSerializer,
@@ -290,18 +291,39 @@ class TestPurchaseSerializers:
         assert pr.pr_number == "PR-2024-001"
 
     def test_purchase_order_serializer_with_vendor_info(self):
-        """Test PurchaseOrderSerializer with vendor information"""
+        """Test PurchaseOrderCreateSerializer with supplier information"""
+        from ..models import PurchaseRequisition, Supplier
+
+        # Create required dependencies
+        pr = PurchaseRequisition.objects.create(
+            pr_number="PR-TEST-001",
+            requested_by="Test User",
+            department="IT",
+            reason="Test procurement",
+        )
+        supplier = Supplier.objects.create(
+            name="Dell Technologies",
+            contact_email="sales@dell.com",
+            contact_phone="1-800-DELL",
+            address="Round Rock, TX",
+            website="https://dell.com",
+        )
+
         data = {
             "po_number": "PO-2024-001",
-            "vendor_name": "Dell Technologies",
+            "purchase_requisition": pr.id,
+            "supplier": supplier.id,
             "payment_terms": "Net 30",
-            "issued_by": "Procurement Team",
-            "status": "issued",
+            "amount": "10000.00",
+            "used": "0.00",
+            "description": "Dell equipment procurement",
         }
-        serializer = PurchaseOrderSerializer(data=data)
+        serializer = PurchaseOrderCreateSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
         po = serializer.save()
-        assert po.vendor_name == "Dell Technologies"
+        assert po.supplier == supplier
+        assert po.purchase_requisition == pr
+        assert str(po.amount) == "10000.00"
 
 
 @pytest.mark.django_db

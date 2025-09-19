@@ -239,34 +239,7 @@ class Command(BaseCommand):
         )
         self.stdout.write("✔️ Baremetal groups ready")
 
-        # Create Purchase Requisitions & Orders
-        prs = self._create_or_get_models(
-            models.PurchaseRequisition,
-            lambda: {
-                "pr_number": f"PR-{fake.unique.random_number(6)}",
-                "requested_by": fake.name(),
-                "department": fake.bs(),
-                "reason": fake.text(),
-            },
-            5,
-            skip_existing,
-            "PurchaseRequisition",
-        )
-
-        pos = self._create_or_get_models(
-            models.PurchaseOrder,
-            lambda: {
-                "po_number": f"PO-{fake.unique.random_number(6)}",
-                "vendor_name": fake.company(),
-                "payment_terms": "NET 30",
-                "issued_by": fake.name(),
-            },
-            5,
-            skip_existing,
-            "PurchaseOrder",
-        )
-
-        # Create Manufacturers and Suppliers
+        # Create Manufacturers and Suppliers first (needed for purchase orders)
         manufacturers = self._create_or_get_models(
             models.Manufacturer, lambda: {"name": fake.company()}, 3, skip_existing, "Manufacturer"
         )
@@ -284,6 +257,45 @@ class Command(BaseCommand):
             skip_existing,
             "Supplier",
         )
+
+        # Create Purchase Requisitions & Orders
+        prs = self._create_or_get_models(
+            models.PurchaseRequisition,
+            lambda: {
+                "pr_number": f"PR-{fake.unique.random_number(6)}",
+                "requested_by": fake.name(),
+                "department": fake.bs(),
+                "reason": fake.text(),
+            },
+            5,
+            skip_existing,
+            "PurchaseRequisition",
+        )
+
+        pos = []
+        for i in range(5):
+            selected_pr = random.choice(prs)
+            selected_supplier = random.choice(suppliers) if suppliers else None
+            po_data = {
+                "po_number": f"PO-{fake.unique.random_number(6)}",
+                "purchase_requisition": selected_pr,
+                "supplier": selected_supplier,
+                "payment_terms": random.choice(["net30", "net45", "net60"]),
+                "amount": fake.pydecimal(left_digits=5, right_digits=2, positive=True),
+                "used": fake.pydecimal(left_digits=4, right_digits=2, positive=True),
+                "description": fake.text(max_nb_chars=200),
+            }
+            po_obj, created = models.PurchaseOrder.objects.get_or_create(
+                po_number=po_data["po_number"], defaults=po_data
+            )
+            pos.append(po_obj)
+            if created and not skip_existing:
+                self.stdout.write(f"  Created PurchaseOrder: {po_obj.po_number}")
+
+        if not skip_existing:
+            self.stdout.write(f"✔️ PurchaseOrder ready ({len(pos)} total)")
+
+        # Manufacturers and suppliers already created above
 
         baremetal_models = self._create_or_get_models(
             models.BaremetalModel,

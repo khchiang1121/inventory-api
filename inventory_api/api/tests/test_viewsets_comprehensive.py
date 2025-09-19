@@ -321,17 +321,45 @@ class TestPurchaseViewSets:
         assert response.data["reason"] == "Server upgrade - approved"
 
     def test_purchase_order_vendor_tracking(self, auth_client):
-        """Test purchase order creation with vendor information"""
+        """Test purchase order creation with supplier information"""
+        # Create purchase requisition
+        pr_data = {
+            "pr_number": "PR-2024-001",
+            "requested_by": "Test User",
+            "department": "IT",
+            "reason": "Equipment procurement",
+        }
+        pr_response = auth_client.post("/api/v1/purchase-requisitions", pr_data, format="json")
+
+        # Create supplier
+        supplier_data = {
+            "name": "Dell Technologies",
+            "contact_email": "sales@dell.com",
+            "contact_phone": "1-800-DELL",
+            "address": "Round Rock, TX",
+            "website": "https://dell.com",
+        }
+        supplier_response = auth_client.post("/api/v1/suppliers", supplier_data, format="json")
+
+        # Create purchase order
         data = {
             "po_number": "PO-2024-001",
-            "vendor_name": "Dell Technologies",
+            "purchase_requisition": pr_response.data["id"],
+            "supplier": supplier_response.data["id"],
             "payment_terms": "Net 30",
-            "issued_by": "Procurement Team",
-            "status": "issued",
+            "amount": "15000.00",
+            "used": "0.00",
+            "description": "Dell equipment procurement",
         }
         response = auth_client.post("/api/v1/purchase-orders", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["vendor_name"] == "Dell Technologies"
+        assert str(response.data["supplier"]) == str(
+            supplier_response.data["id"]
+        )  # CREATE returns UUID
+        assert str(response.data["purchase_requisition"]) == str(
+            pr_response.data["id"]
+        )  # CREATE returns UUID
+        assert str(response.data["amount"]) == "15000.00"
 
 
 @pytest.mark.django_db

@@ -44,6 +44,7 @@ from ..models import (
     PurchaseRequisition,
     Rack,
     Room,
+    Supplier,
     Tenant,
     VirtualMachineSpecification,
 )
@@ -111,11 +112,11 @@ class APITestSetup(APITestCase):
             department="IT",
             reason="Test server",
         )
+        self.supplier = Supplier.objects.create(name="Dell")
         self.purchase_order = PurchaseOrder.objects.create(
             po_number="PO-2024-001",
-            vendor_name="Dell",
+            supplier=self.supplier,
             payment_terms="Net 30",
-            issued_by="Procurement",
         )
 
         # Create test baremetal

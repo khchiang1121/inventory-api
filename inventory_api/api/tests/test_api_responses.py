@@ -31,6 +31,7 @@ from ..models import (
     Rack,
     Room,
     ServiceMesh,
+    Supplier,
     Tenant,
     VirtualMachine,
     VirtualMachineSpecification,
@@ -252,11 +253,11 @@ class TestComplexObjectResponses:
         pr = PurchaseRequisition.objects.create(
             pr_number="PR-001", requested_by="Test", department="IT", reason="Test"
         )
+        supplier = Supplier.objects.create(name="Dell")
         po = PurchaseOrder.objects.create(
             po_number="PO-001",
-            vendor_name="Dell",
+            supplier=supplier,
             payment_terms="Net 30",
-            issued_by="Test",
         )
 
         baremetal = Baremetal.objects.create(

@@ -137,6 +137,13 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
     queryset = models.PurchaseOrder.objects.all().order_by("id")
     serializer_class = serializers.PurchaseOrderSerializer
 
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PurchaseOrderCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PurchaseOrderUpdateSerializer
+        return serializers.PurchaseOrderSerializer
+
 
 # ------------------------------------------------------------------------------
 # Baremetal ViewSets

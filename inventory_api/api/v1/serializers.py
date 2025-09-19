@@ -120,7 +120,7 @@ class RackSerializer(serializers.ModelSerializer):
             "power_capacity",
             "status",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
 
 
@@ -140,7 +140,7 @@ class RackCreateSerializer(serializers.ModelSerializer):
             "power_capacity",
             "status",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
 
 
@@ -160,7 +160,7 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "power_capacity",
             "status",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
 
 
@@ -329,39 +329,6 @@ class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
 # ------------------------------------------------------------------------------
 # Purchase Serializers
 # ------------------------------------------------------------------------------
-class PurchaseRequisitionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PurchaseRequisition
-        fields = [
-            "id",
-            "pr_number",
-            "requested_by",
-            "department",
-            "reason",
-            "submit_date",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class PurchaseOrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PurchaseOrder
-        fields = [
-            "id",
-            "po_number",
-            "vendor_name",
-            "payment_terms",
-            "delivery_date",
-            "issued_by",
-            "created_at",
-            "updated_at",
-        ]
-
-
-# ------------------------------------------------------------------------------
-# Baremetal Serializers
-# ------------------------------------------------------------------------------
 class ManufacturerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Manufacturer
@@ -381,6 +348,86 @@ class SupplierSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class PurchaseRequisitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseRequisition
+        fields = [
+            "id",
+            "pr_number",
+            "requested_by",
+            "department",
+            "reason",
+            "submit_date",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PurchaseOrderSerializer(serializers.ModelSerializer):
+    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
+    supplier = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "id",
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_supplier(self, obj):
+        """Get supplier details if exists"""
+        if obj.supplier:
+            return SupplierSerializer(obj.supplier).data
+        return None
+
+
+class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "id",
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PurchaseOrderUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "id",
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Baremetal Serializers
+# ------------------------------------------------------------------------------
 
 
 class BaremetalModelSerializer(serializers.ModelSerializer):
