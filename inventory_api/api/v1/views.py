@@ -4,6 +4,7 @@ from typing import Type
 
 import psutil
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import get_object_or_404
@@ -30,6 +31,18 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 # ------------------------------------------------------------------------------
 # Infrastructure ViewSets
 # ------------------------------------------------------------------------------
+class AvailableGroupViewSet(viewsets.ModelViewSet):
+    queryset = models.AvailableGroup.objects.all().order_by("id")
+    serializer_class = serializers.AvailableGroupSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AvailableGroupCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AvailableGroupUpdateSerializer
+        return serializers.AvailableGroupSerializer
+
+
 class FabViewSet(viewsets.ModelViewSet):
     queryset = models.Fab.objects.all().order_by("id")
     serializer_class = serializers.FabSerializer
@@ -303,6 +316,108 @@ class ServiceMeshViewSet(viewsets.ModelViewSet):
         elif self.action in ["update", "partial_update"]:
             return serializers.ServiceMeshUpdateSerializer
         return serializers.ServiceMeshSerializer
+
+
+# ------------------------------------------------------------------------------
+# New Model ViewSets
+# ------------------------------------------------------------------------------
+
+
+# Region ViewSet
+class RegionViewSet(viewsets.ModelViewSet):
+    queryset = models.Region.objects.all().order_by("id")
+    serializer_class = serializers.RegionSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.RegionCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.RegionUpdateSerializer
+        return serializers.RegionSerializer
+
+
+# Physical GPU Model ViewSet
+class PhysicalGPUModelViewSet(viewsets.ModelViewSet):
+    queryset = models.PhysicalGPUModel.objects.all().order_by("id")
+    serializer_class = serializers.PhysicalGPUModelSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PhysicalGPUModelCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PhysicalGPUModelUpdateSerializer
+        return serializers.PhysicalGPUModelSerializer
+
+
+# Physical GPU ViewSet
+class PhysicalGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.PhysicalGPU.objects.all().order_by("id")
+    serializer_class = serializers.PhysicalGPUSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PhysicalGPUCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PhysicalGPUUpdateSerializer
+        return serializers.PhysicalGPUSerializer
+
+
+# Baremetal Model GPU ViewSet
+class BaremetalModelGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalModelGPU.objects.all().order_by("id")
+    serializer_class = serializers.BaremetalModelGPUSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalModelGPUCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalModelGPUUpdateSerializer
+        return serializers.BaremetalModelGPUSerializer
+
+
+# Virtual Machine Specification GPU ViewSet
+class VirtualMachineSpecificationGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.VirtualMachineSpecificationGPU.objects.all().order_by("id")
+    serializer_class = serializers.VirtualMachineSpecificationGPUSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.VirtualMachineSpecificationGPUCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.VirtualMachineSpecificationGPUUpdateSerializer
+        return serializers.VirtualMachineSpecificationGPUSerializer
+
+
+# Django Group ViewSet (using built-in Group model)
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all().order_by("id")
+    serializer_class = serializers.GroupSerializer
+
+
+# Scheduling Strategy ViewSet
+class SchedulingStrategyViewSet(viewsets.ModelViewSet):
+    queryset = models.SchedulingStrategy.objects.all().order_by("id")
+    serializer_class = serializers.SchedulingStrategySerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.SchedulingStrategyCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.SchedulingStrategyUpdateSerializer
+        return serializers.SchedulingStrategySerializer
+
+
+# Scheduling Strategy Condition ViewSet
+class SchedulingStrategyConditionViewSet(viewsets.ModelViewSet):
+    queryset = models.SchedulingStrategyCondition.objects.all().order_by("id")
+    serializer_class = serializers.SchedulingStrategyConditionSerializer
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.SchedulingStrategyConditionCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.SchedulingStrategyConditionUpdateSerializer
+        return serializers.SchedulingStrategyConditionSerializer
 
 
 # Virtual Machine ViewSet

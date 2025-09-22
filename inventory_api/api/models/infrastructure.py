@@ -132,3 +132,54 @@ class Unit(AbstractBase):
     class Meta:
         unique_together = ["rack", "name"]
 
+
+# add a phisical gpu model
+class PhysicalGPUModel(AbstractBase):
+    """Physical GPU model"""
+
+    name = models.CharField(max_length=255)  # ex: NVIDIA A100
+    vendor = models.CharField(max_length=64, default="NVIDIA")
+    architecture = models.CharField(max_length=64, blank=True)
+    description = models.TextField(blank=True)
+
+    memory = models.IntegerField(help_text="GPU memory in MB")
+    memory_bandwidth = models.IntegerField(null=True, blank=True, help_text="GB/s")
+    compute_capability = models.CharField(max_length=16, blank=True)
+
+    power_consumption = models.IntegerField(null=True, blank=True, help_text="W")
+    driver_version = models.CharField(max_length=64, blank=True)
+
+    release_date = models.DateField(null=True, blank=True)
+    end_of_life = models.DateField(null=True, blank=True)
+    is_multi_instance_supported = models.BooleanField(default=False)
+    price_reference = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    status = models.CharField(
+        max_length=32,
+        choices=[("active", "Active"), ("inactive", "Inactive")],
+        default="active",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+# add a physical gpu class for each gpu type
+class PhysicalGPU(AbstractBase):
+    """Physical GPU model"""
+
+    name = models.CharField(max_length=255)
+    serial_number = models.CharField(max_length=255)
+    model = models.ForeignKey(
+        "PhysicalGPUModel", on_delete=models.CASCADE, related_name="physical_gpus"
+    )
+    description = models.TextField(blank=True)
+    baremetal = models.ForeignKey(
+        "Baremetal", on_delete=models.CASCADE, related_name="physical_gpus"
+    )
+    virtual_machine = models.ForeignKey(
+        "VirtualMachine", on_delete=models.CASCADE, related_name="physical_gpus"
+    )
+    status = models.CharField(
+        max_length=32, choices=[("active", "Active"), ("inactive", "Inactive")]
+    )

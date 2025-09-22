@@ -1,6 +1,7 @@
 from datetime import datetime  # noqa: F401
 from uuid import UUID  # noqa: F401
 
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
@@ -24,6 +25,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
 # ------------------------------------------------------------------------------
 # Infrastructure Serializers
 # ------------------------------------------------------------------------------
+class AvailableGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AvailableGroup
+        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
+
+
+class AvailableGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AvailableGroup
+        fields = ["id", "name", "description", "status"]
+
+
+class AvailableGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AvailableGroup
+        fields = ["id", "name", "description", "status"]
+
+
 class FabSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Fab
@@ -104,6 +123,7 @@ class RoomUpdateSerializer(serializers.ModelSerializer):
 
 class RackSerializer(serializers.ModelSerializer):
     room = RoomSerializer(read_only=True)
+    available_group = AvailableGroupSerializer(read_only=True)
 
     class Meta:
         model = models.Rack
@@ -119,6 +139,7 @@ class RackSerializer(serializers.ModelSerializer):
             "available_units",
             "power_capacity",
             "status",
+            "available_group",
             "created_at",
             "updated_at",
         ]
@@ -139,6 +160,7 @@ class RackCreateSerializer(serializers.ModelSerializer):
             "available_units",
             "power_capacity",
             "status",
+            "available_group",
             "created_at",
             "updated_at",
         ]
@@ -159,6 +181,7 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "available_units",
             "power_capacity",
             "status",
+            "available_group",
             "created_at",
             "updated_at",
         ]
@@ -169,19 +192,19 @@ class UnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
 
 
 class UnitCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
 
 
 class UnitUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "created_at", "updated_at"]
+        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
 
 
 # ------------------------------------------------------------------------------
@@ -269,6 +292,9 @@ class NetworkInterfaceSerializer(serializers.ModelSerializer):
 
 # Baremetal Group Serializers
 class BaremetalGroupSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(many=True, read_only=True)
+    user_group = serializers.SerializerMethodField()
+
     class Meta:
         model = models.BaremetalGroup
         fields = [
@@ -284,9 +310,16 @@ class BaremetalGroupSerializer(serializers.ModelSerializer):
             "available_storage",
             "available_gpu",
             "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
             "created_at",
             "updated_at",
         ]
+
+    def get_user_group(self, obj):
+        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
 
 
 class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
@@ -305,6 +338,10 @@ class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
             "available_storage",
             "available_gpu",
             "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
         ]
 
 
@@ -323,6 +360,10 @@ class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
             "available_storage",
             "available_gpu",
             "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
         ]
 
 
@@ -433,6 +474,8 @@ class PurchaseOrderUpdateSerializer(serializers.ModelSerializer):
 class BaremetalModelSerializer(serializers.ModelSerializer):
     manufacturer = ManufacturerSerializer(read_only=True)
     suppliers = SupplierSerializer(many=True, read_only=True)
+    total_gpu = serializers.SerializerMethodField()
+    baremetal_model_gpus = serializers.SerializerMethodField()
 
     class Meta:
         model = models.BaremetalModel
@@ -445,8 +488,22 @@ class BaremetalModelSerializer(serializers.ModelSerializer):
             "total_memory",
             "total_storage",
             "total_gpu",
+            "baremetal_model_gpus",
             "created_at",
             "updated_at",
+        ]
+
+    def get_total_gpu(self, obj):
+        return [{"id": str(gpu.id), "name": gpu.name} for gpu in obj.total_gpu.all()]
+
+    def get_baremetal_model_gpus(self, obj):
+        return [
+            {
+                "id": str(bmg.id),
+                "physical_gpu_model": bmg.physical_gpu_model.name,
+                "count": bmg.count,
+            }
+            for bmg in obj.baremetal_model_gpus.all()
         ]
 
 
@@ -484,15 +541,13 @@ class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
 
 # Baremetal Serializers
 class BaremetalSerializer(serializers.ModelSerializer):
-    rack = RackSerializer(read_only=True)
     unit = UnitSerializer(read_only=True)
-    group = BaremetalGroupSerializer(read_only=True)
+    baremetal_group = BaremetalGroupSerializer(read_only=True)
     model = BaremetalModelSerializer(read_only=True)
-    fabrication = FabSerializer(read_only=True)
-    phase = PhaseSerializer(read_only=True)
-    data_center = DataCenterSerializer(read_only=True)
-    pr = PurchaseRequisitionSerializer(read_only=True)
-    po = PurchaseOrderSerializer(read_only=True)
+    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
+    purchase_order = PurchaseOrderSerializer(read_only=True)
+    user = CustomUserSerializer(many=True, read_only=True)
+    user_group = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Baremetal
@@ -501,24 +556,25 @@ class BaremetalSerializer(serializers.ModelSerializer):
             "name",
             "serial_number",
             "model",
-            "fabrication",
-            "phase",
-            "data_center",
-            "room",
-            "rack",
             "unit",
             "status",
             "available_cpu",
             "available_memory",
             "available_storage",
-            "available_gpu",
-            "group",
-            "pr",
-            "po",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
             "external_system_id",
+            "max_virtual_machine",
+            "labels",
             "created_at",
             "updated_at",
         ]
+
+    def get_user_group(self, obj):
+        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
 
 
 class BaremetalCreateSerializer(serializers.ModelSerializer):
@@ -529,21 +585,19 @@ class BaremetalCreateSerializer(serializers.ModelSerializer):
             "name",
             "serial_number",
             "model",
-            "fabrication",
-            "phase",
-            "data_center",
-            "room",
-            "rack",
             "unit",
             "status",
             "available_cpu",
             "available_memory",
             "available_storage",
-            "available_gpu",
-            "group",
-            "pr",
-            "po",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
             "external_system_id",
+            "max_virtual_machine",
+            "labels",
         ]
 
 
@@ -555,21 +609,19 @@ class BaremetalUpdateSerializer(serializers.ModelSerializer):
             "name",
             "serial_number",
             "model",
-            "fabrication",
-            "phase",
-            "data_center",
-            "room",
-            "rack",
             "unit",
             "status",
             "available_cpu",
             "available_memory",
             "available_storage",
-            "available_gpu",
-            "group",
-            "pr",
-            "po",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
             "external_system_id",
+            "max_virtual_machine",
+            "labels",
         ]
 
 
@@ -581,7 +633,7 @@ class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
             "id",
             "group",
             "tenant",
-            "cpu_quota_percentage",
+            "cpu_quota",
             "memory_quota",
             "storage_quota",
             "gpu_quota",
@@ -597,7 +649,7 @@ class BaremetalGroupTenantQuotaCreateSerializer(serializers.ModelSerializer):
             "id",
             "group",
             "tenant",
-            "cpu_quota_percentage",
+            "cpu_quota",
             "memory_quota",
             "storage_quota",
             "gpu_quota",
@@ -611,11 +663,346 @@ class BaremetalGroupTenantQuotaUpdateSerializer(serializers.ModelSerializer):
             "id",
             "group",
             "tenant",
-            "cpu_quota_percentage",
+            "cpu_quota",
             "memory_quota",
             "storage_quota",
             "gpu_quota",
         ]
+
+
+# ------------------------------------------------------------------------------
+# New Model Serializers
+# ------------------------------------------------------------------------------
+
+
+# Region Serializers
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
+
+
+class RegionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["id", "name", "description", "status"]
+
+
+class RegionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["id", "name", "description", "status"]
+
+
+# Physical GPU Model Serializers
+class PhysicalGPUModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "id",
+            "name",
+            "vendor",
+            "architecture",
+            "description",
+            "memory",
+            "memory_bandwidth",
+            "compute_capability",
+            "power_consumption",
+            "driver_version",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+            "price_reference",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PhysicalGPUModelCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "id",
+            "name",
+            "vendor",
+            "architecture",
+            "description",
+            "memory",
+            "memory_bandwidth",
+            "compute_capability",
+            "power_consumption",
+            "driver_version",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+            "price_reference",
+            "status",
+        ]
+
+
+class PhysicalGPUModelUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "id",
+            "name",
+            "vendor",
+            "architecture",
+            "description",
+            "memory",
+            "memory_bandwidth",
+            "compute_capability",
+            "power_consumption",
+            "driver_version",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+            "price_reference",
+            "status",
+        ]
+
+
+# Physical GPU Serializers
+class PhysicalGPUSerializer(serializers.ModelSerializer):
+    model = PhysicalGPUModelSerializer(read_only=True)
+    baremetal = serializers.SerializerMethodField()
+    virtual_machine = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "model",
+            "description",
+            "baremetal",
+            "virtual_machine",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_baremetal(self, obj):
+        if obj.baremetal:
+            return {"id": str(obj.baremetal.id), "name": obj.baremetal.name}
+        return None
+
+    def get_virtual_machine(self, obj):
+        if obj.virtual_machine:
+            return {"id": str(obj.virtual_machine.id), "name": obj.virtual_machine.name}
+        return None
+
+
+class PhysicalGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "model",
+            "description",
+            "baremetal",
+            "virtual_machine",
+            "status",
+        ]
+
+
+class PhysicalGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "model",
+            "description",
+            "baremetal",
+            "virtual_machine",
+            "status",
+        ]
+
+
+# Baremetal Model GPU Serializers
+class BaremetalModelGPUSerializer(serializers.ModelSerializer):
+    baremetal_model = serializers.SerializerMethodField()
+    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
+
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = [
+            "id",
+            "baremetal_model",
+            "physical_gpu_model",
+            "count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_baremetal_model(self, obj):
+        return {"id": str(obj.baremetal_model.id), "name": obj.baremetal_model.name}
+
+
+class BaremetalModelGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = ["id", "baremetal_model", "physical_gpu_model", "count"]
+
+
+class BaremetalModelGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = ["id", "baremetal_model", "physical_gpu_model", "count"]
+
+
+# Virtual Machine Specification GPU Serializers
+class VirtualMachineSpecificationGPUSerializer(serializers.ModelSerializer):
+    virtual_machine_specification = serializers.SerializerMethodField()
+    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
+
+    class Meta:
+        model = models.VirtualMachineSpecificationGPU
+        fields = [
+            "id",
+            "virtual_machine_specification",
+            "physical_gpu_model",
+            "count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_virtual_machine_specification(self, obj):
+        return {
+            "id": str(obj.virtual_machine_specification.id),
+            "name": obj.virtual_machine_specification.name,
+        }
+
+
+class VirtualMachineSpecificationGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecificationGPU
+        fields = ["id", "virtual_machine_specification", "physical_gpu_model", "count"]
+
+
+class VirtualMachineSpecificationGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecificationGPU
+        fields = ["id", "virtual_machine_specification", "physical_gpu_model", "count"]
+
+
+# Django Group Serializers (using built-in Group model)
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ["id", "name"]
+
+
+# Scheduling Strategy Serializers
+class SchedulingStrategyConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategyCondition
+        fields = [
+            "id",
+            "scheduling_strategy",
+            "key",
+            "value",
+            "operator",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class SchedulingStrategySerializer(serializers.ModelSerializer):
+    tenant = serializers.SerializerMethodField()
+    available_group = AvailableGroupSerializer(many=True, read_only=True)
+    conditions = SchedulingStrategyConditionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.SchedulingStrategy
+        fields = [
+            "id",
+            "name",
+            "description",
+            "mode",
+            "priority",
+            "tenant",
+            "max_rack_number",
+            "same_dc_in_failure_zone",
+            "same_phase_in_failure_zone",
+            "same_region_in_failure_zone",
+            "same_tenant_in_failure_zone",
+            "cluster_shared",
+            "balance_split_rack_number",
+            "status",
+            "available_group",
+            "conditions",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_tenant(self, obj):
+        if obj.tenant:
+            return {"id": str(obj.tenant.id), "name": obj.tenant.name}
+        return None
+
+
+class SchedulingStrategyCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategy
+        fields = [
+            "id",
+            "name",
+            "description",
+            "mode",
+            "priority",
+            "tenant",
+            "max_rack_number",
+            "same_dc_in_failure_zone",
+            "same_phase_in_failure_zone",
+            "same_region_in_failure_zone",
+            "same_tenant_in_failure_zone",
+            "cluster_shared",
+            "balance_split_rack_number",
+            "status",
+            "available_group",
+        ]
+
+
+class SchedulingStrategyUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategy
+        fields = [
+            "id",
+            "name",
+            "description",
+            "mode",
+            "priority",
+            "tenant",
+            "max_rack_number",
+            "same_dc_in_failure_zone",
+            "same_phase_in_failure_zone",
+            "same_region_in_failure_zone",
+            "same_tenant_in_failure_zone",
+            "cluster_shared",
+            "balance_split_rack_number",
+            "status",
+            "available_group",
+        ]
+
+
+class SchedulingStrategyConditionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategyCondition
+        fields = ["id", "scheduling_strategy", "key", "value", "operator", "status"]
+
+
+class SchedulingStrategyConditionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategyCondition
+        fields = ["id", "scheduling_strategy", "key", "value", "operator", "status"]
 
 
 # Tenant Serializers
@@ -639,6 +1026,11 @@ class TenantUpdateSerializer(serializers.ModelSerializer):
 
 # Virtual Machine Specification Serializers
 class VirtualMachineSpecificationSerializer(serializers.ModelSerializer):
+    required_gpu = PhysicalGPUModelSerializer(many=True, read_only=True)
+    virtual_machine_specifications_gpus = VirtualMachineSpecificationGPUSerializer(
+        many=True, read_only=True
+    )
+
     class Meta:
         model = models.VirtualMachineSpecification
         fields = [
@@ -648,6 +1040,8 @@ class VirtualMachineSpecificationSerializer(serializers.ModelSerializer):
             "required_cpu",
             "required_memory",
             "required_storage",
+            "required_gpu",
+            "virtual_machine_specifications_gpus",
             "created_at",
             "updated_at",
         ]
@@ -663,6 +1057,7 @@ class VirtualMachineSpecificationCreateSerializer(serializers.ModelSerializer):
             "required_cpu",
             "required_memory",
             "required_storage",
+            "required_gpu",
         ]
 
 
@@ -676,12 +1071,17 @@ class VirtualMachineSpecificationUpdateSerializer(serializers.ModelSerializer):
             "required_cpu",
             "required_memory",
             "required_storage",
+            "required_gpu",
         ]
 
 
 # K8s Cluster Serializers
 class K8sClusterSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
+    region = RegionSerializer(read_only=True)
+    scheduling_strategy = SchedulingStrategySerializer(read_only=True)
+    user = CustomUserSerializer(read_only=True)
+    failure_zone_cluster = serializers.SerializerMethodField()
 
     class Meta:
         model = models.K8sCluster
@@ -690,12 +1090,20 @@ class K8sClusterSerializer(serializers.ModelSerializer):
             "name",
             "version",
             "tenant",
-            "scheduling_mode",
+            "region",
+            "scheduling_strategy",
             "description",
+            "user",
+            "failure_zone_cluster",
             "status",
             "created_at",
             "updated_at",
         ]
+
+    def get_failure_zone_cluster(self, obj):
+        if obj.failure_zone_cluster:
+            return {"id": str(obj.failure_zone_cluster.id), "name": obj.failure_zone_cluster.name}
+        return None
 
 
 class K8sClusterCreateSerializer(serializers.ModelSerializer):
@@ -706,8 +1114,11 @@ class K8sClusterCreateSerializer(serializers.ModelSerializer):
             "name",
             "version",
             "tenant",
-            "scheduling_mode",
+            "region",
+            "scheduling_strategy",
             "description",
+            "user",
+            "failure_zone_cluster",
             "status",
         ]
 
@@ -720,8 +1131,11 @@ class K8sClusterUpdateSerializer(serializers.ModelSerializer):
             "name",
             "version",
             "tenant",
-            "scheduling_mode",
+            "region",
+            "scheduling_strategy",
             "description",
+            "user",
+            "failure_zone_cluster",
             "status",
         ]
 
@@ -829,9 +1243,12 @@ class ServiceMeshUpdateSerializer(serializers.ModelSerializer):
 # Virtual Machine Serializers
 class VirtualMachineSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
+    region = RegionSerializer(read_only=True)
     baremetal = BaremetalSerializer(read_only=True)
     specification = VirtualMachineSpecificationSerializer(read_only=True)
     k8s_cluster = K8sClusterSerializer(read_only=True)
+    user = CustomUserSerializer(read_only=True)
+    user_group = serializers.SerializerMethodField()
 
     class Meta:
         model = models.VirtualMachine
@@ -839,14 +1256,22 @@ class VirtualMachineSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "tenant",
+            "region",
             "baremetal",
             "specification",
             "k8s_cluster",
             "type",
+            "routable",
+            "baremetal_selector",
+            "user",
+            "user_group",
             "status",
             "created_at",
             "updated_at",
         ]
+
+    def get_user_group(self, obj):
+        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
 
 
 class VirtualMachineCreateSerializer(serializers.ModelSerializer):
@@ -856,10 +1281,15 @@ class VirtualMachineCreateSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "tenant",
+            "region",
             "baremetal",
             "specification",
             "k8s_cluster",
             "type",
+            "routable",
+            "baremetal_selector",
+            "user",
+            "user_group",
             "status",
         ]
 
@@ -870,10 +1300,15 @@ class VirtualMachineUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "tenant",
+            "region",
             "baremetal",
             "specification",
             "k8s_cluster",
             "type",
+            "routable",
+            "baremetal_selector",
+            "user",
+            "user_group",
             "status",
         ]
 

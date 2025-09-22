@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local apps
     "inventory_api.api",
+    'django_seed',
     'schema_viewer',
 ]
 
@@ -156,7 +157,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = os.environ.get("DJANGO_LANGUAGE_CODE", "en-us")
 TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "UTC")
 USE_I18N = True
-USE_TZ = True
+# USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -211,7 +213,7 @@ REST_FRAMEWORK = {
         "inventory_api.api.permissions.HasPermissionForObject",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": int(os.environ.get("DRF_PAGE_SIZE", "10")),
+    "PAGE_SIZE": int(os.environ.get("DRF_PAGE_SIZE", "100")),
     "DEFAULT_SCHEMA_CLASS": "inventory_api.schema.CustomAutoSchema",
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",

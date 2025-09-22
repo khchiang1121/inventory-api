@@ -67,3 +67,6 @@ API
 
 how to set static
 python manage.py collectstatic
+
+
+python manage.py seed api --number=15

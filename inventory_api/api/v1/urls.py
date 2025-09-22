@@ -13,6 +13,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register(r"users", views.CustomUserViewSet)
 
 # Infrastructure routes
+router.register(r"available-groups", views.AvailableGroupViewSet)
 router.register(r"fab", views.FabViewSet)
 router.register(r"phases", views.PhaseViewSet)
 router.register(r"data-centers", views.DataCenterViewSet)
@@ -37,6 +38,16 @@ router.register(r"baremetal-models", views.BaremetalModelViewSet)
 router.register(r"baremetal-groups", views.BaremetalGroupViewSet)
 router.register(r"baremetals", views.BaremetalViewSet)
 router.register(r"baremetal-group-tenant-quotas", views.BaremetalGroupTenantQuotaViewSet)
+
+# New Model routes
+router.register(r"regions", views.RegionViewSet)
+router.register(r"physical-gpu-models", views.PhysicalGPUModelViewSet)
+router.register(r"physical-gpus", views.PhysicalGPUViewSet)
+router.register(r"baremetal-model-gpus", views.BaremetalModelGPUViewSet)
+router.register(r"vm-specification-gpus", views.VirtualMachineSpecificationGPUViewSet)
+router.register(r"groups", views.GroupViewSet)
+router.register(r"scheduling-strategies", views.SchedulingStrategyViewSet)
+router.register(r"scheduling-strategy-conditions", views.SchedulingStrategyConditionViewSet)
 
 # Tenant and VM routes
 router.register(r"tenants", views.TenantViewSet)

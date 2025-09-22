@@ -1,9 +1,14 @@
+from django.contrib.auth.models import Group
 from django.db import models
 
 from inventory_api.api.models.virtual import Tenant
 
 from .base import AbstractBase
-from .users import CustomUser, UserGroup
+from .users import CustomUser
+from inventory_api.api.models.infrastructure import PhysicalGPUModel, PhysicalGPU
+
+
+
 
 class BaremetalGroup(AbstractBase):
     """Baremetal server group model"""
@@ -23,10 +28,12 @@ class BaremetalGroup(AbstractBase):
         choices=[("active", "Active"), ("inactive", "Inactive")],
         help_text="Group status",
     )
-    user = models.ManyToManyField(CustomUser, related_name="baremetals")
-    user_group = models.ManyToManyField(UserGroup, related_name="baremetals")
+    user = models.ManyToManyField(CustomUser, related_name="baremetal_groups")
+    user_group = models.ManyToManyField(Group, related_name="baremetal_groups")
     # add a bool field to indicate if the group can be shared by multiple tenants
-    is_multi_tenant = models.BooleanField(default=False, help_text="Indicates if the group can be shared by multiple tenants")
+    is_multi_tenant = models.BooleanField(
+        default=False, help_text="Indicates if the group can be shared by multiple tenants"
+    )
     labels = models.JSONField(blank=True, null=True)
 
 
@@ -67,15 +74,21 @@ class BaremetalModel(AbstractBase):
     total_cpu = models.IntegerField(help_text="Total CPU capacity")
     total_memory = models.IntegerField(help_text="Total memory capacity")
     total_storage = models.IntegerField(help_text="Total storage capacity")
-    total_gpu = models.ManyToManyField("PhysicalGPUModel", through="BaremetalModelGPU", related_name="baremetal_models")
+    total_gpu = models.ManyToManyField(
+        "PhysicalGPUModel", through="BaremetalModelGPU", related_name="baremetal_models"
+    )
 
 
 class BaremetalModelGPU(AbstractBase):
     """Baremetal model GPU model"""
 
-    baremetal_model = models.ForeignKey("BaremetalModel", on_delete=models.CASCADE, related_name="baremetal_model_gpus")
-    physical_gpu_model = models.ForeignKey("PhysicalGPUModel", on_delete=models.CASCADE, related_name="baremetal_model_gpus")
-    count = models.IntegerField()
+    baremetal_model = models.ForeignKey(
+        "BaremetalModel", on_delete=models.CASCADE, related_name="baremetal_model_gpus"
+    )
+    physical_gpu_model = models.ForeignKey(
+        "PhysicalGPUModel", on_delete=models.CASCADE, related_name="baremetal_model_gpus"
+    )
+    count = models.IntegerField(default=0)
 
 
 class Baremetal(AbstractBase):
@@ -99,13 +112,17 @@ class Baremetal(AbstractBase):
     available_cpu = models.IntegerField()
     available_memory = models.IntegerField()
     available_storage = models.IntegerField()
-    baremetal_group = models.ForeignKey(BaremetalGroup, on_delete=models.CASCADE, related_name="baremetals")
+    baremetal_group = models.ForeignKey(
+        BaremetalGroup, on_delete=models.CASCADE, related_name="baremetals"
+    )
     purchase_requisition = models.ForeignKey(
         "PurchaseRequisition", on_delete=models.PROTECT, related_name="baremetals"
     )
-    purchase_order = models.ForeignKey("PurchaseOrder", on_delete=models.PROTECT, related_name="baremetals")
-    user = models.ManyToManyField(CustomUser, related_name="baremetals")
-    user_group = models.ManyToManyField(UserGroup, related_name="baremetals")
+    purchase_order = models.ForeignKey(
+        "PurchaseOrder", on_delete=models.PROTECT, related_name="baremetals"
+    )
+    user = models.ManyToManyField(CustomUser, related_name="owned_baremetals")
+    user_group = models.ManyToManyField(Group, related_name="owned_baremetals")
     external_system_id = models.CharField(max_length=100, blank=True)
     # add a field to specify the max virtual machine that can be created on this baremetal
     max_virtual_machine = models.IntegerField(default=0)

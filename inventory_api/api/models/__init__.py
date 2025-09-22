@@ -17,23 +17,29 @@ from .baremetal import (
     BaremetalGroup,
     BaremetalGroupTenantQuota,
     BaremetalModel,
+    BaremetalModelGPU,
     Manufacturer,
     Supplier,
-    Tenant,
 )
 from .base import AbstractBase
-from .infrastructure import DataCenter, Fab, Phase, Rack, Room, Unit
+from .infrastructure import AvailableGroup, DataCenter, Fab, Phase, Rack, Room, Unit
 from .network import VLAN, VRF, BGPConfig, NetworkInterface
 from .purchase import PurchaseOrder, PurchaseRequisition
+from .scheduling_strategy import SchedulingStrategy, SchedulingStrategyCondition
 from .users import CustomUser
 from .virtual import (
     BastionClusterAssociation,
     K8sCluster,
     K8sClusterPlugin,
     K8sClusterToServiceMesh,
+    PhysicalGPU,
+    PhysicalGPUModel,
+    Region,
     ServiceMesh,
+    Tenant,
     VirtualMachine,
     VirtualMachineSpecification,
+    VirtualMachineSpecificationGPU,
 )
 
 # Export all models
@@ -43,6 +49,7 @@ __all__ = [
     # Users
     "CustomUser",
     # Infrastructure
+    "AvailableGroup",
     "Fab",
     "Phase",
     "DataCenter",
@@ -62,17 +69,25 @@ __all__ = [
     "Manufacturer",
     "Supplier",
     "BaremetalModel",
+    "BaremetalModelGPU",
     "Baremetal",
-    "Tenant",
     "BaremetalGroupTenantQuota",
     # Virtual
+    "Tenant",
+    "Region",
+    "PhysicalGPUModel",
+    "PhysicalGPU",
     "VirtualMachineSpecification",
+    "VirtualMachineSpecificationGPU",
     "K8sCluster",
     "K8sClusterPlugin",
     "ServiceMesh",
     "K8sClusterToServiceMesh",
     "VirtualMachine",
     "BastionClusterAssociation",
+    # Scheduling
+    "SchedulingStrategy",
+    "SchedulingStrategyCondition",
     # Ansible
     "AnsibleInventory",
     "AnsibleInventoryVariable",
