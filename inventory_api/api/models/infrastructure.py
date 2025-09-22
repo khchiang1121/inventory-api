@@ -2,6 +2,12 @@ from django.db import models
 
 from .base import AbstractBase
 
+class AvailableGroup(AbstractBase):
+    """Available group model"""
+    name = models.CharField(max_length=32, unique=True, help_text="Available rack identifier")
+    description = models.TextField(blank=True, help_text="Description of the available rack")
+    status = models.CharField(max_length=32, choices=[("active", "Active"), ("inactive", "Inactive")], default="active", help_text="Available rack status")
+
 
 class Fab(AbstractBase):
     """Fab model for physical infrastructure"""
@@ -103,6 +109,7 @@ class Rack(AbstractBase):
         default="active",
         help_text="Rack status",
     )
+    available_group = models.ForeignKey(AvailableGroup, on_delete=models.CASCADE, related_name="racks")
 
 
 class Unit(AbstractBase):
@@ -119,5 +126,9 @@ class Unit(AbstractBase):
         related_name="units",
         help_text="Rack that this unit belongs to",
     )
+    # add a field to represent this unit belong to which bgp, eg, bgp1, bgp2
+    bgp = models.CharField(max_length=32, help_text="BGP that this unit belongs to")
+    
     class Meta:
         unique_together = ["rack", "name"]
+
