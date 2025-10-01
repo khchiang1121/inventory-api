@@ -6,9 +6,7 @@ from .ansible import (
     AnsibleHost,
     AnsibleHostVariable,
     AnsibleInventory,
-    AnsibleInventoryPlugin,
     AnsibleInventoryTemplate,
-    AnsibleInventoryVariable,
     AnsibleInventoryVariableSetAssociation,
     AnsibleVariableSet,
 )
@@ -18,28 +16,29 @@ from .baremetal import (
     BaremetalGroupTenantQuota,
     BaremetalModel,
     BaremetalModelGPU,
-    Manufacturer,
-    Supplier,
+    GPUAllocation,
 )
 from .base import AbstractBase
+from .common import Region, Tenant, Vendor
+from .gpu import GPUProfile, PhysicalGPU, PhysicalGPUModel
 from .infrastructure import AvailableGroup, DataCenter, Fab, Phase, Rack, Room, Unit
 from .network import VLAN, VRF, BGPConfig, NetworkInterface
 from .purchase import PurchaseOrder, PurchaseRequisition
-from .scheduling_strategy import SchedulingStrategy, SchedulingStrategyCondition
-from .users import CustomUser
+from .scheduling_strategy import SchedulingStrategy, SchedulingStrategyModel
+from .users import CustomGroup, CustomUser
 from .virtual import (
     BastionClusterAssociation,
+    ClusterTemplate,
+    ClusterTemplateVirtualMachine,
     K8sCluster,
     K8sClusterPlugin,
+    K8sClusterPluginAssociation,
     K8sClusterToServiceMesh,
-    PhysicalGPU,
-    PhysicalGPUModel,
-    Region,
     ServiceMesh,
-    Tenant,
     VirtualMachine,
+    VirtualMachineRole,
     VirtualMachineSpecification,
-    VirtualMachineSpecificationGPU,
+    VirtualMachineSpecificationRequiredGPU,
 )
 
 # Export all models
@@ -48,6 +47,7 @@ __all__ = [
     "AbstractBase",
     # Users
     "CustomUser",
+    "CustomGroup",
     # Infrastructure
     "AvailableGroup",
     "Fab",
@@ -64,40 +64,45 @@ __all__ = [
     # Purchase
     "PurchaseRequisition",
     "PurchaseOrder",
+    # Common (shared models)
+    "Vendor",
+    "Region",
+    "Tenant",
+    "VirtualMachine",
     # Baremetal
     "BaremetalGroup",
-    "Manufacturer",
-    "Supplier",
     "BaremetalModel",
     "BaremetalModelGPU",
     "Baremetal",
     "BaremetalGroupTenantQuota",
-    # Virtual
-    "Tenant",
-    "Region",
-    "PhysicalGPUModel",
+    "GPUAllocation",
+    "GPUProfile",
     "PhysicalGPU",
+    "PhysicalGPUModel",
+    # Virtual
+    "VirtualMachine",
     "VirtualMachineSpecification",
-    "VirtualMachineSpecificationGPU",
+    "VirtualMachineSpecificationRequiredGPU",
     "K8sCluster",
     "K8sClusterPlugin",
+    "K8sClusterPluginAssociation",
     "ServiceMesh",
     "K8sClusterToServiceMesh",
-    "VirtualMachine",
     "BastionClusterAssociation",
+    "ClusterTemplate",
+    "ClusterTemplateVirtualMachine",
+    "VirtualMachineRole",
     # Scheduling
     "SchedulingStrategy",
-    "SchedulingStrategyCondition",
+    "SchedulingStrategyModel",
     # Ansible
     "AnsibleInventory",
-    "AnsibleInventoryVariable",
     "AnsibleVariableSet",
     "AnsibleGroup",
     "AnsibleGroupVariable",
     "AnsibleGroupRelationship",
     "AnsibleHost",
     "AnsibleHostVariable",
-    "AnsibleInventoryPlugin",
     "AnsibleInventoryTemplate",
     "AnsibleInventoryVariableSetAssociation",
 ]

@@ -9,7 +9,15 @@ class VLAN(AbstractBase):
     """VLAN model for network segmentation"""
 
     vlan_id = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=255, help_text="VLAN name")
+    description = models.TextField(blank=True, help_text="VLAN description")
+    class Meta:
+        ordering = ["vlan_id"]
+        verbose_name = "VLAN"
+        verbose_name_plural = "VLANs"
+    
+    def __str__(self) -> str:
+        return str(self.name)
 
 
 class VRF(AbstractBase):
@@ -17,6 +25,13 @@ class VRF(AbstractBase):
 
     name = models.CharField(max_length=64, unique=True)
     route_distinguisher = models.CharField(max_length=64)
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "VRF"
+        verbose_name_plural = "VRFs"
+    
+    def __str__(self) -> str:
+        return str(self.name)
 
 
 class BGPConfig(AbstractBase):
@@ -26,6 +41,13 @@ class BGPConfig(AbstractBase):
     peer_ip = models.GenericIPAddressField(protocol="IPv4", help_text="BGP peer IP")
     local_ip = models.GenericIPAddressField(protocol="IPv4", help_text="Local BGP IP")
     password = models.CharField(max_length=64, blank=True)
+    class Meta:
+        ordering = ["asn"]
+        verbose_name = "BGP Config"
+        verbose_name_plural = "BGP Configs"
+    
+    def __str__(self) -> str:
+        return str(self.asn)
 
 
 class NetworkInterface(AbstractBase):
@@ -57,3 +79,11 @@ class NetworkInterface(AbstractBase):
     vlan = models.ForeignKey(VLAN, null=True, blank=True, on_delete=models.SET_NULL)
     vrf = models.ForeignKey(VRF, null=True, blank=True, on_delete=models.SET_NULL)
     bgp_config = models.OneToOneField(BGPConfig, null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Network Interface"
+        verbose_name_plural = "Network Interfaces"
+    
+    def __str__(self) -> str:
+        return str(self.name)

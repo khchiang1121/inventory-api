@@ -75,11 +75,22 @@ class APITestSetup(APITestCase):
         self.phase = Phase.objects.create(name="Test Phase", fab=self.fabrication)
         self.data_center = DataCenter.objects.create(name="Test DC", phase=self.phase)
         self.room = Room.objects.create(name="Test Room", datacenter=self.data_center)
+        from ..models import AvailableGroup
+
+        ag = AvailableGroup.objects.create(name="AG-BASE", description="", status="active")
         self.rack = Rack.objects.create(
-            name="Test Rack", bgp_number="AS12345", as_number=67890, room=self.room
+            name="Test Rack",
+            bgp_number="AS12345",
+            as_number=67890,
+            room=self.room,
+            available_group=ag,
         )
 
         # Create test baremetal group
+        from django.contrib.auth.models import Group as DjangoGroup
+
+        from ..models import CustomUser
+
         self.baremetal_group = BaremetalGroup.objects.create(
             name="Test Group",
             description="Test Description",
@@ -93,6 +104,17 @@ class APITestSetup(APITestCase):
             available_gpu=4,
             status="active",
         )
+        # add minimal M2M
+        owner = CustomUser.objects.create_user(
+            username="base-owner",
+            password="Passw0rd!",
+            email="base-owner@example.com",
+            account="test",
+            status="active",
+        )
+        ug = DjangoGroup.objects.create(name="base-group")
+        self.baremetal_group.user.add(owner)
+        self.baremetal_group.user_group.add(ug)
 
         # Create required related objects for baremetal
         self.manufacturer = Manufacturer.objects.create(name="Dell")
@@ -102,7 +124,6 @@ class APITestSetup(APITestCase):
             total_cpu=64,
             total_memory=1024,
             total_storage=10000,
-            total_gpu=4,
         )
         # Use the already created infrastructure objects
         # self.fabrication, self.phase, self.data_center already created above
@@ -120,21 +141,21 @@ class APITestSetup(APITestCase):
         )
 
         # Create test baremetal
+        from ..models import Unit
+
+        unit = Unit.objects.create(name="U-BASE", unit_number=1, rack=self.rack, bgp="AS1")
         self.baremetal = Baremetal.objects.create(
             name="Test Baremetal",
             serial_number="SN123456",
             model=self.baremetal_model,
-            fabrication=self.fabrication,
-            phase=self.phase,
-            data_center=self.data_center,
-            rack=self.rack,
+            unit=unit,
             status="active",
             available_cpu=64,
             available_memory=1024,
             available_storage=10000,
-            group=self.baremetal_group,
-            pr=self.purchase_requisition,
-            po=self.purchase_order,
+            baremetal_group=self.baremetal_group,
+            purchase_requisition=self.purchase_requisition,
+            purchase_order=self.purchase_order,
         )
 
         # Create test VM specification

@@ -29,11 +29,36 @@ def test_virtual_machine_create(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-vm-create", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-create-owner",
+            "password": "Passw0rd!",
+            "email": "vm-create-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-create-group"},
+        format="json",
+    ).data
+
     payload = {
         "name": "vm-create",
         "type": "worker",
         "status": "running",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec["id"],
     }
     r = auth_client.post("/api/v1/virtual-machines", payload, format="json")
@@ -72,11 +97,36 @@ def test_virtual_machine_retrieve(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-vm-retrieve", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-retrieve-owner",
+            "password": "Passw0rd!",
+            "email": "vm-retrieve-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-retrieve-group"},
+        format="json",
+    ).data
+
     payload = {
         "name": "vm-retrieve",
         "type": "control-plane",
         "status": "running",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec["id"],
     }
     create_r = auth_client.post("/api/v1/virtual-machines", payload, format="json")
@@ -119,11 +169,36 @@ def test_virtual_machine_update_put(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-vm-put", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-put-owner",
+            "password": "Passw0rd!",
+            "email": "vm-put-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-put-group"},
+        format="json",
+    ).data
+
     payload = {
         "name": "vm-put",
         "type": "management",
         "status": "running",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec["id"],
     }
     create_r = auth_client.post("/api/v1/virtual-machines", payload, format="json")
@@ -134,6 +209,9 @@ def test_virtual_machine_update_put(auth_client):
         "type": "other",
         "status": "stopped",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec2["id"],
     }
     r = auth_client.put(f"/api/v1/virtual-machines/{vm_id}", put_payload, format="json")
@@ -169,11 +247,36 @@ def test_virtual_machine_update_patch(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-vm-patch", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-patch-owner",
+            "password": "Passw0rd!",
+            "email": "vm-patch-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-patch-group"},
+        format="json",
+    ).data
+
     payload = {
         "name": "vm-patch",
         "type": "worker",
         "status": "running",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec["id"],
     }
     create_r = auth_client.post("/api/v1/virtual-machines", payload, format="json")
@@ -215,11 +318,36 @@ def test_virtual_machine_delete(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-vm-delete", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-delete-owner",
+            "password": "Passw0rd!",
+            "email": "vm-delete-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-delete-group"},
+        format="json",
+    ).data
+
     payload = {
         "name": "vm-delete",
         "type": "other",
         "status": "running",
         "tenant": tenant["id"],
+        "region": region["id"],
+        "user": user["id"],
+        "user_group": [user_group["id"]],
         "specification": spec["id"],
     }
     create_r = auth_client.post("/api/v1/virtual-machines", payload, format="json")
@@ -303,9 +431,7 @@ def test_vm_specification_update_put(auth_client):
         "required_memory": 16,
         "required_storage": 200,
     }
-    r = auth_client.put(
-        f"/api/v1/vm-specifications/{spec_id}", put_payload, format="json"
-    )
+    r = auth_client.put(f"/api/v1/vm-specifications/{spec_id}", put_payload, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "spec-put-updated"
     assert r.data["generation"] == "gen3"

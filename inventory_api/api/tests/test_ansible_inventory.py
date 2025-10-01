@@ -933,6 +933,29 @@ def test_ansible_host_variable_create(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "host-var-user",
+            "password": "Passw0rd!",
+            "email": "host-var-user@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "host-var-group"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -940,6 +963,9 @@ def test_ansible_host_variable_create(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1030,6 +1056,29 @@ def test_ansible_host_variable_retrieve(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "host-var-retrieve-user",
+            "password": "Passw0rd!",
+            "email": "host-var-retrieve-user@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "host-var-retrieve-dj-group"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1037,6 +1086,9 @@ def test_ansible_host_variable_retrieve(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1121,6 +1173,29 @@ def test_ansible_host_variable_update_put(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "host-var-put-user",
+            "password": "Passw0rd!",
+            "email": "host-var-put-user@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "host-var-put-dj-group"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1128,6 +1203,9 @@ def test_ansible_host_variable_update_put(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1223,6 +1301,29 @@ def test_ansible_host_variable_update_patch(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "host-var-patch-user",
+            "password": "Passw0rd!",
+            "email": "host-var-patch-user@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "host-var-patch-dj-group"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1230,6 +1331,9 @@ def test_ansible_host_variable_update_patch(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1323,6 +1427,28 @@ def test_ansible_host_variable_delete(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-host-var-del", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "host-var-del-user",
+            "password": "Passw0rd!",
+            "email": "host-var-del-user@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups",
+        {"name": "host-var-del-dj-group"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1330,6 +1456,9 @@ def test_ansible_host_variable_delete(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",

@@ -50,6 +50,11 @@ def test_network_interface_create(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-ni", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -59,6 +64,7 @@ def test_network_interface_create(auth_client):
             "rack": rack["id"],
             "name": "U1",
             "unit_number": 1,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -74,6 +80,24 @@ def test_network_interface_create(auth_client):
             "available_memory": 100,
             "available_storage": 100,
             "status": "active",
+            "user": [
+                auth_client.post(
+                    "/api/v1/users",
+                    {
+                        "username": "bm-ni",
+                        "password": "Passw0rd!",
+                        "email": "bm-ni@example.com",
+                        "account": "test",
+                        "status": "active",
+                    },
+                    format="json",
+                ).data["id"]
+            ],
+            "user_group": [
+                auth_client.post("/api/v1/groups", {"name": "bm-ni-group"}, format="json").data[
+                    "id"
+                ]
+            ],
         },
         format="json",
     ).data
@@ -93,8 +117,10 @@ def test_network_interface_create(auth_client):
         "/api/v1/purchase-orders",
         {
             "po_number": "PO-NI-001",
-            "vendor_name": "Vendor",
+            "purchase_requisition": pr["id"],
             "payment_terms": "NET30",
+            "amount": "0.00",
+            "used": "0.00",
         },
         format="json",
     ).data
@@ -105,18 +131,14 @@ def test_network_interface_create(auth_client):
             "name": "bm-ni",
             "serial_number": "SN-NI",
             "model": model["id"],
-            "fabrication": fab["id"],
-            "phase": phase["id"],
-            "data_center": dc["id"],
-            "rack": rack["id"],
             "unit": unit["id"],
             "status": "active",
             "available_cpu": 16,
             "available_memory": 16,
             "available_storage": 200,
-            "group": group["id"],
-            "pr": pr["id"],
-            "po": po["id"],
+            "baremetal_group": group["id"],
+            "purchase_requisition": pr["id"],
+            "purchase_order": po["id"],
         },
         format="json",
     ).data
