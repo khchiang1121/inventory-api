@@ -41,20 +41,41 @@ from .virtual import (
     VirtualMachineSpecificationRequiredGPU,
 )
 
-# Export all models
 __all__ = [
+    # Ansible
+    "AnsibleGroup",
+    "AnsibleGroupRelationship",
+    "AnsibleGroupVariable",
+    "AnsibleHost",
+    "AnsibleHostVariable",
+    "AnsibleInventory",
+    "AnsibleInventoryTemplate",
+    "AnsibleInventoryVariableSetAssociation",
+    "AnsibleVariableSet",
+    # Baremetal
+    "Baremetal",
+    "BaremetalGroup",
+    "BaremetalGroupTenantQuota",
+    "BaremetalModel",
+    "BaremetalModelGPU",
+    "GPUAllocation",
     # Base
     "AbstractBase",
-    # Users
-    "CustomUser",
-    "CustomGroup",
+    # Common (shared models)
+    "Region",
+    "Tenant",
+    "Vendor",
+    # GPU
+    "GPUProfile",
+    "PhysicalGPU",
+    "PhysicalGPUModel",
     # Infrastructure
     "AvailableGroup",
+    "DataCenter",
     "Fab",
     "Phase",
-    "DataCenter",
-    "Room",
     "Rack",
+    "Room",
     "Unit",
     # Network
     "VLAN",
@@ -62,47 +83,25 @@ __all__ = [
     "BGPConfig",
     "NetworkInterface",
     # Purchase
-    "PurchaseRequisition",
     "PurchaseOrder",
-    # Common (shared models)
-    "Vendor",
-    "Region",
-    "Tenant",
-    "VirtualMachine",
-    # Baremetal
-    "BaremetalGroup",
-    "BaremetalModel",
-    "BaremetalModelGPU",
-    "Baremetal",
-    "BaremetalGroupTenantQuota",
-    "GPUAllocation",
-    "GPUProfile",
-    "PhysicalGPU",
-    "PhysicalGPUModel",
-    # Virtual
-    "VirtualMachine",
-    "VirtualMachineSpecification",
-    "VirtualMachineSpecificationRequiredGPU",
-    "K8sCluster",
-    "K8sClusterPlugin",
-    "K8sClusterPluginAssociation",
-    "ServiceMesh",
-    "K8sClusterToServiceMesh",
-    "BastionClusterAssociation",
-    "ClusterTemplate",
-    "ClusterTemplateVirtualMachine",
-    "VirtualMachineRole",
+    "PurchaseRequisition",
     # Scheduling
     "SchedulingStrategy",
     "SchedulingStrategyModel",
-    # Ansible
-    "AnsibleInventory",
-    "AnsibleVariableSet",
-    "AnsibleGroup",
-    "AnsibleGroupVariable",
-    "AnsibleGroupRelationship",
-    "AnsibleHost",
-    "AnsibleHostVariable",
-    "AnsibleInventoryTemplate",
-    "AnsibleInventoryVariableSetAssociation",
+    # Users
+    "CustomGroup",
+    "CustomUser",
+    # Virtual
+    "BastionClusterAssociation",
+    "ClusterTemplate",
+    "ClusterTemplateVirtualMachine",
+    "K8sCluster",
+    "K8sClusterPlugin",
+    "K8sClusterPluginAssociation",
+    "K8sClusterToServiceMesh",
+    "ServiceMesh",
+    "VirtualMachine",
+    "VirtualMachineRole",
+    "VirtualMachineSpecification",
+    "VirtualMachineSpecificationRequiredGPU",
 ]
