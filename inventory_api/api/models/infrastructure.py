@@ -1,4 +1,5 @@
 from typing import Any
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -193,7 +194,6 @@ class DataCenter(AbstractBase):
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.full_clean()
         super().save(*args, **kwargs)
-
 
 
 # [MODEL CHECKLIST v3]
