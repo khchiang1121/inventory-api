@@ -44,6 +44,11 @@ def test_baremetal_create(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-bm1", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -53,6 +58,7 @@ def test_baremetal_create(auth_client):
             "rack": rack["id"],
             "name": "U1",
             "unit_number": 1,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -63,9 +69,27 @@ def test_baremetal_create(auth_client):
     ).data
     po = auth_client.post(
         "/api/v1/purchase-orders",
-        {"po_number": "PO-100", "vendor_name": "Dell"},
+        {
+            "po_number": "PO-100",
+            "purchase_requisition": pr["id"],
+            "payment_terms": "net30",
+            "amount": "0.00",
+            "used": "0.00",
+        },
         format="json",
     ).data
+    owner = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "bm-owner-2",
+            "password": "Passw0rd!",
+            "email": "bm-owner-2@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    owner_group = auth_client.post("/api/v1/groups", {"name": "bm-owners-2"}, format="json").data
     group = auth_client.post(
         "/api/v1/baremetal-groups",
         {
@@ -80,6 +104,8 @@ def test_baremetal_create(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [owner["id"]],
+            "user_group": [owner_group["id"]],
         },
         format="json",
     ).data
@@ -89,18 +115,16 @@ def test_baremetal_create(auth_client):
         "name": "bm1",
         "serial_number": "SN1",
         "model": model["id"],
-        "fabrication": fab["id"],
-        "phase": phase["id"],
-        "data_center": dc["id"],
-        "rack": rack["id"],
         "unit": unit["id"],
         "status": "active",
         "available_cpu": 64,
         "available_memory": 128,
         "available_storage": 1000,
-        "group": group["id"],
-        "pr": pr.get("id"),
-        "po": po.get("id"),
+        "baremetal_group": group["id"],
+        "purchase_requisition": pr.get("id"),
+        "purchase_order": po.get("id"),
+        "user": [owner["id"]],
+        "user_group": [owner_group["id"]],
     }
     r = auth_client.post("/api/v1/baremetals", payload, format="json")
     assert r.status_code == 201
@@ -154,6 +178,11 @@ def test_baremetal_retrieve(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-bm2", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -163,6 +192,7 @@ def test_baremetal_retrieve(auth_client):
             "rack": rack["id"],
             "name": "U2",
             "unit_number": 2,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -180,6 +210,22 @@ def test_baremetal_retrieve(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [
+                auth_client.post(
+                    "/api/v1/users",
+                    {
+                        "username": "bm-u2",
+                        "password": "Passw0rd!",
+                        "email": "bm-u2@example.com",
+                        "account": "test",
+                        "status": "active",
+                    },
+                    format="json",
+                ).data["id"]
+            ],
+            "user_group": [
+                auth_client.post("/api/v1/groups", {"name": "bm-g2"}, format="json").data["id"]
+            ],
         },
         format="json",
     ).data
@@ -201,26 +247,40 @@ def test_baremetal_retrieve(auth_client):
             "po_number": "PO-BM-RETRIEVE",
             "vendor_name": "Dell",
             "payment_terms": "net30",
+            "amount": "0.00",
+            "used": "0.00",
         },
         format="json",
     ).data
+
+    # owner and group for baremetal M2M
+    owner = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "bm-ret-owner",
+            "password": "Passw0rd!",
+            "email": "bm-ret-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    owner_group = auth_client.post("/api/v1/groups", {"name": "bm-ret-owners"}, format="json").data
 
     payload = {
         "name": "bm-retrieve",
         "serial_number": "SN123",
         "model": model["id"],
-        "fabrication": fab["id"],
-        "phase": phase["id"],
-        "data_center": dc["id"],
-        "rack": rack["id"],
         "unit": unit["id"],
         "status": "active",
         "available_cpu": 32,
         "available_memory": 64,
         "available_storage": 500,
-        "group": group["id"],
-        "pr": pr["id"],
-        "po": po["id"],
+        "baremetal_group": group["id"],
+        "purchase_requisition": pr["id"],
+        "purchase_order": po["id"],
+        "user": [owner["id"]],
+        "user_group": [owner_group["id"]],
     }
     create_r = auth_client.post("/api/v1/baremetals", payload, format="json")
     assert create_r.status_code == 201, f"Failed to create baremetal: {create_r.data}"
@@ -270,6 +330,11 @@ def test_baremetal_update(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-bm3", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -279,6 +344,7 @@ def test_baremetal_update(auth_client):
             "rack": rack["id"],
             "name": "U3",
             "unit_number": 3,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -296,6 +362,22 @@ def test_baremetal_update(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [
+                auth_client.post(
+                    "/api/v1/users",
+                    {
+                        "username": "bm-u3",
+                        "password": "Passw0rd!",
+                        "email": "bm-u3@example.com",
+                        "account": "test",
+                        "status": "active",
+                    },
+                    format="json",
+                ).data["id"]
+            ],
+            "user_group": [
+                auth_client.post("/api/v1/groups", {"name": "bm-g3"}, format="json").data["id"]
+            ],
         },
         format="json",
     ).data
@@ -313,7 +395,13 @@ def test_baremetal_update(auth_client):
     ).data
     po = auth_client.post(
         "/api/v1/purchase-orders",
-        {"po_number": "PO-BM-UPDATE", "vendor_name": "Dell", "payment_terms": "net30"},
+        {
+            "po_number": "PO-BM-UPDATE",
+            "vendor_name": "Dell",
+            "payment_terms": "net30",
+            "amount": "0.00",
+            "used": "0.00",
+        },
         format="json",
     ).data
 
@@ -321,18 +409,16 @@ def test_baremetal_update(auth_client):
         "name": "bm-update",
         "serial_number": "SN456",
         "model": model["id"],
-        "fabrication": fab["id"],
-        "phase": phase["id"],
-        "data_center": dc["id"],
-        "rack": rack["id"],
         "unit": unit["id"],
         "status": "active",
         "available_cpu": 24,
         "available_memory": 32,
         "available_storage": 300,
-        "group": group["id"],
-        "pr": pr["id"],
-        "po": po["id"],
+        "baremetal_group": group["id"],
+        "purchase_requisition": pr["id"],
+        "purchase_order": po["id"],
+        "user": [owner["id"]],
+        "user_group": [owner_group["id"]],
     }
     create_r = auth_client.post("/api/v1/baremetals", payload, format="json")
     assert create_r.status_code == 201, f"Failed to create baremetal: {create_r.data}"
@@ -387,6 +473,11 @@ def test_baremetal_delete(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-bm4", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -396,6 +487,7 @@ def test_baremetal_delete(auth_client):
             "rack": rack["id"],
             "name": "U4",
             "unit_number": 4,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -413,6 +505,22 @@ def test_baremetal_delete(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [
+                auth_client.post(
+                    "/api/v1/users",
+                    {
+                        "username": "bm-u4",
+                        "password": "Passw0rd!",
+                        "email": "bm-u4@example.com",
+                        "account": "test",
+                        "status": "active",
+                    },
+                    format="json",
+                ).data["id"]
+            ],
+            "user_group": [
+                auth_client.post("/api/v1/groups", {"name": "bm-g4"}, format="json").data["id"]
+            ],
         },
         format="json",
     ).data
@@ -430,7 +538,13 @@ def test_baremetal_delete(auth_client):
     ).data
     po = auth_client.post(
         "/api/v1/purchase-orders",
-        {"po_number": "PO-BM-DELETE", "vendor_name": "Dell", "payment_terms": "net30"},
+        {
+            "po_number": "PO-BM-DELETE",
+            "vendor_name": "Dell",
+            "payment_terms": "net30",
+            "amount": "0.00",
+            "used": "0.00",
+        },
         format="json",
     ).data
 
@@ -438,18 +552,16 @@ def test_baremetal_delete(auth_client):
         "name": "bm-delete",
         "serial_number": "SN789",
         "model": model["id"],
-        "fabrication": fab["id"],
-        "phase": phase["id"],
-        "data_center": dc["id"],
-        "rack": rack["id"],
         "unit": unit["id"],
         "status": "active",
         "available_cpu": 16,
         "available_memory": 16,
         "available_storage": 200,
-        "group": group["id"],
-        "pr": pr["id"],
-        "po": po["id"],
+        "baremetal_group": group["id"],
+        "purchase_requisition": pr["id"],
+        "purchase_order": po["id"],
+        "user": [owner["id"]],
+        "user_group": [owner_group["id"]],
     }
     create_r = auth_client.post("/api/v1/baremetals", payload, format="json")
     assert create_r.status_code == 201, f"Failed to create baremetal: {create_r.data}"
@@ -503,6 +615,11 @@ def test_baremetal_with_network_interface(auth_client):
             "power_capacity": "4.00",
             "status": "active",
             "room": room["id"],
+            "available_group": auth_client.post(
+                "/api/v1/available-groups",
+                {"name": "ag-bm5", "description": "", "status": "active"},
+                format="json",
+            ).data["id"],
         },
         format="json",
     ).data
@@ -512,6 +629,7 @@ def test_baremetal_with_network_interface(auth_client):
             "rack": rack["id"],
             "name": "U5",
             "unit_number": 5,
+            "bgp": "AS1",
         },
         format="json",
     ).data
@@ -529,6 +647,22 @@ def test_baremetal_with_network_interface(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [
+                auth_client.post(
+                    "/api/v1/users",
+                    {
+                        "username": "bm-u5",
+                        "password": "Passw0rd!",
+                        "email": "bm-u5@example.com",
+                        "account": "test",
+                        "status": "active",
+                    },
+                    format="json",
+                ).data["id"]
+            ],
+            "user_group": [
+                auth_client.post("/api/v1/groups", {"name": "bm-g5"}, format="json").data["id"]
+            ],
         },
         format="json",
     ).data
@@ -546,7 +680,13 @@ def test_baremetal_with_network_interface(auth_client):
     ).data
     po = auth_client.post(
         "/api/v1/purchase-orders",
-        {"po_number": "PO-BM-NI", "vendor_name": "Dell", "payment_terms": "net30"},
+        {
+            "po_number": "PO-BM-NI",
+            "vendor_name": "Dell",
+            "payment_terms": "net30",
+            "amount": "0.00",
+            "used": "0.00",
+        },
         format="json",
     ).data
 
@@ -554,18 +694,16 @@ def test_baremetal_with_network_interface(auth_client):
         "name": "bm-network",
         "serial_number": "SN999",
         "model": model["id"],
-        "fabrication": fab["id"],
-        "phase": phase["id"],
-        "data_center": dc["id"],
-        "rack": rack["id"],
         "unit": unit["id"],
         "status": "active",
         "available_cpu": 8,
         "available_memory": 8,
         "available_storage": 100,
-        "group": group["id"],
-        "pr": pr["id"],
-        "po": po["id"],
+        "baremetal_group": group["id"],
+        "purchase_requisition": pr["id"],
+        "purchase_order": po["id"],
+        "user": [owner["id"]],
+        "user_group": [owner_group["id"]],
     }
     create_r = auth_client.post("/api/v1/baremetals", payload, format="json")
     assert create_r.status_code == 201, f"Failed to create baremetal: {create_r.data}"
@@ -906,6 +1044,8 @@ def test_baremetal_group_quota_create(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [],
+            "user_group": [],
         },
         format="json",
     ).data
@@ -913,14 +1053,14 @@ def test_baremetal_group_quota_create(auth_client):
     payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 50.0,
+        "cpu_quota": 50,
         "memory_quota": 50,
         "storage_quota": 50,
         "gpu_quota": 2,
     }
     r = auth_client.post("/api/v1/baremetal-group-tenant-quotas", payload, format="json")
     assert r.status_code == 201
-    assert r.data["cpu_quota_percentage"] == 50.0
+    assert r.data["cpu_quota"] == 50
     assert r.data["memory_quota"] == 50
 
 
@@ -954,6 +1094,8 @@ def test_baremetal_group_quota_retrieve(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [],
+            "user_group": [],
         },
         format="json",
     ).data
@@ -961,7 +1103,7 @@ def test_baremetal_group_quota_retrieve(auth_client):
     payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 75.0,
+        "cpu_quota": 75,
         "memory_quota": 75,
         "storage_quota": 75,
         "gpu_quota": 3,
@@ -971,7 +1113,7 @@ def test_baremetal_group_quota_retrieve(auth_client):
 
     r = auth_client.get(f"/api/v1/baremetal-group-tenant-quotas/{qid}")
     assert r.status_code == 200
-    assert r.data["cpu_quota_percentage"] == 75.0
+    assert r.data["cpu_quota"] == 75
     assert r.data["memory_quota"] == 75
 
 
@@ -995,6 +1137,8 @@ def test_baremetal_group_quota_update_put(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [],
+            "user_group": [],
         },
         format="json",
     ).data
@@ -1002,7 +1146,7 @@ def test_baremetal_group_quota_update_put(auth_client):
     payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 30.0,
+        "cpu_quota": 30,
         "memory_quota": 30,
         "storage_quota": 30,
         "gpu_quota": 1,
@@ -1013,20 +1157,20 @@ def test_baremetal_group_quota_update_put(auth_client):
     put_payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 80.0,
+        "cpu_quota": 80,
         "memory_quota": 80,
         "storage_quota": 80,
         "gpu_quota": 4,
     }
     r = auth_client.put(f"/api/v1/baremetal-group-tenant-quotas/{qid}", put_payload, format="json")
     assert r.status_code == 200
-    assert r.data["cpu_quota_percentage"] == 80.0
+    assert r.data["cpu_quota"] == 80
     assert r.data["memory_quota"] == 80
 
     # Verify in database
     r = auth_client.get(f"/api/v1/baremetal-group-tenant-quotas/{qid}")
     assert r.status_code == 200
-    assert r.data["cpu_quota_percentage"] == 80.0
+    assert r.data["cpu_quota"] == 80
 
 
 @pytest.mark.django_db
@@ -1049,6 +1193,8 @@ def test_baremetal_group_quota_update_patch(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [],
+            "user_group": [],
         },
         format="json",
     ).data
@@ -1056,7 +1202,7 @@ def test_baremetal_group_quota_update_patch(auth_client):
     payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 40.0,
+        "cpu_quota": 40,
         "memory_quota": 40,
         "storage_quota": 40,
         "gpu_quota": 2,
@@ -1066,17 +1212,17 @@ def test_baremetal_group_quota_update_patch(auth_client):
 
     r = auth_client.patch(
         f"/api/v1/baremetal-group-tenant-quotas/{qid}",
-        {"cpu_quota_percentage": 90.0},
+        {"cpu_quota": 90},
         format="json",
     )
     assert r.status_code == 200
-    assert r.data["cpu_quota_percentage"] == 90.0
+    assert r.data["cpu_quota"] == 90
     assert r.data["memory_quota"] == 40  # Should remain unchanged
 
     # Verify in database
     r = auth_client.get(f"/api/v1/baremetal-group-tenant-quotas/{qid}")
     assert r.status_code == 200
-    assert r.data["cpu_quota_percentage"] == 90.0
+    assert r.data["cpu_quota"] == 90
     assert r.data["memory_quota"] == 40
 
 
@@ -1100,6 +1246,8 @@ def test_baremetal_group_quota_delete(auth_client):
             "available_storage": 100,
             "available_gpu": 4,
             "status": "active",
+            "user": [],
+            "user_group": [],
         },
         format="json",
     ).data
@@ -1107,7 +1255,7 @@ def test_baremetal_group_quota_delete(auth_client):
     payload = {
         "group": group["id"],
         "tenant": tenant["id"],
-        "cpu_quota_percentage": 25.0,
+        "cpu_quota": 25,
         "memory_quota": 25,
         "storage_quota": 25,
         "gpu_quota": 1,

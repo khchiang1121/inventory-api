@@ -179,7 +179,7 @@ cp env.example .env
 
 #### API 設定
 - `REQUIRE_API_AUTHENTICATION`: API 認證要求（預設：True）
-- `DRF_PAGE_SIZE`: DRF 分頁大小（預設：10）
+- `DRF_PAGE_SIZE`: DRF 分頁大小（預設：100）
 
 #### CORS 設定
 - `CORS_ALLOWED_ORIGINS`: 允許的 CORS 來源（逗號分隔）

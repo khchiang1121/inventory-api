@@ -759,6 +759,31 @@ def test_ansible_host_create_for_vm(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-owner",
+            "password": "Passw0rd!",
+            "email": "vm-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+
+    # user_group must be non-empty per schema; create a group and assign
+    group_obj = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-owners"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -766,6 +791,9 @@ def test_ansible_host_create_for_vm(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [group_obj["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -841,6 +869,29 @@ def test_ansible_host_retrieve(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-owner-retrieve",
+            "password": "Passw0rd!",
+            "email": "vm-owner-retrieve@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    group_obj = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-owners-retrieve"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -848,6 +899,9 @@ def test_ansible_host_retrieve(auth_client):
             "type": "control-plane",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [group_obj["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -914,6 +968,28 @@ def test_ansible_host_update_put(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-owner-put",
+            "password": "Passw0rd!",
+            "email": "vm-owner-put@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    group_obj = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-owners-put"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -921,6 +997,9 @@ def test_ansible_host_update_put(auth_client):
             "type": "management",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [group_obj["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1004,6 +1083,28 @@ def test_ansible_host_update_patch(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-owner-patch",
+            "password": "Passw0rd!",
+            "email": "vm-owner-patch@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    group_obj = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-owners-patch"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1011,6 +1112,9 @@ def test_ansible_host_update_patch(auth_client):
             "type": "other",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [group_obj["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -1088,6 +1192,28 @@ def test_ansible_host_delete(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-test-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "vm-owner-del",
+            "password": "Passw0rd!",
+            "email": "vm-owner-del@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    group_obj = auth_client.post(
+        "/api/v1/groups",
+        {"name": "vm-owners-del"},
+        format="json",
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -1095,6 +1221,9 @@ def test_ansible_host_delete(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [group_obj["id"]],
             "specification": spec["id"],
         },
         format="json",

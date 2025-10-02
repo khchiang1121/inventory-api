@@ -6,9 +6,7 @@ from .ansible import (
     AnsibleHost,
     AnsibleHostVariable,
     AnsibleInventory,
-    AnsibleInventoryPlugin,
     AnsibleInventoryTemplate,
-    AnsibleInventoryVariable,
     AnsibleInventoryVariableSetAssociation,
     AnsibleVariableSet,
 )
@@ -17,37 +15,67 @@ from .baremetal import (
     BaremetalGroup,
     BaremetalGroupTenantQuota,
     BaremetalModel,
-    Manufacturer,
-    Supplier,
-    Tenant,
+    BaremetalModelGPU,
+    GPUAllocation,
 )
 from .base import AbstractBase
-from .infrastructure import DataCenter, Fab, Phase, Rack, Room, Unit
+from .common import Region, Tenant, Vendor
+from .gpu import GPUProfile, PhysicalGPU, PhysicalGPUModel
+from .infrastructure import AvailableGroup, DataCenter, Fab, Phase, Rack, Room, Unit
 from .network import VLAN, VRF, BGPConfig, NetworkInterface
 from .purchase import PurchaseOrder, PurchaseRequisition
-from .users import CustomUser
+from .scheduling_strategy import SchedulingStrategy, SchedulingStrategyModel
+from .users import CustomGroup, CustomUser
 from .virtual import (
     BastionClusterAssociation,
+    ClusterTemplate,
+    ClusterTemplateVirtualMachine,
     K8sCluster,
     K8sClusterPlugin,
+    K8sClusterPluginAssociation,
     K8sClusterToServiceMesh,
     ServiceMesh,
     VirtualMachine,
+    VirtualMachineRole,
     VirtualMachineSpecification,
+    VirtualMachineSpecificationRequiredGPU,
 )
 
-# Export all models
 __all__ = [
+    # Ansible
+    "AnsibleGroup",
+    "AnsibleGroupRelationship",
+    "AnsibleGroupVariable",
+    "AnsibleHost",
+    "AnsibleHostVariable",
+    "AnsibleInventory",
+    "AnsibleInventoryTemplate",
+    "AnsibleInventoryVariableSetAssociation",
+    "AnsibleVariableSet",
+    # Baremetal
+    "Baremetal",
+    "BaremetalGroup",
+    "BaremetalGroupTenantQuota",
+    "BaremetalModel",
+    "BaremetalModelGPU",
+    "GPUAllocation",
     # Base
     "AbstractBase",
-    # Users
-    "CustomUser",
+    # Common (shared models)
+    "Region",
+    "Tenant",
+    "Vendor",
+    # GPU
+    "GPUProfile",
+    "PhysicalGPU",
+    "PhysicalGPUModel",
     # Infrastructure
+    "AvailableGroup",
+    "DataCenter",
     "Fab",
     "Phase",
-    "DataCenter",
-    "Room",
     "Rack",
+    "Room",
     "Unit",
     # Network
     "VLAN",
@@ -55,34 +83,25 @@ __all__ = [
     "BGPConfig",
     "NetworkInterface",
     # Purchase
-    "PurchaseRequisition",
     "PurchaseOrder",
-    # Baremetal
-    "BaremetalGroup",
-    "Manufacturer",
-    "Supplier",
-    "BaremetalModel",
-    "Baremetal",
-    "Tenant",
-    "BaremetalGroupTenantQuota",
+    "PurchaseRequisition",
+    # Scheduling
+    "SchedulingStrategy",
+    "SchedulingStrategyModel",
+    # Users
+    "CustomGroup",
+    "CustomUser",
     # Virtual
-    "VirtualMachineSpecification",
+    "BastionClusterAssociation",
+    "ClusterTemplate",
+    "ClusterTemplateVirtualMachine",
     "K8sCluster",
     "K8sClusterPlugin",
-    "ServiceMesh",
+    "K8sClusterPluginAssociation",
     "K8sClusterToServiceMesh",
+    "ServiceMesh",
     "VirtualMachine",
-    "BastionClusterAssociation",
-    # Ansible
-    "AnsibleInventory",
-    "AnsibleInventoryVariable",
-    "AnsibleVariableSet",
-    "AnsibleGroup",
-    "AnsibleGroupVariable",
-    "AnsibleGroupRelationship",
-    "AnsibleHost",
-    "AnsibleHostVariable",
-    "AnsibleInventoryPlugin",
-    "AnsibleInventoryTemplate",
-    "AnsibleInventoryVariableSetAssociation",
+    "VirtualMachineRole",
+    "VirtualMachineSpecification",
+    "VirtualMachineSpecificationRequiredGPU",
 ]

@@ -145,6 +145,13 @@ class TestAPIResponseContent:
 
     def test_rack_response_with_numeric_fields(self, auth_client):
         """Test rack response contains correct numeric field types"""
+        from ..models import AvailableGroup, DataCenter, Fab, Phase, Room
+
+        fab = Fab.objects.create(name="FAB-RACK-RESP")
+        phase = Phase.objects.create(name="PHASE-RACK-RESP", fab=fab)
+        dc = DataCenter.objects.create(name="DC-RACK-RESP", phase=phase)
+        room = Room.objects.create(name="ROOM-RACK-RESP", datacenter=dc)
+        ag = AvailableGroup.objects.create(name="AG-RACK-RESP", description="", status="active")
         rack = Rack.objects.create(
             name="RACK001",
             bgp_number="AS12345",
@@ -154,6 +161,8 @@ class TestAPIResponseContent:
             available_units=32,
             power_capacity=15.50,
             status="active",
+            available_group=ag,
+            room=room,
         )
 
         response = auth_client.get(f"/api/v1/racks/{rack.id}")
@@ -239,8 +248,14 @@ class TestComplexObjectResponses:
         # Create required objects for baremetal
         fabrication = Fab.objects.create(name="FAB1")
         phase = Phase.objects.create(name="PHASE1")
-        data_center = DataCenter.objects.create(name="DC1")
-        rack = Rack.objects.create(name="RACK1", bgp_number="AS1", as_number=1)
+        data_center = DataCenter.objects.create(name="DC1", phase=phase)
+        room = Room.objects.create(name="ROOM1", datacenter=data_center)
+        from ..models import AvailableGroup as AG
+
+        ag = AG.objects.create(name="AG1", description="", status="active")
+        rack = Rack.objects.create(
+            name="RACK1", bgp_number="AS1", as_number=1, room=room, available_group=ag
+        )
         baremetal_group = BaremetalGroup.objects.create(
             name="Group1",
             total_cpu=100,
@@ -249,6 +264,7 @@ class TestComplexObjectResponses:
             available_cpu=100,
             available_memory=1000,
             available_storage=10000,
+            status="active",
         )
         pr = PurchaseRequisition.objects.create(
             pr_number="PR-001", requested_by="Test", department="IT", reason="Test"
@@ -259,22 +275,23 @@ class TestComplexObjectResponses:
             supplier=supplier,
             payment_terms="Net 30",
         )
+        # Create a unit under the rack
+        from ..models import Unit
+
+        unit = Unit.objects.create(name="U1", unit_number=1, rack=rack, bgp="AS1")
 
         baremetal = Baremetal.objects.create(
             name="BM001",
             serial_number="SN123",
             model=model,
-            fabrication=fabrication,
-            phase=phase,
-            data_center=data_center,
-            rack=rack,
+            unit=unit,
             status="active",
             available_cpu=64,
             available_memory=1024,
             available_storage=10000,
-            group=baremetal_group,
-            pr=pr,
-            po=po,
+            baremetal_group=baremetal_group,
+            purchase_requisition=pr,
+            purchase_order=po,
         )
 
         # Create VLAN and VRF for network interface

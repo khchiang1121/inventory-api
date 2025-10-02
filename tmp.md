@@ -67,3 +67,19 @@ API
 
 how to set static
 python manage.py collectstatic
+
+
+python manage.py seed api --number=15
+
+
+char長度規則
+- 超長字串：500
+- 一般字串(預設)：255
+- 短字串：100
+- 超短字串：50
+- 極短字串：20
+- 超極短字串：10
+- 超超極短字串：5
+- 超超超極短字串：3
+- 超超超超極短字串：2
+- 超超超超超極短字串：1

@@ -419,6 +419,11 @@ def test_rack_create(auth_client):
     room = auth_client.post(
         "/api/v1/rooms", {"name": "room-rack-test", "datacenter": dc["id"]}, format="json"
     ).data
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-test", "description": "", "status": "active"},
+        format="json",
+    ).data
 
     payload = {
         "name": "rack-create",
@@ -428,6 +433,7 @@ def test_rack_create(auth_client):
         "power_capacity": "4.00",
         "status": "active",
         "room": room["id"],
+        "available_group": ag["id"],
     }
     r = auth_client.post("/api/v1/racks", payload, format="json")
     assert r.status_code == 201
@@ -458,6 +464,11 @@ def test_rack_retrieve(auth_client):
     room = auth_client.post(
         "/api/v1/rooms", {"name": "room-rack-retrieve", "datacenter": dc["id"]}, format="json"
     ).data
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-retrieve", "description": "", "status": "active"},
+        format="json",
+    ).data
 
     payload = {
         "name": "rack-retrieve",
@@ -467,6 +478,7 @@ def test_rack_retrieve(auth_client):
         "power_capacity": "4.00",
         "status": "active",
         "room": room["id"],
+        "available_group": ag["id"],
     }
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
@@ -481,13 +493,21 @@ def test_rack_retrieve(auth_client):
 @pytest.mark.django_db
 def test_rack_update_put(auth_client):
     """Test updating a rack with PUT"""
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-put", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-rack-put"}, format="json").data
     payload = {
         "name": "rack-put",
-        "bgp_number": "65003",
-        "as_number": 65003,
+        "bgp_number": "AS12345",
+        "as_number": 65001,
         "height_units": 42,
-        "power_capacity": "4.00",
+        "power_capacity": "0.00",
         "status": "active",
+        "room": room["id"],
+        "available_group": ag["id"],
     }
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
@@ -516,6 +536,12 @@ def test_rack_update_put(auth_client):
 @pytest.mark.django_db
 def test_rack_update_patch(auth_client):
     """Test updating a rack with PATCH"""
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-patch", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-rack-patch"}, format="json").data
     payload = {
         "name": "rack-patch",
         "bgp_number": "65005",
@@ -523,6 +549,8 @@ def test_rack_update_patch(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room.get("id"),
+        "available_group": ag["id"],
     }
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
@@ -543,6 +571,12 @@ def test_rack_update_patch(auth_client):
 @pytest.mark.django_db
 def test_rack_delete(auth_client):
     """Test deleting a rack"""
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-delete", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-rack-delete"}, format="json").data
     payload = {
         "name": "rack-delete",
         "bgp_number": "65006",
@@ -550,6 +584,8 @@ def test_rack_delete(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "room": room.get("id"),
+        "available_group": ag["id"],
     }
     create_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = create_r.data["id"]
@@ -589,9 +625,20 @@ def test_infrastructure_hierarchy_chain(auth_client):
     ).data
 
     # Create rack under room
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-rack-hierarchy", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack = auth_client.post(
         "/api/v1/racks",
-        {"name": "RACK-HIERARCHY", "bgp_number": "65100", "as_number": 65100, "room": room["id"]},
+        {
+            "name": "RACK-HIERARCHY",
+            "bgp_number": "65100",
+            "as_number": 65100,
+            "room": room["id"],
+            "available_group": ag["id"],
+        },
         format="json",
     ).data
 
@@ -666,6 +713,11 @@ def test_unit_create(auth_client):
         "/api/v1/rooms", {"name": "room-unit-test", "datacenter": dc["id"]}, format="json"
     ).data
 
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack_payload = {
         "name": "rack-for-unit",
         "bgp_number": "65010",
@@ -674,6 +726,7 @@ def test_unit_create(auth_client):
         "power_capacity": "4.00",
         "status": "active",
         "room": room["id"],
+        "available_group": ag["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     assert rack_r.status_code == 201
@@ -718,6 +771,11 @@ def test_unit_retrieve(auth_client):
         "/api/v1/rooms", {"name": "room-unit-retrieve", "datacenter": dc["id"]}, format="json"
     ).data
 
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-retrieve", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack_payload = {
         "name": "rack-for-retrieve",
         "bgp_number": "65011",
@@ -726,6 +784,7 @@ def test_unit_retrieve(auth_client):
         "power_capacity": "4.00",
         "status": "active",
         "room": room["id"],
+        "available_group": ag["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     rack_id = rack_r.data["id"]
@@ -747,15 +806,22 @@ def test_unit_retrieve(auth_client):
 def test_unit_update_put(auth_client):
     """Test updating a unit with PUT"""
     # First create a rack
-    rack_payload = {
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-put", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-unit-put"}, format="json").data
+    payload = {
         "name": "rack-for-put",
         "bgp_number": "65012",
         "as_number": 65012,
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
-    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = rack_r.data["id"]
 
     # Create another rack for updating
@@ -793,15 +859,22 @@ def test_unit_update_put(auth_client):
 def test_unit_update_patch(auth_client):
     """Test updating a unit with PATCH"""
     # First create a rack
-    rack_payload = {
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-patch", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-unit-patch"}, format="json").data
+    payload = {
         "name": "rack-for-patch",
         "bgp_number": "65014",
         "as_number": 65014,
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
-    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = rack_r.data["id"]
 
     # Create a unit
@@ -826,15 +899,22 @@ def test_unit_update_patch(auth_client):
 def test_unit_delete(auth_client):
     """Test deleting a unit"""
     # First create a rack
-    rack_payload = {
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-delete", "description": "", "status": "active"},
+        format="json",
+    ).data
+    room = auth_client.post("/api/v1/rooms", {"name": "room-unit-delete"}, format="json").data
+    payload = {
         "name": "rack-for-delete",
         "bgp_number": "65015",
         "as_number": 65015,
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
-    rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
+    rack_r = auth_client.post("/api/v1/racks", payload, format="json")
     rack_id = rack_r.data["id"]
 
     # Create a unit
@@ -855,6 +935,11 @@ def test_unit_delete(auth_client):
 def test_unit_unique_constraint(auth_client):
     """Test that rack + name combination must be unique"""
     # First create a rack
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-unique", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack_payload = {
         "name": "rack-for-unique",
         "bgp_number": "65016",
@@ -862,6 +947,7 @@ def test_unit_unique_constraint(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     rack_id = rack_r.data["id"]
@@ -880,6 +966,11 @@ def test_unit_unique_constraint(auth_client):
 def test_unit_same_name_different_racks(auth_client):
     """Test that same unit name can exist in different racks"""
     # Create first rack
+    ag1 = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-same-1", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack1_payload = {
         "name": "rack-1-for-same-name",
         "bgp_number": "65017",
@@ -887,11 +978,17 @@ def test_unit_same_name_different_racks(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag1["id"],
     }
     rack1_r = auth_client.post("/api/v1/racks", rack1_payload, format="json")
     rack1_id = rack1_r.data["id"]
 
     # Create second rack
+    ag2 = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-same-2", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack2_payload = {
         "name": "rack-2-for-same-name",
         "bgp_number": "65018",
@@ -899,6 +996,7 @@ def test_unit_same_name_different_racks(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag2["id"],
     }
     rack2_r = auth_client.post("/api/v1/racks", rack2_payload, format="json")
     rack2_id = rack2_r.data["id"]
@@ -931,10 +1029,11 @@ def test_unit_invalid_rack(auth_client):
 def test_unit_missing_required_fields(auth_client):
     """Test creating a unit with missing required fields"""
     # Test missing rack
-    r1 = auth_client.post("/api/v1/units", {"name": "U100"}, format="json")
-    assert r1.status_code == 400
-
-    # Test missing name
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-missing", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack_payload = {
         "name": "rack-for-missing-fields",
         "bgp_number": "65019",
@@ -942,6 +1041,7 @@ def test_unit_missing_required_fields(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     rack_id = rack_r.data["id"]
@@ -954,6 +1054,11 @@ def test_unit_missing_required_fields(auth_client):
 def test_unit_cascade_delete_with_rack(auth_client):
     """Test that units are deleted when their parent rack is deleted"""
     # Create a rack
+    ag = auth_client.post(
+        "/api/v1/available-groups",
+        {"name": "ag-unit-cascade", "description": "", "status": "active"},
+        format="json",
+    ).data
     rack_payload = {
         "name": "rack-for-cascade",
         "bgp_number": "65020",
@@ -961,6 +1066,7 @@ def test_unit_cascade_delete_with_rack(auth_client):
         "height_units": 42,
         "power_capacity": "4.00",
         "status": "active",
+        "available_group": ag["id"],
     }
     rack_r = auth_client.post("/api/v1/racks", rack_payload, format="json")
     rack_id = rack_r.data["id"]

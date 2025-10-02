@@ -13,12 +13,45 @@ def test_k8s_cluster_create(auth_client):
         {"name": "k8s-tenant-create", "status": "active"},
         format="json",
     ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-1", "description": "", "status": "active"},
+        format="json",
+    ).data
+    # minimal scheduling strategy and user required
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "default-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-owner",
+            "password": "Passw0rd!",
+            "email": "k8s-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     cluster_data = {
         "name": "cluster-create",
         "version": "1.28",
         "tenant": tenant["id"],
-        "scheduling_mode": "default",
+        "region": region["id"],
+        "scheduling_strategy": strategy["id"],
+        "description": "",
+        "user": user["id"],
         "status": "active",
     }
     r = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json")
@@ -43,12 +76,44 @@ def test_k8s_cluster_retrieve(auth_client):
         {"name": "k8s-tenant-retrieve", "status": "active"},
         format="json",
     ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-2", "description": "", "status": "active"},
+        format="json",
+    ).data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "retrieve-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-retrieve",
+            "password": "Passw0rd!",
+            "email": "k8s-retrieve@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     cluster_data = {
         "name": "cluster-retrieve",
         "version": "1.27",
         "tenant": tenant["id"],
-        "scheduling_mode": "default",
+        "region": region["id"],
+        "scheduling_strategy": strategy["id"],
+        "description": "",
+        "user": user["id"],
         "status": "active",
     }
     create_r = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json")
@@ -66,12 +131,44 @@ def test_k8s_cluster_update_put(auth_client):
     tenant = auth_client.post(
         "/api/v1/tenants", {"name": "k8s-tenant-put", "status": "active"}, format="json"
     ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-3", "description": "", "status": "active"},
+        format="json",
+    ).data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "put-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-put",
+            "password": "Passw0rd!",
+            "email": "k8s-put@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     cluster_data = {
         "name": "cluster-put",
         "version": "1.28",
         "tenant": tenant["id"],
-        "scheduling_mode": "default",
+        "region": region["id"],
+        "scheduling_strategy": strategy["id"],
+        "description": "",
+        "user": user["id"],
         "status": "active",
     }
     create_r = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json")
@@ -105,12 +202,44 @@ def test_k8s_cluster_update_patch(auth_client):
         {"name": "k8s-tenant-patch", "status": "active"},
         format="json",
     ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-4", "description": "", "status": "active"},
+        format="json",
+    ).data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "patch-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-patch",
+            "password": "Passw0rd!",
+            "email": "k8s-patch@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     cluster_data = {
         "name": "cluster-patch",
         "version": "1.28",
         "tenant": tenant["id"],
-        "scheduling_mode": "default",
+        "region": region["id"],
+        "scheduling_strategy": strategy["id"],
+        "description": "",
+        "user": user["id"],
         "status": "active",
     }
     create_r = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json")
@@ -138,12 +267,44 @@ def test_k8s_cluster_delete(auth_client):
         {"name": "k8s-tenant-delete", "status": "active"},
         format="json",
     ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-5", "description": "", "status": "active"},
+        format="json",
+    ).data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "delete-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-delete",
+            "password": "Passw0rd!",
+            "email": "k8s-delete@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     cluster_data = {
         "name": "cluster-delete",
         "version": "1.28",
         "tenant": tenant["id"],
-        "scheduling_mode": "default",
+        "region": region["id"],
+        "scheduling_strategy": strategy["id"],
+        "description": "",
+        "user": user["id"],
         "status": "active",
     }
     create_r = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json")
@@ -165,20 +326,55 @@ def test_k8s_cluster_delete(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_plugins_create(auth_client):
     """Test creating K8s cluster plugins"""
+    # For plugin tests and service mesh associations below, ensure a cluster exists with required fields
     tenant = auth_client.post(
         "/api/v1/tenants",
         {"name": "plugin-tenant-create", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-for-plugins",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-k8s-plugins", "description": "", "status": "active"},
+        format="json",
+    ).data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "plugins-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-plugins",
+            "password": "Passw0rd!",
+            "email": "k8s-plugins@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-for-plugins",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     plugin_data = {
         "cluster": cluster["id"],
@@ -203,20 +399,53 @@ def test_k8s_cluster_plugins_list(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_plugins_retrieve(auth_client):
     """Test retrieving a specific K8s cluster plugin"""
+    # Ensure cluster has required fields
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "plugin-tenant-retrieve", "status": "active"},
+        "/api/v1/tenants", {"name": "plugin-tenant-retrieve2", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-plugins-retrieve", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-for-retrieve",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "plugins-retrieve-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-plugins-retrieve",
+            "password": "Passw0rd!",
+            "email": "k8s-plugins-retrieve@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-for-retrieve",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     plugin_data = {
         "cluster": cluster["id"],
@@ -224,9 +453,7 @@ def test_k8s_cluster_plugins_retrieve(auth_client):
         "version": "1.12.0",
         "status": "active",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-plugins", plugin_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-plugins", plugin_data, format="json")
     plugin_id = create_r.data["id"]
 
     r = auth_client.get(f"/api/v1/k8s-cluster-plugins/{plugin_id}")
@@ -238,20 +465,53 @@ def test_k8s_cluster_plugins_retrieve(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_plugins_update_put(auth_client):
     """Test updating K8s cluster plugins with PUT"""
+    # Recreate minimal cluster for put using required fields
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "plugin-tenant-put", "status": "active"},
+        "/api/v1/tenants", {"name": "plugin-tenant-put3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-plugins-put3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-for-put",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "plugins-put3-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-plugins-put3",
+            "password": "Passw0rd!",
+            "email": "k8s-plugins-put3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-for-put",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     plugin_data = {
         "cluster": cluster["id"],
@@ -259,9 +519,7 @@ def test_k8s_cluster_plugins_update_put(auth_client):
         "version": "2.40.0",
         "status": "active",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-plugins", plugin_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-plugins", plugin_data, format="json")
     plugin_id = create_r.data["id"]
 
     put_data = {
@@ -270,16 +528,11 @@ def test_k8s_cluster_plugins_update_put(auth_client):
         "version": "2.45.0",
         "status": "inactive",
     }
-    r = auth_client.put(
-        f"/api/v1/k8s-cluster-plugins/{plugin_id}", put_data, format="json"
-    )
+    r = auth_client.put(f"/api/v1/k8s-cluster-plugins/{plugin_id}", put_data, format="json")
     assert r.status_code == 200
     assert r.data["name"] == "prometheus-updated"
     assert r.data["version"] == "2.45.0"
-    assert (
-        str(r.data["cluster"]) == str(cluster["id"])
-        or r.data["cluster"] == cluster["id"]
-    )
+    assert str(r.data["cluster"]) == str(cluster["id"]) or r.data["cluster"] == cluster["id"]
 
     # Verify in database
     r = auth_client.get(f"/api/v1/k8s-cluster-plugins/{plugin_id}")
@@ -291,20 +544,53 @@ def test_k8s_cluster_plugins_update_put(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_plugins_update_patch(auth_client):
     """Test updating K8s cluster plugins with PATCH"""
+    # Recreate minimal cluster for patch
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "plugin-tenant-patch", "status": "active"},
+        "/api/v1/tenants", {"name": "plugin-tenant-patch3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-plugins-patch3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-for-patch",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "plugins-patch3-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-plugins-patch3",
+            "password": "Passw0rd!",
+            "email": "k8s-plugins-patch3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-for-patch",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     plugin_data = {
         "cluster": cluster["id"],
@@ -312,9 +598,7 @@ def test_k8s_cluster_plugins_update_patch(auth_client):
         "version": "9.0.0",
         "status": "active",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-plugins", plugin_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-plugins", plugin_data, format="json")
     plugin_id = create_r.data["id"]
 
     r = auth_client.patch(
@@ -323,18 +607,14 @@ def test_k8s_cluster_plugins_update_patch(auth_client):
         format="json",
     )
     assert r.status_code == 200
-    assert (
-        str(r.data["cluster"]) == str(cluster["id"])
-        or r.data["cluster"] == cluster["id"]
-    )
+    assert str(r.data["cluster"]) == str(cluster["id"]) or r.data["cluster"] == cluster["id"]
     assert r.data["name"] == "grafana"  # Should remain unchanged
 
     # Verify in database
     r = auth_client.get(f"/api/v1/k8s-cluster-plugins/{plugin_id}")
     assert r.status_code == 200
     assert (
-        str(r.data.get("cluster")) == str(cluster["id"])
-        or r.data.get("cluster") == cluster["id"]
+        str(r.data.get("cluster")) == str(cluster["id"]) or r.data.get("cluster") == cluster["id"]
     )
     assert r.data["name"] == "grafana"
 
@@ -342,20 +622,53 @@ def test_k8s_cluster_plugins_update_patch(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_plugins_delete(auth_client):
     """Test deleting K8s cluster plugins"""
+    # Recreate minimal cluster for delete
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "plugin-tenant-delete", "status": "active"},
+        "/api/v1/tenants", {"name": "plugin-tenant-delete3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-plugins-delete3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-for-delete",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "plugins-delete3-strat",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-plugins-delete3",
+            "password": "Passw0rd!",
+            "email": "k8s-plugins-delete3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-for-delete",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     plugin_data = {
         "cluster": cluster["id"],
@@ -363,9 +676,7 @@ def test_k8s_cluster_plugins_delete(auth_client):
         "version": "2.8.0",
         "status": "active",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-plugins", plugin_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-plugins", plugin_data, format="json")
     plugin_id = create_r.data["id"]
 
     r = auth_client.delete(f"/api/v1/k8s-cluster-plugins/{plugin_id}")
@@ -525,9 +836,7 @@ def test_k8s_cluster_service_mesh_binding_create(auth_client):
         "service_mesh": mesh["id"],
         "role": "primary",
     }
-    r = auth_client.post(
-        "/api/v1/k8s-cluster-service-meshes", binding_data, format="json"
-    )
+    r = auth_client.post("/api/v1/k8s-cluster-service-meshes", binding_data, format="json")
     assert r.status_code == 201
     assert r.data["role"] == "primary"
 
@@ -543,36 +852,60 @@ def test_k8s_cluster_service_mesh_binding_list(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_service_mesh_binding_retrieve(auth_client):
     """Test retrieving a specific K8s cluster service mesh binding"""
+    # For mesh binding retrieve minimal cluster
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "binding-tenant-retrieve", "status": "active"},
+        "/api/v1/tenants", {"name": "binding-tenant-retrieve-3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-binding-retrieve-3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-binding-retrieve",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
-
-    mesh_data = {
-        "name": "linkerd-binding-retrieve",
-        "type": "istio",
-        "status": "active",
-    }
-    mesh = auth_client.post("/api/v1/service-meshes", mesh_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "binding-strat-retrieve-3",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-binding-retrieve-3",
+            "password": "Passw0rd!",
+            "email": "k8s-binding-retrieve-3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-binding-retrieve",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     binding_data = {
         "cluster": cluster["id"],
         "service_mesh": mesh["id"],
         "role": "primary",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-service-meshes", binding_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-service-meshes", binding_data, format="json")
     binding_id = (
         str(create_r.data["id"])
         if not isinstance(create_r.data["id"], str)
@@ -587,36 +920,60 @@ def test_k8s_cluster_service_mesh_binding_retrieve(auth_client):
 @pytest.mark.django_db
 def test_k8s_cluster_service_mesh_binding_update_put(auth_client):
     """Test updating K8s cluster service mesh binding with PUT"""
+    # For mesh binding put minimal cluster
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "binding-tenant-put", "status": "active"},
+        "/api/v1/tenants", {"name": "binding-tenant-put-3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-binding-put-3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-binding-put",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
-
-    mesh_data = {
-        "name": "istio-binding-put",
-        "type": "istio",
-        "status": "active",
-    }
-    mesh = auth_client.post("/api/v1/service-meshes", mesh_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "binding-strat-put-3",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-binding-put-3",
+            "password": "Passw0rd!",
+            "email": "k8s-binding-put-3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-binding-put",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     binding_data = {
         "cluster": cluster["id"],
         "service_mesh": mesh["id"],
         "role": "primary",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-service-meshes", binding_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-service-meshes", binding_data, format="json")
     binding_id = (
         str(create_r.data["id"])
         if not isinstance(create_r.data["id"], str)
@@ -635,52 +992,74 @@ def test_k8s_cluster_service_mesh_binding_update_put(auth_client):
     )
     assert r.status_code == 200
     assert (
-        str(r.data.get("cluster")) == str(cluster["id"])
-        or r.data.get("cluster") == cluster["id"]
+        str(r.data.get("cluster")) == str(cluster["id"]) or r.data.get("cluster") == cluster["id"]
     )
 
     # Verify in database
     r = auth_client.get(f"/api/v1/k8s-cluster-service-meshes/{binding_id}")
     assert r.status_code == 200
     assert (
-        str(r.data.get("cluster")) == str(cluster["id"])
-        or r.data.get("cluster") == cluster["id"]
+        str(r.data.get("cluster")) == str(cluster["id"]) or r.data.get("cluster") == cluster["id"]
     )
 
 
 @pytest.mark.django_db
 def test_k8s_cluster_service_mesh_binding_update_patch(auth_client):
     """Test updating K8s cluster service mesh binding with PATCH"""
+    # For mesh binding patch minimal cluster
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "binding-tenant-patch", "status": "active"},
+        "/api/v1/tenants", {"name": "binding-tenant-patch-3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-binding-patch-3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-binding-patch",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
-
-    mesh_data = {
-        "name": "cilium-binding-patch",
-        "type": "cilium",
-        "status": "active",
-    }
-    mesh = auth_client.post("/api/v1/service-meshes", mesh_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "binding-strat-patch-3",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-binding-patch-3",
+            "password": "Passw0rd!",
+            "email": "k8s-binding-patch-3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-binding-patch",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     binding_data = {
         "cluster": cluster["id"],
         "service_mesh": mesh["id"],
         "role": "primary",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-service-meshes", binding_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-service-meshes", binding_data, format="json")
     binding_id = (
         str(create_r.data["id"])
         if not isinstance(create_r.data["id"], str)
@@ -694,52 +1073,74 @@ def test_k8s_cluster_service_mesh_binding_update_patch(auth_client):
     )
     assert r.status_code == 200
     assert (
-        str(r.data.get("cluster")) == str(cluster["id"])
-        or r.data.get("cluster") == cluster["id"]
+        str(r.data.get("cluster")) == str(cluster["id"]) or r.data.get("cluster") == cluster["id"]
     )
 
     # Verify in database
     r = auth_client.get(f"/api/v1/k8s-cluster-service-meshes/{binding_id}")
     assert r.status_code == 200
     assert (
-        str(r.data.get("cluster")) == str(cluster["id"])
-        or r.data.get("cluster") == cluster["id"]
+        str(r.data.get("cluster")) == str(cluster["id"]) or r.data.get("cluster") == cluster["id"]
     )
 
 
 @pytest.mark.django_db
 def test_k8s_cluster_service_mesh_binding_delete(auth_client):
     """Test deleting K8s cluster service mesh binding"""
+    # For mesh binding delete minimal cluster
     tenant = auth_client.post(
-        "/api/v1/tenants",
-        {"name": "binding-tenant-delete", "status": "active"},
+        "/api/v1/tenants", {"name": "binding-tenant-delete-3", "status": "active"}, format="json"
+    ).data
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-binding-delete-3", "description": "", "status": "active"},
         format="json",
     ).data
-
-    cluster_data = {
-        "name": "cluster-binding-delete",
-        "version": "1.28",
-        "tenant": tenant["id"],
-        "scheduling_mode": "default",
-        "status": "active",
-    }
-    cluster = auth_client.post("/api/v1/k8s-clusters", cluster_data, format="json").data
-
-    mesh_data = {
-        "name": "mesh-binding-delete",
-        "type": "istio",
-        "status": "active",
-    }
-    mesh = auth_client.post("/api/v1/service-meshes", mesh_data, format="json").data
+    strategy = auth_client.post(
+        "/api/v1/scheduling-strategies",
+        {
+            "name": "binding-strat-delete-3",
+            "description": "",
+            "mode": "default",
+            "priority": 0,
+            "tenant": tenant["id"],
+            "status": "active",
+            "available_group": [],
+        },
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "k8s-binding-delete-3",
+            "password": "Passw0rd!",
+            "email": "k8s-binding-delete-3@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    cluster = auth_client.post(
+        "/api/v1/k8s-clusters",
+        {
+            "name": "cluster-binding-delete",
+            "version": "1.28",
+            "tenant": tenant["id"],
+            "region": region["id"],
+            "scheduling_strategy": strategy["id"],
+            "description": "",
+            "user": user["id"],
+            "status": "active",
+        },
+        format="json",
+    ).data
 
     binding_data = {
         "cluster": cluster["id"],
         "service_mesh": mesh["id"],
         "role": "primary",
     }
-    create_r = auth_client.post(
-        "/api/v1/k8s-cluster-service-meshes", binding_data, format="json"
-    )
+    create_r = auth_client.post("/api/v1/k8s-cluster-service-meshes", binding_data, format="json")
     binding_id = create_r.data["id"]
 
     r = auth_client.delete(f"/api/v1/k8s-cluster-service-meshes/{binding_id}")
@@ -797,9 +1198,7 @@ def test_bastion_cluster_association_create(auth_client):
         "k8s_cluster": cluster["id"],
         "bastion": vm["id"],
     }
-    r = auth_client.post(
-        "/api/v1/bastion-cluster-associations", association_data, format="json"
-    )
+    r = auth_client.post("/api/v1/bastion-cluster-associations", association_data, format="json")
     assert r.status_code == 201
     assert str(r.data["k8s_cluster"]) == str(cluster["id"])
     assert str(r.data["bastion"]) == str(vm["id"])
@@ -939,9 +1338,7 @@ def test_bastion_cluster_association_update_put(auth_client):
         str(r.data.get("k8s_cluster")) == str(cluster["id"])
         or r.data.get("k8s_cluster") == cluster["id"]
     )
-    assert (
-        str(r.data.get("bastion")) == str(vm["id"]) or r.data.get("bastion") == vm["id"]
-    )
+    assert str(r.data.get("bastion")) == str(vm["id"]) or r.data.get("bastion") == vm["id"]
 
     # Verify in database
     r = auth_client.get(f"/api/v1/bastion-cluster-associations/{association_id}")

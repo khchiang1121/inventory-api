@@ -168,6 +168,27 @@ def test_complete_ansible_inventory_workflow(auth_client):
         format="json",
     ).data
 
+    # New required dependencies for VM
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-workflow", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "workflow-vm-owner",
+            "password": "Passw0rd!",
+            "email": "workflow-vm-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post(
+        "/api/v1/groups", {"name": "workflow-vm-group"}, format="json"
+    ).data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -175,6 +196,9 @@ def test_complete_ansible_inventory_workflow(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -223,9 +247,7 @@ def test_complete_ansible_inventory_workflow(auth_client):
     )
 
     # 10. Test merged variables endpoint
-    r = auth_client.get(
-        f"/api/v1/ansible-inventories/{inventory['id']}/merged_variables"
-    )
+    r = auth_client.get(f"/api/v1/ansible-inventories/{inventory['id']}/merged_variables")
     assert r.status_code == 200
 
     # Should include inventory variables
@@ -384,6 +406,24 @@ def test_variable_priority_override(auth_client):
         format="json",
     ).data
 
+    region = auth_client.post(
+        "/api/v1/regions",
+        {"name": "us-priority", "description": "", "status": "active"},
+        format="json",
+    ).data
+    user = auth_client.post(
+        "/api/v1/users",
+        {
+            "username": "priority-owner",
+            "password": "Passw0rd!",
+            "email": "priority-owner@example.com",
+            "account": "test",
+            "status": "active",
+        },
+        format="json",
+    ).data
+    user_group = auth_client.post("/api/v1/groups", {"name": "priority-group"}, format="json").data
+
     vm = auth_client.post(
         "/api/v1/virtual-machines",
         {
@@ -391,6 +431,9 @@ def test_variable_priority_override(auth_client):
             "type": "worker",
             "status": "running",
             "tenant": tenant["id"],
+            "region": region["id"],
+            "user": user["id"],
+            "user_group": [user_group["id"]],
             "specification": spec["id"],
         },
         format="json",
@@ -437,14 +480,9 @@ def test_variable_priority_override(auth_client):
         f"/api/v1/ansible-inventories/{inventory['id']}/merged_variables?group_id={group['id']}"
     )
     assert r.status_code == 200
-    assert (
-        r.data["app_version"] == "2.0.0"
-    )  # Group variable wins over inventory and variable set
+    assert r.data["app_version"] == "2.0.0"  # Group variable wins over inventory and variable set
 
     # Test merged variables without host/group context - should show variable set variable
-    r = auth_client.get(
-        f"/api/v1/ansible-inventories/{inventory['id']}/merged_variables"
-    )
+    r = auth_client.get(f"/api/v1/ansible-inventories/{inventory['id']}/merged_variables")
     assert r.status_code == 200
     assert r.data["app_version"] == "1.0.0"  # Variable set wins over inventory variable
-

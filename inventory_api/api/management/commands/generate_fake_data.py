@@ -223,14 +223,12 @@ class Command(BaseCommand):
             lambda: {
                 "name": fake.word().capitalize(),
                 "description": fake.text(max_nb_chars=100),
-                "total_cpu": 256,
-                "total_memory": 131072,
-                "total_storage": 50000,
-                "total_gpu": random.randint(8, 32),
-                "available_cpu": 128,
-                "available_memory": 65536,
-                "available_storage": 25000,
-                "available_gpu": random.randint(4, 16),
+                "total_cpu_cores": 256,
+                "total_memory_mib": 131072,
+                "total_storage_gb": 50000,
+                "available_cpu_cores": 128,
+                "available_memory_mib": 65536,
+                "available_storage_gb": 25000,
                 "status": random.choice(["active", "inactive"]),
             },
             3,
@@ -239,23 +237,18 @@ class Command(BaseCommand):
         )
         self.stdout.write("✔️ Baremetal groups ready")
 
-        # Create Manufacturers and Suppliers first (needed for purchase orders)
-        manufacturers = self._create_or_get_models(
-            models.Manufacturer, lambda: {"name": fake.company()}, 3, skip_existing, "Manufacturer"
-        )
-
-        suppliers = self._create_or_get_models(
-            models.Supplier,
+        # Create Vendors (replaces old Manufacturers and Suppliers)
+        vendors = self._create_or_get_models(
+            models.Vendor,
             lambda: {
                 "name": fake.company(),
                 "contact_email": fake.email(),
-                "contact_phone": fake.phone_number()[:20],  # Truncate to 20 chars
+                "contact_phone": fake.phone_number()[:20],
                 "address": fake.address(),
-                "website": fake.url(),
             },
-            3,
+            5,
             skip_existing,
-            "Supplier",
+            "Vendor",
         )
 
         # Create Purchase Requisitions & Orders
@@ -275,11 +268,12 @@ class Command(BaseCommand):
         pos = []
         for i in range(5):
             selected_pr = random.choice(prs)
-            selected_supplier = random.choice(suppliers) if suppliers else None
+            selected_vendor = random.choice(vendors) if vendors else None
             po_data = {
+                "name": f"PO-{i+1}",
                 "po_number": f"PO-{fake.unique.random_number(6)}",
                 "purchase_requisition": selected_pr,
-                "supplier": selected_supplier,
+                "supplier": selected_vendor,
                 "payment_terms": random.choice(["net30", "net45", "net60"]),
                 "amount": fake.pydecimal(left_digits=5, right_digits=2, positive=True),
                 "used": fake.pydecimal(left_digits=4, right_digits=2, positive=True),
@@ -295,29 +289,19 @@ class Command(BaseCommand):
         if not skip_existing:
             self.stdout.write(f"✔️ PurchaseOrder ready ({len(pos)} total)")
 
-        # Manufacturers and suppliers already created above
-
+        # Create BaremetalModels
         baremetal_models = self._create_or_get_models(
             models.BaremetalModel,
             lambda: {
                 "name": f"Model-{fake.word()}",
-                "manufacturer": random.choice(manufacturers),
-                "total_cpu": 64,
-                "total_memory": 65536,
-                "total_storage": 10000,
-                "total_gpu": random.randint(0, 8),
+                "manufacturer": random.choice(vendors) if vendors else None,
+                "cpu_cores": 64,
+                "memory_mib": 65536,
             },
             5,
             skip_existing,
             "BaremetalModel",
         )
-
-        # Add suppliers to baremetal models after creation
-        for model in baremetal_models:
-            # Randomly assign 1-3 suppliers to each model
-            num_suppliers = random.randint(1, min(3, len(suppliers)))
-            selected_suppliers = random.sample(suppliers, num_suppliers)
-            model.suppliers.set(selected_suppliers)
 
         # Create Units per rack
         units_by_rack = {}
@@ -338,21 +322,19 @@ class Command(BaseCommand):
                 "name": f"BM-{fake.domain_word()}",
                 "serial_number": fake.uuid4(),
                 "model": random.choice(baremetal_models),
-                "fabrication": random.choice(fabs),
-                "phase": random.choice(phases),
-                "data_center": random.choice(data_centers),
-                "room": random.choice(rooms).name,
-                "rack": (selected_rack := random.choice(racks)),
-                "unit": random.choice(units_by_rack[selected_rack.id]),
+                "unit": random.choice(units_by_rack[(selected_rack := random.choice(racks)).id]),
                 "status": random.choice(["active", "inactive", "pending", "retired"]),
-                "available_cpu": random.randint(8, 64),
-                "available_memory": random.randint(8192, 65536),
-                "available_storage": random.randint(500, 5000),
-                "available_gpu": random.randint(0, 4),
-                "group": random.choice(host_groups),
-                "pr": random.choice(prs),
-                "po": random.choice(pos),
+                "cpu_cores": 64,
+                "memory_mib": 65536,
+                "storage_gb": 10000,
+                "available_cpu_cores": random.randint(8, 64),
+                "available_memory_mib": random.randint(8192, 65536),
+                "available_storage_gb": random.randint(500, 5000),
+                "baremetal_group": random.choice(host_groups),
+                "purchase_requisition": random.choice(prs),
+                "purchase_order": random.choice(pos),
                 "external_system_id": fake.uuid4(),
+                "failure_zone": random.choice(["fz1", "fz2", "fz3", "fz4"]),
             },
             10,
             skip_existing,
@@ -424,29 +406,27 @@ class Command(BaseCommand):
             tenant = random.choice(tenants)
             if (
                 not models.BaremetalGroupTenantQuota.objects.filter(
-                    group=baremetal_group, tenant=tenant
+                    baremetal_group=baremetal_group, tenant=tenant
                 ).exists()
                 or not skip_existing
             ):
                 if models.BaremetalGroupTenantQuota.objects.filter(
-                    group=baremetal_group, tenant=tenant
+                    baremetal_group=baremetal_group, tenant=tenant
                 ).exists():
                     quota = models.BaremetalGroupTenantQuota.objects.get(
-                        group=baremetal_group, tenant=tenant
+                        baremetal_group=baremetal_group, tenant=tenant
                     )
-                    quota.cpu_quota_percentage = random.uniform(0.1, 1.0)
-                    quota.memory_quota = random.randint(4096, 32768)
-                    quota.storage_quota = random.randint(500, 5000)
-                    quota.gpu_quota = random.randint(0, 4)
+                    quota.cpu_quota = random.uniform(0.1, 1.0)
+                    quota.memory_quota = random.uniform(0.1, 1.0)
+                    quota.storage_quota = random.uniform(0.1, 1.0)
                     quota.save()
                 else:
                     models.BaremetalGroupTenantQuota.objects.create(
-                        group=baremetal_group,
+                        baremetal_group=baremetal_group,
                         tenant=tenant,
-                        cpu_quota_percentage=random.uniform(0.1, 1.0),
-                        memory_quota=random.randint(4096, 32768),
-                        storage_quota=random.randint(500, 5000),
-                        gpu_quota=random.randint(0, 4),
+                        cpu_quota=random.uniform(0.1, 1.0),
+                        memory_quota=random.uniform(0.1, 1.0),
+                        storage_quota=random.uniform(0.1, 1.0),
                     )
         self.stdout.write("✔️ Tenant quotas ready")
 
@@ -456,9 +436,9 @@ class Command(BaseCommand):
             lambda: {
                 "name": fake.word().capitalize(),
                 "generation": f"gen-{random.randint(1, 5)}",
-                "required_cpu": random.randint(1, 16),
-                "required_memory": random.randint(1024, 8192),
-                "required_storage": random.randint(50, 500),
+                "required_cpu_cores": random.randint(1, 16),
+                "required_memory_mib": random.randint(1024, 8192),
+                "required_storage_gb": random.randint(50, 500),
             },
             5,
             skip_existing,
@@ -467,14 +447,32 @@ class Command(BaseCommand):
         self.stdout.write("✔️ VM specifications ready")
 
         # Create K8s Clusters
+        # Create scheduling strategies first if they don't exist
+        scheduling_strategies = list(models.SchedulingStrategy.objects.all())
+        if not scheduling_strategies and tenants:
+            for strategy_name in ["spread_rack", "balanced", "spread_resource", "default"]:
+                strategy = models.SchedulingStrategy.objects.create(
+                    name=f"Strategy-{strategy_name}",
+                    tenant=random.choice(tenants),
+                )
+                scheduling_strategies.append(strategy)
+
+        # Create regions first if they don't exist
+        regions = list(models.Region.objects.all())
+        if not regions:
+            for i in range(3):
+                region = models.Region.objects.create(name=f"Region-{fake.word()}")
+                regions.append(region)
+
         clusters = self._create_or_get_models(
             models.K8sCluster,
             lambda: {
                 "name": f"K8s-{fake.word()}",
                 "version": f"v{random.randint(1, 3)}.{random.randint(0, 9)}",
                 "tenant": random.choice(tenants),
-                "scheduling_mode": random.choice(
-                    ["spread_rack", "balanced", "spread_resource", "default"]
+                "region": random.choice(regions),
+                "scheduling_strategy": (
+                    random.choice(scheduling_strategies) if scheduling_strategies else None
                 ),
                 "description": fake.text(),
                 "status": random.choice(["active", "inactive"]),
@@ -485,16 +483,24 @@ class Command(BaseCommand):
         )
         self.stdout.write("✔️ Kubernetes clusters ready")
 
+        # Create VirtualMachineRoles first if they don't exist
+        vm_roles = list(models.VirtualMachineRole.objects.all())
+        if not vm_roles:
+            for role_name in ["control-plane", "worker", "management", "other"]:
+                role = models.VirtualMachineRole.objects.create(name=role_name)
+                vm_roles.append(role)
+
         # Create VMs
         vms = self._create_or_get_models(
             models.VirtualMachine,
             lambda: {
                 "name": f"VM-{fake.word()}",
                 "tenant": random.choice(tenants),
+                "region": random.choice(regions),
                 "baremetal": random.choice(baremetals),
                 "specification": random.choice(vm_specs),
                 "k8s_cluster": random.choice(clusters + [None]),
-                "type": random.choice(["control-plane", "worker", "management", "other"]),
+                "virtual_machine_role": random.choice(vm_roles),
                 "status": random.choice(["active", "inactive"]),
             },
             10,
@@ -504,33 +510,31 @@ class Command(BaseCommand):
         self.stdout.write("✔️ Virtual machines ready")
 
         # Create Plugins
+        plugins = []
+        for i in range(5):
+            plugin_name = f"Plugin-{fake.word().capitalize()}"
+            plugin, created = models.K8sClusterPlugin.objects.get_or_create(
+                name=plugin_name,
+                defaults={
+                    "versions": [f"v{random.randint(1, 3)}.{random.randint(0, 9)}"],
+                    "status": random.choice(["active", "inactive", "error"]),
+                    "additional_info": {"notes": fake.sentence()},
+                },
+            )
+            plugins.append(plugin)
+
+        # Create Plugin Associations
         for cluster in clusters:
             for _ in range(2):
-                plugin_name = fake.word().capitalize()
-                if (
-                    not models.K8sClusterPlugin.objects.filter(
-                        cluster=cluster, name=plugin_name
-                    ).exists()
-                    or not skip_existing
-                ):
-                    if models.K8sClusterPlugin.objects.filter(
-                        cluster=cluster, name=plugin_name
-                    ).exists():
-                        plugin = models.K8sClusterPlugin.objects.get(
-                            cluster=cluster, name=plugin_name
-                        )
-                        plugin.version = f"v{random.randint(1, 3)}.{random.randint(0, 9)}"
-                        plugin.status = random.choice(["active", "inactive", "error"])
-                        plugin.additional_info = {"notes": fake.sentence()}
-                        plugin.save()
-                    else:
-                        models.K8sClusterPlugin.objects.create(
-                            cluster=cluster,
-                            name=plugin_name,
-                            version=f"v{random.randint(1, 3)}.{random.randint(0, 9)}",
-                            status=random.choice(["active", "inactive", "error"]),
-                            additional_info={"notes": fake.sentence()},
-                        )
+                plugin = random.choice(plugins)
+                if not models.K8sClusterPluginAssociation.objects.filter(
+                    k8s_cluster=cluster, k8s_cluster_plugin=plugin
+                ).exists():
+                    models.K8sClusterPluginAssociation.objects.create(
+                        k8s_cluster=cluster,
+                        k8s_cluster_plugin=plugin,
+                        version=f"v{random.randint(1, 3)}.{random.randint(0, 9)}",
+                    )
         self.stdout.write("✔️ Cluster plugins ready")
 
         # Create Service Meshes
@@ -553,21 +557,21 @@ class Command(BaseCommand):
             for mesh in meshes:
                 if (
                     not models.K8sClusterToServiceMesh.objects.filter(
-                        cluster=cluster, service_mesh=mesh
+                        k8s_cluster=cluster, service_mesh=mesh
                     ).exists()
                     or not skip_existing
                 ):
                     if models.K8sClusterToServiceMesh.objects.filter(
-                        cluster=cluster, service_mesh=mesh
+                        k8s_cluster=cluster, service_mesh=mesh
                     ).exists():
                         association = models.K8sClusterToServiceMesh.objects.get(
-                            cluster=cluster, service_mesh=mesh
+                            k8s_cluster=cluster, service_mesh=mesh
                         )
                         association.role = random.choice(["primary", "secondary"])
                         association.save()
                     else:
                         models.K8sClusterToServiceMesh.objects.create(
-                            cluster=cluster,
+                            k8s_cluster=cluster,
                             service_mesh=mesh,
                             role=random.choice(["primary", "secondary"]),
                         )
@@ -604,19 +608,8 @@ class Command(BaseCommand):
                 name=inv_name,
                 defaults={
                     "description": f"{inv_name.capitalize()} environment inventory",
-                    "version": "1.0",
-                    "source_type": random.choice(["static", "dynamic", "hybrid"]),
-                    "source_plugin": random.choice(["aws_ec2", "openstack", "vmware", None]),
-                    "source_config": {
-                        "regions": (
-                            ["us-west-2", "us-east-1"]
-                            if inv_name == "production"
-                            else ["us-west-2"]
-                        ),
-                        "filters": {"tag:Environment": inv_name},
-                    },
+                    "source_type": random.choice(["static", "dynamic"]),
                     "status": "active",
-                    "created_by": random.choice(users),
                 },
             )
             if created:
@@ -644,7 +637,6 @@ ntp_servers:
                 "tags": ["common", "system"],
                 "priority": 10,
                 "status": "active",
-                "created_by": random.choice(users),
             },
         )
         if created:
@@ -669,7 +661,6 @@ ntp_servers:
                 "tags": ["database", "production"],
                 "priority": 20,
                 "status": "active",
-                "created_by": random.choice(users),
             },
         )
         if created:
@@ -681,39 +672,20 @@ ntp_servers:
             for var_set in variable_sets:
                 association, created = (
                     models.AnsibleInventoryVariableSetAssociation.objects.get_or_create(
-                        inventory=inventory,
-                        variable_set=var_set,
+                        ansible_inventory=inventory,
+                        ansible_variable_set=var_set,
                         defaults={
                             "load_priority": var_set.priority,
                             "enabled": True,
-                            "load_tags": [],
-                            "load_config": {"merge_strategy": "override"},
                         },
                     )
                 )
                 if created:
                     self.stdout.write(f"✔️ Associated {var_set.name} with {inventory.name}")
 
-        # Create Inventory Variables
-        for inventory in inventories:
-            env_vars = {
-                "environment": inventory.name,
-                "backup_enabled": inventory.name == "production",
-                "monitoring_level": ("high" if inventory.name == "production" else "medium"),
-                "log_level": "info" if inventory.name == "production" else "debug",
-            }
-
-            for key, value in env_vars.items():
-                inv_var, created = models.AnsibleInventoryVariable.objects.get_or_create(
-                    inventory=inventory,
-                    key=key,
-                    defaults={
-                        "value": str(value),
-                        "value_type": ("string" if isinstance(value, str) else "boolean"),
-                    },
-                )
-                if created:
-                    self.stdout.write(f"✔️ Created inventory variable {key} for {inventory.name}")
+        # Note: AnsibleInventoryVariable model has been removed from the current schema
+        # If needed, variables should be stored in the AnsibleVariableSet or in inventory config
+        self.stdout.write("✔️ Inventory variables (stored in variable sets)")
 
         # Create Ansible Groups for each inventory
         ansible_groups = []
@@ -721,7 +693,7 @@ ntp_servers:
         for inventory in inventories:
             # Create special groups
             all_group, created = models.AnsibleGroup.objects.get_or_create(
-                inventory=inventory,
+                ansible_inventory=inventory,
                 name="all",
                 defaults={
                     "description": "All hosts",
@@ -734,7 +706,7 @@ ntp_servers:
             ansible_groups.append(all_group)
 
             ungrouped_group, created = models.AnsibleGroup.objects.get_or_create(
-                inventory=inventory,
+                ansible_inventory=inventory,
                 name="ungrouped",
                 defaults={
                     "description": "Hosts not in any group",
@@ -762,7 +734,7 @@ ntp_servers:
         for inventory in inventories:
             for group_name in group_names:
                 group, created = models.AnsibleGroup.objects.get_or_create(
-                    inventory=inventory,
+                    ansible_inventory=inventory,
                     name=group_name,
                     defaults={
                         "description": fake.text(max_nb_chars=100),
@@ -805,11 +777,13 @@ ntp_servers:
         for inventory in inventories:
             for group_name, vars_dict in common_vars.items():
                 try:
-                    group = models.AnsibleGroup.objects.get(inventory=inventory, name=group_name)
+                    group = models.AnsibleGroup.objects.get(
+                        ansible_inventory=inventory, name=group_name
+                    )
                     for key, value in vars_dict.items():
                         if (
                             not models.AnsibleGroupVariable.objects.filter(
-                                group=group, key=key
+                                ansible_group=group, name=key
                             ).exists()
                             or not skip_existing
                         ):
@@ -823,18 +797,20 @@ ntp_servers:
                                 value = str(value)
 
                             if models.AnsibleGroupVariable.objects.filter(
-                                group=group, key=key
+                                ansible_group=group, name=key
                             ).exists():
-                                var = models.AnsibleGroupVariable.objects.get(group=group, key=key)
-                                var.value = str(value)
-                                var.value_type = value_type
+                                var = models.AnsibleGroupVariable.objects.get(
+                                    ansible_group=group, name=key
+                                )
+                                var.content = str(value)
+                                var.content_type = "yaml"
                                 var.save()
                             else:
                                 models.AnsibleGroupVariable.objects.create(
-                                    group=group,
-                                    key=key,
-                                    value=str(value),
-                                    value_type=value_type,
+                                    ansible_group=group,
+                                    name=key,
+                                    content=str(value),
+                                    content_type="yaml",
                                 )
                 except models.AnsibleGroup.DoesNotExist:
                     continue
@@ -852,8 +828,12 @@ ntp_servers:
         for inventory in inventories:
             for parent_name, child_name in relationships:
                 try:
-                    parent = models.AnsibleGroup.objects.get(inventory=inventory, name=parent_name)
-                    child = models.AnsibleGroup.objects.get(inventory=inventory, name=child_name)
+                    parent = models.AnsibleGroup.objects.get(
+                        ansible_inventory=inventory, name=parent_name
+                    )
+                    child = models.AnsibleGroup.objects.get(
+                        ansible_inventory=inventory, name=child_name
+                    )
                     if (
                         not models.AnsibleGroupRelationship.objects.filter(
                             parent_group=parent, child_group=child
@@ -892,24 +872,28 @@ ntp_servers:
             # Assign to each inventory
             for inventory in inventories:
                 group = random.choice(
-                    [g for g in ansible_groups if not g.is_special and g.inventory == inventory]
+                    [
+                        g
+                        for g in ansible_groups
+                        if not g.is_special and g.ansible_inventory == inventory
+                    ]
                 )
 
                 if (
                     not models.AnsibleHost.objects.filter(
-                        inventory=inventory,
+                        ansible_inventory=inventory,
                         content_type=baremetal_content_type,
                         object_id=baremetal.id,
                     ).exists()
                     or not skip_existing
                 ):
                     if models.AnsibleHost.objects.filter(
-                        inventory=inventory,
+                        ansible_inventory=inventory,
                         content_type=baremetal_content_type,
                         object_id=baremetal.id,
                     ).exists():
                         host = models.AnsibleHost.objects.get(
-                            inventory=inventory,
+                            ansible_inventory=inventory,
                             content_type=baremetal_content_type,
                             object_id=baremetal.id,
                         )
@@ -918,14 +902,14 @@ ntp_servers:
                         host.status = "active"
                         host.metadata = {
                             "server_type": "baremetal",
-                            "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
+                            "rack_location": f"{baremetal.unit.rack.name if baremetal.unit else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
                             "serial_number": baremetal.serial_number,
                         }
                         host.save()
-                        host.groups.set([group])
+                        host.ansible_groups.set([group])
                     else:
                         host = models.AnsibleHost.objects.create(
-                            inventory=inventory,
+                            ansible_inventory=inventory,
                             content_type=baremetal_content_type,
                             object_id=baremetal.id,
                             ansible_host=ansible_host,
@@ -935,11 +919,11 @@ ntp_servers:
                             status="active",
                             metadata={
                                 "server_type": "baremetal",
-                                "rack_location": f"{baremetal.rack.name if baremetal.rack else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
+                                "rack_location": f"{baremetal.unit.rack.name if baremetal.unit else 'Unknown'}-{baremetal.unit.name if baremetal.unit else 'Unknown'}",
                                 "serial_number": baremetal.serial_number,
                             },
                         )
-                        host.groups.set([group])
+                        host.ansible_groups.set([group])
 
         # Assign VMs to groups
         for vm in vms:
@@ -959,41 +943,43 @@ ntp_servers:
 
             # Assign to each inventory
             for inventory in inventories:
-                # Assign VMs to appropriate groups based on their type
-                if vm.type == "control-plane":
+                # Assign VMs to appropriate groups based on their virtual machine role
+                if vm.virtual_machine_role.name == "control-plane":
                     group = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name="k8s_control_plane"
+                        ansible_inventory=inventory, name="k8s_control_plane"
                     )
-                elif vm.type == "worker":
+                elif vm.virtual_machine_role.name == "worker":
                     group = models.AnsibleGroup.objects.get(
-                        inventory=inventory, name="k8s_workers"
+                        ansible_inventory=inventory, name="k8s_workers"
                     )
-                elif vm.type == "management":
-                    group = models.AnsibleGroup.objects.get(inventory=inventory, name="management")
+                elif vm.virtual_machine_role.name == "management":
+                    group = models.AnsibleGroup.objects.get(
+                        ansible_inventory=inventory, name="management"
+                    )
                 else:
                     group = random.choice(
                         [
                             g
                             for g in ansible_groups
-                            if not g.is_special and g.inventory == inventory
+                            if not g.is_special and g.ansible_inventory == inventory
                         ]
                     )
 
                 if (
                     not models.AnsibleHost.objects.filter(
-                        inventory=inventory,
+                        ansible_inventory=inventory,
                         content_type=vm_content_type,
                         object_id=vm.id,
                     ).exists()
                     or not skip_existing
                 ):
                     if models.AnsibleHost.objects.filter(
-                        inventory=inventory,
+                        ansible_inventory=inventory,
                         content_type=vm_content_type,
                         object_id=vm.id,
                     ).exists():
                         host = models.AnsibleHost.objects.get(
-                            inventory=inventory,
+                            ansible_inventory=inventory,
                             content_type=vm_content_type,
                             object_id=vm.id,
                         )
@@ -1002,15 +988,15 @@ ntp_servers:
                         host.status = "active"
                         host.metadata = {
                             "server_type": "virtual_machine",
-                            "vm_type": vm.type,
+                            "vm_type": vm.virtual_machine_role.name,
                             "tenant": vm.tenant.name,
                             "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                         }
                         host.save()
-                        host.groups.set([group])
+                        host.ansible_groups.set([group])
                     else:
                         host = models.AnsibleHost.objects.create(
-                            inventory=inventory,
+                            ansible_inventory=inventory,
                             content_type=vm_content_type,
                             object_id=vm.id,
                             ansible_host=ansible_host,
@@ -1020,18 +1006,18 @@ ntp_servers:
                             status="active",
                             metadata={
                                 "server_type": "virtual_machine",
-                                "vm_type": vm.type,
+                                "vm_type": vm.virtual_machine_role.name,
                                 "tenant": vm.tenant.name,
                                 "k8s_cluster": (vm.k8s_cluster.name if vm.k8s_cluster else None),
                             },
                         )
-                        host.groups.set([group])
+                        host.ansible_groups.set([group])
 
         self.stdout.write("✔️ Assigned hosts to Ansible groups")
 
         # Create Host Variables
         for inventory in inventories:
-            hosts = models.AnsibleHost.objects.filter(inventory=inventory)
+            hosts = models.AnsibleHost.objects.filter(ansible_inventory=inventory)
             for host in hosts[:5]:  # Limit to first 5 hosts per inventory
                 host_vars = {
                     "app_version": f"1.{random.randint(0, 9)}.{random.randint(0, 9)}",
@@ -1041,40 +1027,19 @@ ntp_servers:
 
                 for key, value in host_vars.items():
                     host_var, created = models.AnsibleHostVariable.objects.get_or_create(
-                        host=host,
-                        key=key,
+                        ansible_host=host,
+                        name=key,
                         defaults={
-                            "value": str(value),
-                            "value_type": "string",
+                            "content": str(value),
+                            "content_type": "yaml",
                         },
                     )
                     if created:
                         self.stdout.write(f"✔️ Created host variable {key} for {host}")
 
-        # Create Inventory Plugins
-        for inventory in inventories:
-            if inventory.source_type in ["dynamic", "hybrid"]:
-                plugin_config = {
-                    "regions": inventory.source_config.get("regions", ["us-west-2"]),
-                    "filters": inventory.source_config.get("filters", {}),
-                    "keyed_groups": [
-                        {"key": "tags.Environment", "prefix": "env"},
-                        {"key": "instance_type", "prefix": "type"},
-                    ],
-                }
-
-                plugin, created = models.AnsibleInventoryPlugin.objects.get_or_create(
-                    inventory=inventory,
-                    name=inventory.source_plugin or "aws_ec2",
-                    defaults={
-                        "config": plugin_config,
-                        "enabled": True,
-                        "priority": 1,
-                        "cache_timeout": 300,
-                    },
-                )
-                if created:
-                    self.stdout.write(f"✔️ Created plugin {plugin.name} for {inventory.name}")
+        # Note: AnsibleInventoryPlugin model has been removed from the current schema
+        # If needed, plugin configuration should be stored in the inventory's source_config field
+        self.stdout.write("✔️ Inventory plugins (configured in inventory source_config)")
 
         # Create Inventory Templates
         template_content = """all:
@@ -1099,7 +1064,6 @@ ntp_servers:
                 "description": "YAML format inventory template",
                 "template_type": "yaml",
                 "template_content": template_content,
-                "variables": {"groups": [], "hosts": []},
             },
         )
         if created:
@@ -1158,32 +1122,37 @@ ntp_servers:
         # Clear in reverse dependency order to avoid foreign key constraints
         # Clear new Ansible models first
         models.AnsibleHostVariable.objects.all().delete()
-        models.AnsibleInventoryPlugin.objects.all().delete()
+        models.AnsibleGroupVariable.objects.all().delete()
         models.AnsibleInventoryTemplate.objects.all().delete()
         models.AnsibleInventoryVariableSetAssociation.objects.all().delete()
         models.AnsibleVariableSet.objects.all().delete()
-        models.AnsibleInventoryVariable.objects.all().delete()
         models.AnsibleHost.objects.all().delete()
-        models.AnsibleGroupVariable.objects.all().delete()
         models.AnsibleGroupRelationship.objects.all().delete()
         models.AnsibleGroup.objects.all().delete()
         models.AnsibleInventory.objects.all().delete()
 
         # Clear existing models
+        models.GPUAllocation.objects.all().delete()
         models.BastionClusterAssociation.objects.all().delete()
+        models.ClusterTemplateVirtualMachine.objects.all().delete()
+        models.K8sClusterPluginAssociation.objects.all().delete()
         models.K8sClusterToServiceMesh.objects.all().delete()
         models.ServiceMesh.objects.all().delete()
         models.K8sClusterPlugin.objects.all().delete()
         models.VirtualMachine.objects.all().delete()
         models.K8sCluster.objects.all().delete()
+        models.ClusterTemplate.objects.all().delete()
         models.VirtualMachineSpecification.objects.all().delete()
+        models.PhysicalGPU.objects.all().delete()
+        models.BaremetalModelGPU.objects.all().delete()
         models.BaremetalGroupTenantQuota.objects.all().delete()
         models.Tenant.objects.all().delete()
         models.NetworkInterface.objects.all().delete()
         models.Baremetal.objects.all().delete()
+        models.Unit.objects.all().delete()
         models.BaremetalModel.objects.all().delete()
-        models.Manufacturer.objects.all().delete()
-        models.Supplier.objects.all().delete()
+        models.PhysicalGPUModel.objects.all().delete()
+        models.Vendor.objects.all().delete()
         models.PurchaseOrder.objects.all().delete()
         models.PurchaseRequisition.objects.all().delete()
         models.BaremetalGroup.objects.all().delete()

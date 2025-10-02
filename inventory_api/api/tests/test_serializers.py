@@ -126,6 +126,9 @@ class TestInfrastructureSerializers:
         phase = Phase.objects.create(name="PHASE001", fab=fab)
         dc = DataCenter.objects.create(name="DC001", phase=phase)
         room = Room.objects.create(name="ROOM001", datacenter=dc)
+        from ..models import AvailableGroup
+
+        ag = AvailableGroup.objects.create(name="AG001", description="", status="active")
 
         data = {
             "name": "RACK001",
@@ -137,6 +140,7 @@ class TestInfrastructureSerializers:
             "power_capacity": "10.50",
             "status": "active",
             "room": room.id,
+            "available_group": ag.id,
         }
         serializer = RackCreateSerializer(data=data)
         assert serializer.is_valid(), f"Validation errors: {serializer.errors}"
