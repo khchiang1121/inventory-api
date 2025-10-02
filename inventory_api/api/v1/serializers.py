@@ -8,23 +8,1218 @@ from rest_framework import serializers
 from .. import models
 
 
+# ------------------------------------------------------------------------------
+# Helper Classes and Shared Serializers
+# ------------------------------------------------------------------------------
+class ResourceRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        return {
+            "id": str(value.id),
+            "type": value._meta.model_name,
+            "name": getattr(value, "name", str(value)),
+        }
+
+    # Silence abstract method warnings in strict linters; we only use this as
+    # a read-only field.
+    def to_internal_value(self, data):  # type: ignore[override]
+        raise NotImplementedError("Read-only field")
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
         fields = ["id", "username", "password", "email", "account", "status"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer for user profile information (excludes sensitive fields)"""
-
+class CustomUserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
-        fields = ["id", "username", "email", "account", "status"]
+        fields = ["id", "username", "password", "email", "account", "status"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        user = models.CustomUser.objects.create_user(**validated_data)
+        return user
+
+
+class CustomUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CustomUser
+        fields = ["username", "email", "account", "status"]
+
+
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     """Serializer for user profile information (excludes sensitive fields)"""
+
+#     class Meta:
+#         model = models.CustomUser
+#         fields = ["id", "username", "email", "account", "status"]
 
 
 # ------------------------------------------------------------------------------
-# Infrastructure Serializers
+# Ansible ViewSets (ordered per views.py)
 # ------------------------------------------------------------------------------
+
+
+# AnsibleGroupVariable Serializers
+class AnsibleGroupVariableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = [
+            "id",
+            "ansible_group",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleGroupVariableCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = [
+            "id",
+            "ansible_group",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+class AnsibleGroupVariableUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupVariable
+        fields = ["name", "description", "content", "content_type", "tags", "priority", "status"]
+
+
+# AnsibleGroup Serializers
+class AnsibleGroupSerializer(serializers.ModelSerializer):
+    ansible_group_variables = AnsibleGroupVariableSerializer(many=True, read_only=True)
+    child_groups = serializers.SerializerMethodField()
+    parent_groups = serializers.SerializerMethodField()
+    ansible_hosts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.AnsibleGroup
+        fields = [
+            "id",
+            "ansible_inventory",
+            "name",
+            "description",
+            "is_special",
+            "status",
+            "ansible_group_variables",
+            "child_groups",
+            "parent_groups",
+            "ansible_hosts",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_child_groups(self, obj):
+        return [{"id": str(group.id), "name": group.name} for group in obj.child_groups]
+
+    def get_parent_groups(self, obj):
+        return [{"id": str(group.id), "name": group.name} for group in obj.parent_groups]
+
+    def get_ansible_hosts(self, obj):
+        hosts = obj.ansible_hosts.all()
+        return [
+            {
+                "id": str(host.id),
+                "host": str(host.host),
+            }
+            for host in hosts
+        ]
+
+
+class AnsibleGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroup
+        fields = ["id", "ansible_inventory", "name", "description", "is_special", "status"]
+
+
+class AnsibleGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroup
+        fields = ["ansible_inventory", "name", "description", "is_special", "status"]
+
+
+# AnsibleGroupRelationship Serializers
+class AnsibleGroupRelationshipSerializer(serializers.ModelSerializer):
+    parent_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
+    child_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
+
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ["id", "parent_group", "child_group", "created_at", "updated_at"]
+
+
+class AnsibleGroupRelationshipCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ["id", "parent_group", "child_group"]
+
+
+class AnsibleGroupRelationshipUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleGroupRelationship
+        fields = ["parent_group", "child_group"]
+
+
+# AnsibleHost Serializers
+class AnsibleHostSerializer(serializers.ModelSerializer):
+    ansible_groups = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    host = ResourceRelatedField(read_only=True)
+    content_type = serializers.PrimaryKeyRelatedField(
+        queryset=ContentType.objects.all(), write_only=True
+    )
+    object_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = models.AnsibleHost
+        fields = [
+            "id",
+            "ansible_inventory",
+            "ansible_groups",
+            "host",
+            "content_type",
+            "object_id",
+            "aliases",
+            "ansible_host",
+            "ansible_port",
+            "ansible_user",
+            "ansible_ssh_private_key_file",
+            "ansible_ssh_common_args",
+            "ansible_ssh_extra_args",
+            "ansible_ssh_pipelining",
+            "ansible_ssh_executable",
+            "ansible_python_interpreter",
+            "ansible_shell_type",
+            "status",
+            "metadata",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleHostCreateSerializer(serializers.ModelSerializer):
+    ansible_groups = serializers.PrimaryKeyRelatedField(
+        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
+    )
+
+    class Meta:
+        model = models.AnsibleHost
+        fields = [
+            "id",
+            "ansible_inventory",
+            "ansible_groups",
+            "content_type",
+            "object_id",
+            "aliases",
+            "ansible_host",
+            "ansible_port",
+            "ansible_user",
+            "ansible_ssh_private_key_file",
+            "ansible_ssh_common_args",
+            "ansible_ssh_extra_args",
+            "ansible_ssh_pipelining",
+            "ansible_ssh_executable",
+            "ansible_python_interpreter",
+            "ansible_shell_type",
+            "status",
+            "metadata",
+        ]
+
+    def create(self, validated_data):
+        ansible_groups = validated_data.pop("ansible_groups", [])
+        host = models.AnsibleHost.objects.create(**validated_data)
+        if ansible_groups:
+            host.ansible_groups.set(ansible_groups)
+        return host
+
+
+class AnsibleHostUpdateSerializer(serializers.ModelSerializer):
+    ansible_groups = serializers.PrimaryKeyRelatedField(
+        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
+    )
+
+    class Meta:
+        model = models.AnsibleHost
+        fields = [
+            "ansible_inventory",
+            "ansible_groups",
+            "aliases",
+            "ansible_host",
+            "ansible_port",
+            "ansible_user",
+            "ansible_ssh_private_key_file",
+            "ansible_ssh_common_args",
+            "ansible_ssh_extra_args",
+            "ansible_ssh_pipelining",
+            "ansible_ssh_executable",
+            "ansible_python_interpreter",
+            "ansible_shell_type",
+            "status",
+            "metadata",
+        ]
+
+    def update(self, instance, validated_data):
+        ansible_groups = validated_data.pop("ansible_groups", None)
+
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update groups if provided
+        if ansible_groups is not None:
+            instance.ansible_groups.set(ansible_groups)
+
+        return instance
+
+
+# AnsibleHostVariable Serializers
+class AnsibleHostVariableSerializer(serializers.ModelSerializer):
+    ansible_host = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = [
+            "id",
+            "ansible_host",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleHostVariableCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = [
+            "id",
+            "ansible_host",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+class AnsibleHostVariableUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleHostVariable
+        fields = ["name", "description", "content", "content_type", "tags", "priority", "status"]
+
+
+# AnsibleInventory Serializers
+class AnsibleInventorySerializer(serializers.ModelSerializer):
+    groups_count = serializers.SerializerMethodField()
+    hosts_count = serializers.SerializerMethodField()
+    associated_variable_sets_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "id",
+            "name",
+            "description",
+            "source_type",
+            "status",
+            "groups_count",
+            "hosts_count",
+            "associated_variable_sets_count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_groups_count(self, obj) -> int:
+        return obj.ansible_groups.count()
+
+    def get_hosts_count(self, obj) -> int:
+        return obj.ansible_hosts.count()
+
+    def get_associated_variable_sets_count(self, obj) -> int:
+        return obj.associated_variable_sets.count()
+
+
+class AnsibleInventoryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "id",
+            "name",
+            "description",
+            "source_type",
+            "status",
+        ]
+
+
+class AnsibleInventoryUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventory
+        fields = [
+            "name",
+            "description",
+            "source_type",
+            "status",
+        ]
+
+
+# AnsibleInventoryTemplate Serializers
+class AnsibleInventoryTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryTemplateCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+        ]
+
+
+class AnsibleInventoryTemplateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryTemplate
+        fields = [
+            "name",
+            "description",
+            "template_type",
+            "template_content",
+        ]
+
+
+# AnsibleVariableSet Serializers
+class AnsibleVariableSetSerializer(serializers.ModelSerializer):
+    associated_inventories_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "id",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+            "associated_inventories_count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_associated_inventories_count(self, obj) -> int:
+        return obj.associated_inventories.count()
+
+
+class AnsibleVariableSetCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "id",
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+class AnsibleVariableSetUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleVariableSet
+        fields = [
+            "name",
+            "description",
+            "content",
+            "content_type",
+            "tags",
+            "priority",
+            "status",
+        ]
+
+
+# AnsibleInventoryVariableSetAssociation Serializers
+class AnsibleInventoryVariableSetAssociationSerializer(serializers.ModelSerializer):
+    ansible_inventory = AnsibleInventorySerializer(read_only=True)
+    ansible_variable_set = AnsibleVariableSetSerializer(read_only=True)
+
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "id",
+            "ansible_inventory",
+            "ansible_variable_set",
+            "load_priority",
+            "enabled",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class AnsibleInventoryVariableSetAssociationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "id",
+            "ansible_inventory",
+            "ansible_variable_set",
+            "load_priority",
+            "enabled",
+        ]
+
+
+class AnsibleInventoryVariableSetAssociationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.AnsibleInventoryVariableSetAssociation
+        fields = [
+            "load_priority",
+            "enabled",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Purchase ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+# PurchaseRequisition Serializers
+class PurchaseRequisitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseRequisition
+        fields = [
+            "id",
+            "name",
+            "description",
+            "pr_number",
+            "requested_by",
+            "department",
+            "reason",
+            "submit_date",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PurchaseRequisitionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseRequisition
+        fields = [
+            "id",
+            "name",
+            "description",
+            "pr_number",
+            "requested_by",
+            "department",
+            "reason",
+        ]
+
+
+class PurchaseRequisitionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseRequisition
+        fields = [
+            "name",
+            "description",
+            "pr_number",
+            "requested_by",
+            "department",
+            "reason",
+        ]
+
+
+# PurchaseOrder Serializers
+class PurchaseOrderSerializer(serializers.ModelSerializer):
+    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
+
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "id",
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "id",
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+        ]
+
+
+class PurchaseOrderUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PurchaseOrder
+        fields = [
+            "po_number",
+            "purchase_requisition",
+            "supplier",
+            "payment_terms",
+            "amount",
+            "used",
+            "description",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Baremetal ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# Unit Serializers
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
+
+
+class UnitCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = ["id", "name", "unit_number", "rack", "bgp"]
+
+
+class UnitUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Unit
+        fields = ["name", "unit_number", "rack", "bgp"]
+
+
+# BaremetalGroup Serializers
+class BaremetalGroupSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer(many=True, read_only=True)
+    user_group = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.BaremetalGroup
+        fields = [
+            "id",
+            "name",
+            "description",
+            "total_cpu_cores",
+            "total_memory_mib",
+            "total_storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_user_group(self, obj):
+        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
+
+
+class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroup
+        fields = [
+            "id",
+            "name",
+            "description",
+            "total_cpu_cores",
+            "total_memory_mib",
+            "total_storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
+        ]
+
+
+class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroup
+        fields = [
+            "name",
+            "description",
+            "total_cpu_cores",
+            "total_memory_mib",
+            "total_storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "status",
+            "user",
+            "user_group",
+            "is_multi_tenant",
+            "labels",
+        ]
+
+
+# BaremetalModel Serializers
+class BaremetalModelSerializer(serializers.ModelSerializer):
+    gpus = serializers.SerializerMethodField()
+    gpu_specifications = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.BaremetalModel
+        fields = [
+            "id",
+            "name",
+            "description",
+            "model_name",
+            "short_model_name",
+            "manufacturer",
+            "cpu_model",
+            "cpu_count",
+            "disks",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "unit_size",
+            "type",
+            "gpus",
+            "gpu_specifications",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_gpus(self, obj):
+        return [{"id": str(gpu.id), "name": gpu.name} for gpu in obj.gpus.all()]
+
+    def get_gpu_specifications(self, obj):
+        return [
+            {
+                "id": str(bmg.id),
+                "physical_gpu_model": bmg.physical_gpu_model.name,
+                "count": bmg.count,
+            }
+            for bmg in obj.gpu_specifications.all()
+        ]
+
+
+class BaremetalModelCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModel
+        fields = [
+            "id",
+            "name",
+            "description",
+            "model_name",
+            "short_model_name",
+            "manufacturer",
+            "cpu_model",
+            "cpu_count",
+            "disks",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "unit_size",
+            "type",
+        ]
+
+
+class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModel
+        fields = [
+            "name",
+            "description",
+            "model_name",
+            "short_model_name",
+            "manufacturer",
+            "cpu_model",
+            "cpu_count",
+            "disks",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "unit_size",
+            "type",
+        ]
+
+
+# Baremetal Serializers
+class BaremetalSerializer(serializers.ModelSerializer):
+    unit = UnitSerializer(read_only=True)
+    baremetal_group = BaremetalGroupSerializer(read_only=True)
+    model = BaremetalModelSerializer(read_only=True)
+    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
+    purchase_order = PurchaseOrderSerializer(read_only=True)
+    user = CustomUserSerializer(many=True, read_only=True)
+    user_group = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Baremetal
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "model",
+            "unit",
+            "status",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
+            "external_system_id",
+            "max_virtual_machine",
+            "max_utilization",
+            "labels",
+            "failure_zone",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_user_group(self, obj):
+        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
+
+
+class BaremetalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Baremetal
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "model",
+            "unit",
+            "status",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
+            "external_system_id",
+            "max_virtual_machine",
+            "max_utilization",
+            "labels",
+            "failure_zone",
+        ]
+
+
+class BaremetalUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Baremetal
+        fields = [
+            "name",
+            "serial_number",
+            "model",
+            "unit",
+            "status",
+            "cpu_cores",
+            "memory_mib",
+            "storage_gb",
+            "available_cpu_cores",
+            "available_memory_mib",
+            "available_storage_gb",
+            "baremetal_group",
+            "purchase_requisition",
+            "purchase_order",
+            "user",
+            "user_group",
+            "external_system_id",
+            "max_virtual_machine",
+            "max_utilization",
+            "labels",
+            "failure_zone",
+        ]
+
+
+# BaremetalGroupTenantQuota Serializers
+class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = [
+            "id",
+            "baremetal_group",
+            "tenant",
+            "cpu_quota",
+            "memory_quota",
+            "storage_quota",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class BaremetalGroupTenantQuotaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = [
+            "id",
+            "baremetal_group",
+            "tenant",
+            "cpu_quota",
+            "memory_quota",
+            "storage_quota",
+        ]
+
+
+class BaremetalGroupTenantQuotaUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalGroupTenantQuota
+        fields = [
+            "baremetal_group",
+            "tenant",
+            "cpu_quota",
+            "memory_quota",
+            "storage_quota",
+        ]
+
+
+# BaremetalModelGPU Serializers (PhysicalGPUModel needed here)
+class PhysicalGPUModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "id",
+            "name",
+            "description",
+            "vendor",
+            "architecture",
+            "memory_mib",
+            "api_support",
+            "power_consumption",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PhysicalGPUModelCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "id",
+            "name",
+            "description",
+            "vendor",
+            "architecture",
+            "memory_mib",
+            "api_support",
+            "power_consumption",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+        ]
+
+
+class PhysicalGPUModelUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPUModel
+        fields = [
+            "name",
+            "description",
+            "vendor",
+            "architecture",
+            "memory_mib",
+            "api_support",
+            "power_consumption",
+            "release_date",
+            "end_of_life",
+            "is_multi_instance_supported",
+        ]
+
+
+class BaremetalModelGPUSerializer(serializers.ModelSerializer):
+    baremetal_model = serializers.SerializerMethodField()
+    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
+
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = [
+            "id",
+            "baremetal_model",
+            "physical_gpu_model",
+            "count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_baremetal_model(self, obj):
+        return {"id": str(obj.baremetal_model.id), "name": obj.baremetal_model.name}
+
+
+class BaremetalModelGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = ["id", "baremetal_model", "physical_gpu_model", "count"]
+
+
+class BaremetalModelGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BaremetalModelGPU
+        fields = ["baremetal_model", "physical_gpu_model", "count"]
+
+
+# GPUAllocation Serializers (GPUProfile needed here)
+class GPUProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GPUProfile
+        fields = ["id", "name", "memory_mib", "cores", "created_at", "updated_at"]
+
+
+class GPUProfileCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GPUProfile
+        fields = ["id", "name", "memory_mib", "cores"]
+
+
+class GPUProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GPUProfile
+        fields = ["name", "memory_mib", "cores"]
+
+
+class GPUAllocationSerializer(serializers.ModelSerializer):
+    physical_gpu = serializers.SerializerMethodField()
+    virtual_machine = serializers.SerializerMethodField()
+    profile = GPUProfileSerializer(read_only=True)
+
+    class Meta:
+        model = models.GPUAllocation
+        fields = [
+            "id",
+            "physical_gpu",
+            "virtual_machine",
+            "allocated_memory_mib",
+            "allocated_cores",
+            "profile",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_virtual_machine(self, obj):
+        return {"id": str(obj.virtual_machine.id), "name": obj.virtual_machine.name}
+
+    def get_physical_gpu(self, obj):
+        return {"id": str(obj.physical_gpu.id), "name": obj.physical_gpu.name}
+
+
+class GPUAllocationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GPUAllocation
+        fields = [
+            "id",
+            "physical_gpu",
+            "virtual_machine",
+            "allocated_memory_mib",
+            "allocated_cores",
+            "profile",
+        ]
+
+
+class GPUAllocationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GPUAllocation
+        fields = [
+            "physical_gpu",
+            "virtual_machine",
+            "allocated_memory_mib",
+            "allocated_cores",
+            "profile",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Common ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# Region Serializers
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
+
+
+class RegionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["id", "name", "description", "status"]
+
+
+class RegionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Region
+        fields = ["name", "description", "status"]
+
+
+# Tenant Serializers
+class TenantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
+
+
+class TenantCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ["id", "name", "description", "status"]
+
+
+class TenantUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tenant
+        fields = ["name", "description", "status"]
+
+
+# Vendor Serializers
+class VendorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Vendor
+        fields = ["id", "name", "created_at", "updated_at"]
+
+
+class VendorCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Vendor
+        fields = ["id", "name", "contact_email", "contact_phone", "address"]
+
+
+class VendorUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Vendor
+        fields = ["name", "contact_email", "contact_phone", "address"]
+
+# TODO: 為什麼需要這個 serializer？
+class VendorBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Vendor
+        fields = ["id", "name"]
+
+
+# ------------------------------------------------------------------------------
+# GPU ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# PhysicalGPU Serializers
+class PhysicalGPUSerializer(serializers.ModelSerializer):
+    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
+    baremetal = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "physical_gpu_model",
+            "description",
+            "baremetal",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_baremetal(self, obj):
+        if obj.baremetal:
+            return {"id": str(obj.baremetal.id), "name": obj.baremetal.name}
+        return None
+
+
+class PhysicalGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "id",
+            "name",
+            "serial_number",
+            "physical_gpu_model",
+            "description",
+            "baremetal",
+            "status",
+        ]
+
+
+class PhysicalGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PhysicalGPU
+        fields = [
+            "name",
+            "serial_number",
+            "physical_gpu_model",
+            "description",
+            "baremetal",
+            "status",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Infrastructure ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# AvailableGroup Serializers
 class AvailableGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AvailableGroup
@@ -40,9 +1235,10 @@ class AvailableGroupCreateSerializer(serializers.ModelSerializer):
 class AvailableGroupUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AvailableGroup
-        fields = ["id", "name", "description", "status"]
+        fields = ["name", "description", "status"]
 
 
+# Fab Serializers
 class FabSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Fab
@@ -52,15 +1248,16 @@ class FabSerializer(serializers.ModelSerializer):
 class FabCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Fab
-        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id"]
 
 
 class FabUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Fab
-        fields = ["id", "name", "external_system_id", "created_at", "updated_at"]
+        fields = ["name", "external_system_id"]
 
 
+# Phase Serializers
 class PhaseSerializer(serializers.ModelSerializer):
     fab = FabSerializer(read_only=True)
 
@@ -72,15 +1269,16 @@ class PhaseSerializer(serializers.ModelSerializer):
 class PhaseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phase
-        fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "fab"]
 
 
 class PhaseUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phase
-        fields = ["id", "name", "external_system_id", "fab", "created_at", "updated_at"]
+        fields = ["name", "external_system_id", "fab"]
 
 
+# DataCenter Serializers
 class DataCenterSerializer(serializers.ModelSerializer):
     phase = PhaseSerializer(read_only=True)
 
@@ -98,9 +1296,10 @@ class DataCenterCreateSerializer(serializers.ModelSerializer):
 class DataCenterUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DataCenter
-        fields = ["id", "name", "external_system_id", "phase", "created_at", "updated_at"]
+        fields = ["name", "external_system_id", "phase"]
 
 
+# Room Serializers
 class RoomSerializer(serializers.ModelSerializer):
     datacenter = DataCenterSerializer(read_only=True)
 
@@ -112,15 +1311,17 @@ class RoomSerializer(serializers.ModelSerializer):
 class RoomCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Room
-        fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
+        fields = ["id", "name", "external_system_id", "datacenter"]
 
 
 class RoomUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Room
-        fields = ["id", "name", "external_system_id", "datacenter", "created_at", "updated_at"]
+        fields = ["name", "external_system_id", "datacenter"]
 
 
+
+# Rack Serializers
 class RackSerializer(serializers.ModelSerializer):
     room = RoomSerializer(read_only=True)
     available_group = AvailableGroupSerializer(read_only=True)
@@ -137,7 +1338,6 @@ class RackSerializer(serializers.ModelSerializer):
             "height_units",
             "used_units",
             "available_units",
-            "power_capacity",
             "status",
             "available_group",
             "created_at",
@@ -158,11 +1358,8 @@ class RackCreateSerializer(serializers.ModelSerializer):
             "height_units",
             "used_units",
             "available_units",
-            "power_capacity",
             "status",
             "available_group",
-            "created_at",
-            "updated_at",
         ]
 
 
@@ -170,7 +1367,6 @@ class RackUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Rack
         fields = [
-            "id",
             "name",
             "external_system_id",
             "room",
@@ -179,43 +1375,37 @@ class RackUpdateSerializer(serializers.ModelSerializer):
             "height_units",
             "used_units",
             "available_units",
-            "power_capacity",
             "status",
             "available_group",
-            "created_at",
-            "updated_at",
         ]
 
 
-class UnitSerializer(serializers.ModelSerializer):
-    rack = RackSerializer(read_only=True)
-
-    class Meta:
-        model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
-
-
-class UnitCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
-
-
-class UnitUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Unit
-        fields = ["id", "name", "unit_number", "rack", "bgp", "created_at", "updated_at"]
-
 
 # ------------------------------------------------------------------------------
-# Network Serializers
+# Network ViewSets (ordered per views.py)
 # ------------------------------------------------------------------------------
+
+
+# VLAN Serializers
 class VLANSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VLAN
-        fields = ["id", "vlan_id", "name", "created_at", "updated_at"]
+        fields = ["id", "vlan_id", "name", "description", "created_at", "updated_at"]
 
 
+class VLANCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VLAN
+        fields = ["id", "vlan_id", "name", "description"]
+
+
+class VLANUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VLAN
+        fields = ["vlan_id", "name", "description"]
+
+
+# VRF Serializers
 class VRFSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VRF
@@ -228,6 +1418,26 @@ class VRFSerializer(serializers.ModelSerializer):
         ]
 
 
+class VRFCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VRF
+        fields = [
+            "id",
+            "name",
+            "route_distinguisher",
+        ]
+
+
+class VRFUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VRF
+        fields = [
+            "name",
+            "route_distinguisher",
+        ]
+
+
+# BGPConfig Serializers
 class BGPConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.BGPConfig
@@ -242,20 +1452,30 @@ class BGPConfigSerializer(serializers.ModelSerializer):
         ]
 
 
-class ResourceRelatedField(serializers.RelatedField):
-    def to_representation(self, value):
-        return {
-            "id": str(value.id),
-            "type": value._meta.model_name,
-            "name": value.name,
-        }
-
-    # Silence abstract method warnings in strict linters; we only use this as
-    # a read-only field.
-    def to_internal_value(self, data):  # type: ignore[override]
-        raise NotImplementedError("Read-only field")
+class BGPConfigCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BGPConfig
+        fields = [
+            "id",
+            "asn",
+            "peer_ip",
+            "local_ip",
+            "password",
+        ]
 
 
+class BGPConfigUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BGPConfig
+        fields = [
+            "asn",
+            "peer_ip",
+            "local_ip",
+            "password",
+        ]
+
+
+# NetworkInterface Serializers
 class NetworkInterfaceSerializer(serializers.ModelSerializer):
     vlan = VLANSerializer(read_only=True)
     vrf = VRFSerializer(read_only=True)
@@ -290,635 +1510,57 @@ class NetworkInterfaceSerializer(serializers.ModelSerializer):
         ]
 
 
-# Baremetal Group Serializers
-class BaremetalGroupSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(many=True, read_only=True)
-    user_group = serializers.SerializerMethodField()
-
+class NetworkInterfaceCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.BaremetalGroup
+        model = models.NetworkInterface
         fields = [
             "id",
+            "content_type",
+            "object_id",
             "name",
-            "description",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "available_gpu",
-            "status",
-            "user",
-            "user_group",
-            "is_multi_tenant",
-            "labels",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_user_group(self, obj):
-        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
-
-
-class BaremetalGroupCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalGroup
-        fields = [
-            "id",
-            "name",
-            "description",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "available_gpu",
-            "status",
-            "user",
-            "user_group",
-            "is_multi_tenant",
-            "labels",
+            "mac_address",
+            "is_primary",
+            "ipv4_address",
+            "ipv4_netmask",
+            "ipv6_address",
+            "ipv6_netmask",
+            "gateway",
+            "dns_servers",
+            "vlan",
+            "vrf",
+            "bgp_config",
         ]
 
 
-class BaremetalGroupUpdateSerializer(serializers.ModelSerializer):
+class NetworkInterfaceUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.BaremetalGroup
+        model = models.NetworkInterface
         fields = [
             "name",
-            "description",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "available_gpu",
-            "status",
-            "user",
-            "user_group",
-            "is_multi_tenant",
-            "labels",
+            "mac_address",
+            "is_primary",
+            "ipv4_address",
+            "ipv4_netmask",
+            "ipv6_address",
+            "ipv6_netmask",
+            "gateway",
+            "dns_servers",
+            "vlan",
+            "vrf",
+            "bgp_config",
         ]
 
 
 # ------------------------------------------------------------------------------
-# Purchase Serializers
-# ------------------------------------------------------------------------------
-class ManufacturerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Manufacturer
-        fields = ["id", "name", "created_at", "updated_at"]
-
-
-class SupplierSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Supplier
-        fields = [
-            "id",
-            "name",
-            "contact_email",
-            "contact_phone",
-            "address",
-            "website",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class PurchaseRequisitionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PurchaseRequisition
-        fields = [
-            "id",
-            "pr_number",
-            "requested_by",
-            "department",
-            "reason",
-            "submit_date",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class PurchaseOrderSerializer(serializers.ModelSerializer):
-    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
-    supplier = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.PurchaseOrder
-        fields = [
-            "id",
-            "po_number",
-            "purchase_requisition",
-            "supplier",
-            "payment_terms",
-            "amount",
-            "used",
-            "description",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_supplier(self, obj):
-        """Get supplier details if exists"""
-        if obj.supplier:
-            return SupplierSerializer(obj.supplier).data
-        return None
-
-
-class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PurchaseOrder
-        fields = [
-            "id",
-            "po_number",
-            "purchase_requisition",
-            "supplier",
-            "payment_terms",
-            "amount",
-            "used",
-            "description",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class PurchaseOrderUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PurchaseOrder
-        fields = [
-            "id",
-            "po_number",
-            "purchase_requisition",
-            "supplier",
-            "payment_terms",
-            "amount",
-            "used",
-            "description",
-            "created_at",
-            "updated_at",
-        ]
-
-
-# ------------------------------------------------------------------------------
-# Baremetal Serializers
+# Scheduling ViewSets (ordered per views.py)
 # ------------------------------------------------------------------------------
 
 
-class BaremetalModelSerializer(serializers.ModelSerializer):
-    manufacturer = ManufacturerSerializer(read_only=True)
-    suppliers = SupplierSerializer(many=True, read_only=True)
-    total_gpu = serializers.SerializerMethodField()
-    baremetal_model_gpus = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.BaremetalModel
-        fields = [
-            "id",
-            "name",
-            "manufacturer",
-            "suppliers",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-            "baremetal_model_gpus",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_total_gpu(self, obj):
-        return [{"id": str(gpu.id), "name": gpu.name} for gpu in obj.total_gpu.all()]
-
-    def get_baremetal_model_gpus(self, obj):
-        return [
-            {
-                "id": str(bmg.id),
-                "physical_gpu_model": bmg.physical_gpu_model.name,
-                "count": bmg.count,
-            }
-            for bmg in obj.baremetal_model_gpus.all()
-        ]
-
-
-class BaremetalModelCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalModel
-        fields = [
-            "id",
-            "name",
-            "manufacturer",
-            "suppliers",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-        ]
-        read_only_fields = ["id"]
-
-
-class BaremetalModelUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalModel
-        fields = [
-            "id",
-            "name",
-            "manufacturer",
-            "suppliers",
-            "total_cpu",
-            "total_memory",
-            "total_storage",
-            "total_gpu",
-        ]
-        read_only_fields = ["id"]
-
-
-# Baremetal Serializers
-class BaremetalSerializer(serializers.ModelSerializer):
-    unit = UnitSerializer(read_only=True)
-    baremetal_group = BaremetalGroupSerializer(read_only=True)
-    model = BaremetalModelSerializer(read_only=True)
-    purchase_requisition = PurchaseRequisitionSerializer(read_only=True)
-    purchase_order = PurchaseOrderSerializer(read_only=True)
-    user = CustomUserSerializer(many=True, read_only=True)
-    user_group = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.Baremetal
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "unit",
-            "status",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "baremetal_group",
-            "purchase_requisition",
-            "purchase_order",
-            "user",
-            "user_group",
-            "external_system_id",
-            "max_virtual_machine",
-            "labels",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_user_group(self, obj):
-        return [{"id": str(ug.id), "name": ug.name} for ug in obj.user_group.all()]
-
-
-class BaremetalCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Baremetal
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "unit",
-            "status",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "baremetal_group",
-            "purchase_requisition",
-            "purchase_order",
-            "user",
-            "user_group",
-            "external_system_id",
-            "max_virtual_machine",
-            "labels",
-        ]
-
-
-class BaremetalUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Baremetal
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "unit",
-            "status",
-            "available_cpu",
-            "available_memory",
-            "available_storage",
-            "baremetal_group",
-            "purchase_requisition",
-            "purchase_order",
-            "user",
-            "user_group",
-            "external_system_id",
-            "max_virtual_machine",
-            "labels",
-        ]
-
-
-# Baremetal Group Tenant Quota Serializers
-class BaremetalGroupTenantQuotaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalGroupTenantQuota
-        fields = [
-            "id",
-            "group",
-            "tenant",
-            "cpu_quota",
-            "memory_quota",
-            "storage_quota",
-            "gpu_quota",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class BaremetalGroupTenantQuotaCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalGroupTenantQuota
-        fields = [
-            "id",
-            "group",
-            "tenant",
-            "cpu_quota",
-            "memory_quota",
-            "storage_quota",
-            "gpu_quota",
-        ]
-
-
-class BaremetalGroupTenantQuotaUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalGroupTenantQuota
-        fields = [
-            "id",
-            "group",
-            "tenant",
-            "cpu_quota",
-            "memory_quota",
-            "storage_quota",
-            "gpu_quota",
-        ]
-
-
-# ------------------------------------------------------------------------------
-# New Model Serializers
-# ------------------------------------------------------------------------------
-
-
-# Region Serializers
-class RegionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Region
-        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
-
-
-class RegionCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Region
-        fields = ["id", "name", "description", "status"]
-
-
-class RegionUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Region
-        fields = ["id", "name", "description", "status"]
-
-
-# Physical GPU Model Serializers
-class PhysicalGPUModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PhysicalGPUModel
-        fields = [
-            "id",
-            "name",
-            "vendor",
-            "architecture",
-            "description",
-            "memory",
-            "memory_bandwidth",
-            "compute_capability",
-            "power_consumption",
-            "driver_version",
-            "release_date",
-            "end_of_life",
-            "is_multi_instance_supported",
-            "price_reference",
-            "status",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class PhysicalGPUModelCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PhysicalGPUModel
-        fields = [
-            "id",
-            "name",
-            "vendor",
-            "architecture",
-            "description",
-            "memory",
-            "memory_bandwidth",
-            "compute_capability",
-            "power_consumption",
-            "driver_version",
-            "release_date",
-            "end_of_life",
-            "is_multi_instance_supported",
-            "price_reference",
-            "status",
-        ]
-
-
-class PhysicalGPUModelUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PhysicalGPUModel
-        fields = [
-            "id",
-            "name",
-            "vendor",
-            "architecture",
-            "description",
-            "memory",
-            "memory_bandwidth",
-            "compute_capability",
-            "power_consumption",
-            "driver_version",
-            "release_date",
-            "end_of_life",
-            "is_multi_instance_supported",
-            "price_reference",
-            "status",
-        ]
-
-
-# Physical GPU Serializers
-class PhysicalGPUSerializer(serializers.ModelSerializer):
-    model = PhysicalGPUModelSerializer(read_only=True)
-    baremetal = serializers.SerializerMethodField()
-    virtual_machine = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.PhysicalGPU
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "description",
-            "baremetal",
-            "virtual_machine",
-            "status",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_baremetal(self, obj):
-        if obj.baremetal:
-            return {"id": str(obj.baremetal.id), "name": obj.baremetal.name}
-        return None
-
-    def get_virtual_machine(self, obj):
-        if obj.virtual_machine:
-            return {"id": str(obj.virtual_machine.id), "name": obj.virtual_machine.name}
-        return None
-
-
-class PhysicalGPUCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PhysicalGPU
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "description",
-            "baremetal",
-            "virtual_machine",
-            "status",
-        ]
-
-
-class PhysicalGPUUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PhysicalGPU
-        fields = [
-            "id",
-            "name",
-            "serial_number",
-            "model",
-            "description",
-            "baremetal",
-            "virtual_machine",
-            "status",
-        ]
-
-
-# Baremetal Model GPU Serializers
-class BaremetalModelGPUSerializer(serializers.ModelSerializer):
-    baremetal_model = serializers.SerializerMethodField()
-    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
-
-    class Meta:
-        model = models.BaremetalModelGPU
-        fields = [
-            "id",
-            "baremetal_model",
-            "physical_gpu_model",
-            "count",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_baremetal_model(self, obj):
-        return {"id": str(obj.baremetal_model.id), "name": obj.baremetal_model.name}
-
-
-class BaremetalModelGPUCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalModelGPU
-        fields = ["id", "baremetal_model", "physical_gpu_model", "count"]
-
-
-class BaremetalModelGPUUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaremetalModelGPU
-        fields = ["id", "baremetal_model", "physical_gpu_model", "count"]
-
-
-# Virtual Machine Specification GPU Serializers
-class VirtualMachineSpecificationGPUSerializer(serializers.ModelSerializer):
-    virtual_machine_specification = serializers.SerializerMethodField()
-    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
-
-    class Meta:
-        model = models.VirtualMachineSpecificationGPU
-        fields = [
-            "id",
-            "virtual_machine_specification",
-            "physical_gpu_model",
-            "count",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_virtual_machine_specification(self, obj):
-        return {
-            "id": str(obj.virtual_machine_specification.id),
-            "name": obj.virtual_machine_specification.name,
-        }
-
-
-class VirtualMachineSpecificationGPUCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.VirtualMachineSpecificationGPU
-        fields = ["id", "virtual_machine_specification", "physical_gpu_model", "count"]
-
-
-class VirtualMachineSpecificationGPUUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.VirtualMachineSpecificationGPU
-        fields = ["id", "virtual_machine_specification", "physical_gpu_model", "count"]
-
-
-# Django Group Serializers (using built-in Group model)
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ["id", "name"]
-
-
-# Scheduling Strategy Serializers
-class SchedulingStrategyConditionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.SchedulingStrategyCondition
-        fields = [
-            "id",
-            "scheduling_strategy",
-            "key",
-            "value",
-            "operator",
-            "status",
-            "created_at",
-            "updated_at",
-        ]
-
-
+# SchedulingStrategy Serializers
 class SchedulingStrategySerializer(serializers.ModelSerializer):
     tenant = serializers.SerializerMethodField()
     available_group = AvailableGroupSerializer(many=True, read_only=True)
-    conditions = SchedulingStrategyConditionSerializer(many=True, read_only=True)
+    baremetal_group_tenant_quota = serializers.SerializerMethodField()
 
     class Meta:
         model = models.SchedulingStrategy
@@ -926,26 +1568,27 @@ class SchedulingStrategySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
-            "mode",
             "priority",
             "tenant",
-            "max_rack_number",
-            "same_dc_in_failure_zone",
-            "same_phase_in_failure_zone",
-            "same_region_in_failure_zone",
-            "same_tenant_in_failure_zone",
-            "cluster_shared",
-            "balance_split_rack_number",
             "status",
             "available_group",
-            "conditions",
+            "baremetal_group_tenant_quota",
             "created_at",
             "updated_at",
         ]
 
     def get_tenant(self, obj):
         if obj.tenant:
-            return {"id": str(obj.tenant.id), "name": obj.tenant.name}
+            return {"id": str(obj.tenant.id), "name": obj.tenant.name, "status": obj.tenant.status}
+        return None
+
+    def get_baremetal_group_tenant_quota(self, obj):
+        if obj.baremetal_group_tenant_quota:
+            return {
+                "id": str(obj.baremetal_group_tenant_quota.id),
+                "baremetal_group": obj.baremetal_group_tenant_quota.baremetal_group.name,
+                "tenant": obj.baremetal_group_tenant_quota.tenant.name,
+            }
         return None
 
 
@@ -956,18 +1599,11 @@ class SchedulingStrategyCreateSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
-            "mode",
             "priority",
             "tenant",
-            "max_rack_number",
-            "same_dc_in_failure_zone",
-            "same_phase_in_failure_zone",
-            "same_region_in_failure_zone",
-            "same_tenant_in_failure_zone",
-            "cluster_shared",
-            "balance_split_rack_number",
             "status",
             "available_group",
+            "baremetal_group_tenant_quota",
         ]
 
 
@@ -975,107 +1611,185 @@ class SchedulingStrategyUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SchedulingStrategy
         fields = [
+            "name",
+            "description",
+            "priority",
+            "tenant",
+            "status",
+            "available_group",
+            "baremetal_group_tenant_quota",
+        ]
+
+
+# SchedulingStrategyModel Serializers
+class SchedulingStrategyModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.SchedulingStrategyModel
+        fields = [
             "id",
             "name",
             "description",
             "mode",
             "priority",
-            "tenant",
-            "max_rack_number",
-            "same_dc_in_failure_zone",
-            "same_phase_in_failure_zone",
-            "same_region_in_failure_zone",
-            "same_tenant_in_failure_zone",
-            "cluster_shared",
-            "balance_split_rack_number",
-            "status",
-            "available_group",
-        ]
-
-
-class SchedulingStrategyConditionCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.SchedulingStrategyCondition
-        fields = ["id", "scheduling_strategy", "key", "value", "operator", "status"]
-
-
-class SchedulingStrategyConditionUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.SchedulingStrategyCondition
-        fields = ["id", "scheduling_strategy", "key", "value", "operator", "status"]
-
-
-# Tenant Serializers
-class TenantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Tenant
-        fields = ["id", "name", "description", "status", "created_at", "updated_at"]
-
-
-class TenantCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Tenant
-        fields = ["id", "name", "description", "status"]
-
-
-class TenantUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Tenant
-        fields = ["id", "name", "description", "status"]
-
-
-# Virtual Machine Specification Serializers
-class VirtualMachineSpecificationSerializer(serializers.ModelSerializer):
-    required_gpu = PhysicalGPUModelSerializer(many=True, read_only=True)
-    virtual_machine_specifications_gpus = VirtualMachineSpecificationGPUSerializer(
-        many=True, read_only=True
-    )
-
-    class Meta:
-        model = models.VirtualMachineSpecification
-        fields = [
-            "id",
-            "name",
-            "generation",
-            "required_cpu",
-            "required_memory",
-            "required_storage",
-            "required_gpu",
-            "virtual_machine_specifications_gpus",
+            "dc_failure_zone_affinity",
+            "phase_failure_zone_affinity",
+            "room_failure_zone_affinity",
+            "rack_failure_zone_affinity",
+            "ttl_seconds",
             "created_at",
             "updated_at",
         ]
 
 
-class VirtualMachineSpecificationCreateSerializer(serializers.ModelSerializer):
+class SchedulingStrategyModelCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.VirtualMachineSpecification
+        model = models.SchedulingStrategyModel
         fields = [
             "id",
             "name",
-            "generation",
-            "required_cpu",
-            "required_memory",
-            "required_storage",
-            "required_gpu",
+            "description",
+            "mode",
+            "priority",
+            "dc_failure_zone_affinity",
+            "phase_failure_zone_affinity",
+            "room_failure_zone_affinity",
+            "rack_failure_zone_affinity",
+            "ttl_seconds",
         ]
 
 
-class VirtualMachineSpecificationUpdateSerializer(serializers.ModelSerializer):
+class SchedulingStrategyModelUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.VirtualMachineSpecification
+        model = models.SchedulingStrategyModel
+        fields = [
+            "name",
+            "description",
+            "mode",
+            "priority",
+            "dc_failure_zone_affinity",
+            "phase_failure_zone_affinity",
+            "room_failure_zone_affinity",
+            "rack_failure_zone_affinity",
+            "ttl_seconds",
+        ]
+
+
+# ------------------------------------------------------------------------------
+# Users ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# CustomGroup Serializers
+class CustomGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CustomGroup
+        fields = ["id", "name", "description", "status"]
+
+
+class CustomGroupCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CustomGroup
+        fields = ["id", "name", "description", "status"]
+
+
+class CustomGroupUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CustomGroup
+        fields = ["name", "description", "status"]
+
+
+# ------------------------------------------------------------------------------
+# Virtual ViewSets (ordered per views.py)
+# ------------------------------------------------------------------------------
+
+
+# BastionClusterAssociation Serializers
+class BastionClusterAssociationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ["id", "bastion", "k8s_cluster", "created_at", "updated_at"]
+
+
+class BastionClusterAssociationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ["id", "bastion", "k8s_cluster"]
+
+
+class BastionClusterAssociationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BastionClusterAssociation
+        fields = ["bastion", "k8s_cluster"]
+
+
+# ClusterTemplate Serializers
+class ClusterTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClusterTemplate
         fields = [
             "id",
             "name",
-            "generation",
-            "required_cpu",
-            "required_memory",
-            "required_storage",
-            "required_gpu",
+            "description",
+            "routable_ratio",
+            "created_at",
+            "updated_at",
         ]
 
 
-# K8s Cluster Serializers
+class ClusterTemplateCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClusterTemplate
+        fields = ["id", "name", "description", "routable_ratio", "user", "user_group"]
+
+
+class ClusterTemplateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClusterTemplate
+        fields = ["name", "description", "routable_ratio", "user", "user_group"]
+
+
+# ClusterTemplateVirtualMachine Serializers
+class ClusterTemplateVirtualMachineSerializer(serializers.ModelSerializer):
+    cluster_template = serializers.SerializerMethodField()
+    vm_role = serializers.SerializerMethodField()
+    vm_spec = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.ClusterTemplateVirtualMachine
+        fields = [
+            "id",
+            "cluster_template",
+            "vm_role",
+            "vm_spec",
+            "is_routable",
+            "count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_cluster_template(self, obj):
+        return {"id": str(obj.cluster_template.id), "name": obj.cluster_template.name}
+
+    def get_vm_role(self, obj):
+        return {"id": str(obj.vm_role.id), "name": obj.vm_role.name}
+
+    def get_vm_spec(self, obj):
+        return {"id": str(obj.vm_spec.id), "name": obj.vm_spec.name}
+
+
+class ClusterTemplateVirtualMachineCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClusterTemplateVirtualMachine
+        fields = ["id", "cluster_template", "vm_role", "vm_spec", "is_routable", "count"]
+
+
+class ClusterTemplateVirtualMachineUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClusterTemplateVirtualMachine
+        fields = ["cluster_template", "vm_role", "vm_spec", "is_routable", "count"]
+
+
+# K8sCluster Serializers
 class K8sClusterSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     region = RegionSerializer(read_only=True)
@@ -1127,7 +1841,6 @@ class K8sClusterUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sCluster
         fields = [
-            "id",
             "name",
             "version",
             "tenant",
@@ -1140,15 +1853,14 @@ class K8sClusterUpdateSerializer(serializers.ModelSerializer):
         ]
 
 
-# K8s Cluster Plugin Serializers
+# K8sClusterPlugin Serializers
 class K8sClusterPluginSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterPlugin
         fields = [
             "id",
-            "cluster",
+            "k8s_clusters",
             "name",
-            "version",
             "status",
             "additional_info",
             "created_at",
@@ -1159,41 +1871,57 @@ class K8sClusterPluginSerializer(serializers.ModelSerializer):
 class K8sClusterPluginCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterPlugin
-        fields = ["id", "cluster", "name", "version", "status", "additional_info"]
+        fields = ["id", "name", "status", "additional_info", "k8s_clusters"]
 
 
 class K8sClusterPluginUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterPlugin
-        fields = ["id", "cluster", "name", "version", "status", "additional_info"]
+        fields = ["name", "status", "additional_info", "k8s_clusters"]
 
 
-# Bastion Cluster Association Serializers
-class BastionClusterAssociationSerializer(serializers.ModelSerializer):
+# K8sClusterPluginAssociation Serializers
+class K8sClusterPluginAssociationSerializer(serializers.ModelSerializer):
+    k8s_cluster = serializers.SerializerMethodField()
+    k8s_cluster_plugin = serializers.SerializerMethodField()
+
     class Meta:
-        model = models.BastionClusterAssociation
-        fields = ["id", "bastion", "k8s_cluster", "created_at", "updated_at"]
+        model = models.K8sClusterPluginAssociation
+        fields = [
+            "id",
+            "k8s_cluster",
+            "k8s_cluster_plugin",
+            "version",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_k8s_cluster(self, obj):
+        return {"id": str(obj.k8s_cluster.id), "name": obj.k8s_cluster.name}
+
+    def get_k8s_cluster_plugin(self, obj):
+        return {"id": str(obj.k8s_cluster_plugin.id), "name": obj.k8s_cluster_plugin.name}
 
 
-class BastionClusterAssociationCreateSerializer(serializers.ModelSerializer):
+class K8sClusterPluginAssociationCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.BastionClusterAssociation
-        fields = ["id", "bastion", "k8s_cluster"]
+        model = models.K8sClusterPluginAssociation
+        fields = ["id", "k8s_cluster", "k8s_cluster_plugin", "version"]
 
 
-class BastionClusterAssociationUpdateSerializer(serializers.ModelSerializer):
+class K8sClusterPluginAssociationUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.BastionClusterAssociation
-        fields = ["id", "bastion", "k8s_cluster"]
+        model = models.K8sClusterPluginAssociation
+        fields = ["k8s_cluster", "k8s_cluster_plugin", "version"]
 
 
-# K8s Cluster To Service Mesh Serializers
+# K8sClusterToServiceMesh Serializers
 class K8sClusterToServiceMeshSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterToServiceMesh
         fields = [
             "id",
-            "cluster",
+            "k8s_cluster",
             "service_mesh",
             "role",
             "created_at",
@@ -1204,16 +1932,16 @@ class K8sClusterToServiceMeshSerializer(serializers.ModelSerializer):
 class K8sClusterToServiceMeshCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterToServiceMesh
-        fields = ["id", "cluster", "service_mesh", "role"]
+        fields = ["id", "k8s_cluster", "service_mesh", "role"]
 
 
 class K8sClusterToServiceMeshUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.K8sClusterToServiceMesh
-        fields = ["id", "cluster", "service_mesh", "role"]
+        fields = ["k8s_cluster", "service_mesh", "role"]
 
 
-# Service Mesh Serializers
+# ServiceMesh Serializers
 class ServiceMeshSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ServiceMesh
@@ -1237,10 +1965,56 @@ class ServiceMeshCreateSerializer(serializers.ModelSerializer):
 class ServiceMeshUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ServiceMesh
-        fields = ["id", "name", "type", "description", "status"]
+        fields = ["name", "type", "description", "status"]
 
 
-# Virtual Machine Serializers
+# VirtualMachineSpecification Serializers
+class VirtualMachineSpecificationSerializer(serializers.ModelSerializer):
+    required_gpu = PhysicalGPUModelSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = [
+            "id",
+            "name",
+            "generation",
+            "required_cpu_cores",
+            "required_memory_mib",
+            "required_storage_gb",
+            "required_gpu",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class VirtualMachineSpecificationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = [
+            "id",
+            "name",
+            "generation",
+            "required_cpu_cores",
+            "required_memory_mib",
+            "required_storage_gb",
+            "required_gpu",
+        ]
+
+
+class VirtualMachineSpecificationUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecification
+        fields = [
+            "name",
+            "generation",
+            "required_cpu_cores",
+            "required_memory_mib",
+            "required_storage_gb",
+            "required_gpu",
+        ]
+
+
+# VirtualMachine Serializers
 class VirtualMachineSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     region = RegionSerializer(read_only=True)
@@ -1260,7 +2034,7 @@ class VirtualMachineSerializer(serializers.ModelSerializer):
             "baremetal",
             "specification",
             "k8s_cluster",
-            "type",
+            "virtual_machine_role",
             "routable",
             "baremetal_selector",
             "user",
@@ -1285,7 +2059,7 @@ class VirtualMachineCreateSerializer(serializers.ModelSerializer):
             "baremetal",
             "specification",
             "k8s_cluster",
-            "type",
+            "virtual_machine_role",
             "routable",
             "baremetal_selector",
             "user",
@@ -1304,13 +2078,67 @@ class VirtualMachineUpdateSerializer(serializers.ModelSerializer):
             "baremetal",
             "specification",
             "k8s_cluster",
-            "type",
+            "virtual_machine_role",
             "routable",
             "baremetal_selector",
             "user",
             "user_group",
             "status",
         ]
+
+
+# VirtualMachineRole Serializers
+class VirtualMachineRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineRole
+        fields = ["id", "name", "description", "created_at", "updated_at"]
+
+
+class VirtualMachineRoleCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineRole
+        fields = ["id", "name", "description"]
+
+
+class VirtualMachineRoleUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineRole
+        fields = ["name", "description"]
+
+
+# VirtualMachineSpecificationRequiredGPU Serializers
+class VirtualMachineSpecificationRequiredGPUSerializer(serializers.ModelSerializer):
+    virtual_machine_specification = serializers.SerializerMethodField()
+    physical_gpu_model = PhysicalGPUModelSerializer(read_only=True)
+
+    class Meta:
+        model = models.VirtualMachineSpecificationRequiredGPU
+        fields = [
+            "id",
+            "virtual_machine_specification",
+            "physical_gpu_model",
+            "count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_virtual_machine_specification(self, obj):
+        return {
+            "id": str(obj.virtual_machine_specification.id),
+            "name": obj.virtual_machine_specification.name,
+        }
+
+
+class VirtualMachineSpecificationRequiredGPUCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecificationRequiredGPU
+        fields = ["id", "virtual_machine_specification", "physical_gpu_model", "count"]
+
+
+class VirtualMachineSpecificationRequiredGPUUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VirtualMachineSpecificationRequiredGPU
+        fields = ["virtual_machine_specification", "physical_gpu_model", "count"]
 
 
 # ------------------------------------------------------------------------------
@@ -1323,515 +2151,9 @@ class ObjectPermissionSerializer(serializers.Serializer):
     group_id = serializers.CharField(required=False)
     permission = serializers.CharField()
 
-
-# ------------------------------------------------------------------------------
-# Ansible Inventory Serializers
-# ------------------------------------------------------------------------------
-class AnsibleInventorySerializer(serializers.ModelSerializer):
-    created_by = CustomUserSerializer(read_only=True)
-    groups_count = serializers.SerializerMethodField()
-    hosts_count = serializers.SerializerMethodField()
-    associated_variable_sets_count = serializers.SerializerMethodField()
-
+# TODO: 為什麼需要這個 serializer？
+# Django Group Serializers (using built-in Group model)
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.AnsibleInventory
-        fields = [
-            "id",
-            "name",
-            "description",
-            "version",
-            "source_type",
-            "source_plugin",
-            "source_config",
-            "status",
-            "created_by",
-            "groups_count",
-            "hosts_count",
-            "associated_variable_sets_count",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_groups_count(self, obj) -> int:
-        return obj.groups.count()
-
-    def get_hosts_count(self, obj) -> int:
-        return obj.hosts.count()
-
-    def get_associated_variable_sets_count(self, obj) -> int:
-        return obj.associated_variable_sets.count()
-
-
-class AnsibleInventoryCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventory
-        fields = [
-            "id",
-            "name",
-            "description",
-            "version",
-            "source_type",
-            "source_plugin",
-            "source_config",
-            "status",
-        ]
-
-
-class AnsibleInventoryUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventory
-        fields = [
-            "name",
-            "description",
-            "version",
-            "source_type",
-            "source_plugin",
-            "source_config",
-            "status",
-        ]
-
-
-class AnsibleInventoryVariableSerializer(serializers.ModelSerializer):
-    inventory = AnsibleInventorySerializer(read_only=True)
-
-    class Meta:
-        model = models.AnsibleInventoryVariable
-        fields = [
-            "id",
-            "inventory",
-            "key",
-            "value",
-            "value_type",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleInventoryVariableCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryVariable
-        fields = ["id", "inventory", "key", "value", "value_type"]
-
-
-class AnsibleInventoryVariableUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryVariable
-        fields = ["key", "value", "value_type"]
-
-
-# ------------------------------------------------------------------------------
-# Ansible Variable Set Serializers
-# ------------------------------------------------------------------------------
-class AnsibleVariableSetSerializer(serializers.ModelSerializer):
-    created_by = CustomUserSerializer(read_only=True)
-    associated_inventories_count = serializers.SerializerMethodField()
-    parsed_content = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.AnsibleVariableSet
-        fields = [
-            "id",
-            "name",
-            "description",
-            "content",
-            "content_type",
-            "tags",
-            "priority",
-            "status",
-            "created_by",
-            "associated_inventories_count",
-            "parsed_content",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_associated_inventories_count(self, obj) -> int:
-        return obj.associated_inventories.count()
-
-    def get_parsed_content(self, obj) -> dict:
-        return obj.get_parsed_content()
-
-
-class AnsibleVariableSetCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleVariableSet
-        fields = [
-            "id",
-            "name",
-            "description",
-            "content",
-            "content_type",
-            "tags",
-            "priority",
-            "status",
-        ]
-
-
-class AnsibleVariableSetUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleVariableSet
-        fields = [
-            "name",
-            "description",
-            "content",
-            "content_type",
-            "tags",
-            "priority",
-            "status",
-        ]
-
-
-class AnsibleInventoryVariableSetAssociationSerializer(serializers.ModelSerializer):
-    inventory = AnsibleInventorySerializer(read_only=True)
-    variable_set = AnsibleVariableSetSerializer(read_only=True)
-
-    class Meta:
-        model = models.AnsibleInventoryVariableSetAssociation
-        fields = [
-            "id",
-            "inventory",
-            "variable_set",
-            "load_priority",
-            "enabled",
-            "load_tags",
-            "load_config",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleInventoryVariableSetAssociationCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryVariableSetAssociation
-        fields = [
-            "id",
-            "inventory",
-            "variable_set",
-            "load_priority",
-            "enabled",
-            "load_tags",
-            "load_config",
-        ]
-
-
-class AnsibleInventoryVariableSetAssociationUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryVariableSetAssociation
-        fields = [
-            "load_priority",
-            "enabled",
-            "load_tags",
-            "load_config",
-        ]
-
-
-# ------------------------------------------------------------------------------
-# Ansible Host Variable Serializers
-# ------------------------------------------------------------------------------
-class AnsibleHostVariableSerializer(serializers.ModelSerializer):
-    host: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    class Meta:
-        model = models.AnsibleHostVariable
-        fields = [
-            "id",
-            "host",
-            "key",
-            "value",
-            "value_type",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleHostVariableCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleHostVariable
-        fields = ["id", "host", "key", "value", "value_type"]
-
-
-class AnsibleHostVariableUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleHostVariable
-        fields = ["key", "value", "value_type"]
-
-
-# ------------------------------------------------------------------------------
-# Ansible Inventory Plugin Serializers
-# ------------------------------------------------------------------------------
-class AnsibleInventoryPluginSerializer(serializers.ModelSerializer):
-    inventory = AnsibleInventorySerializer(read_only=True)
-
-    class Meta:
-        model = models.AnsibleInventoryPlugin
-        fields = [
-            "id",
-            "inventory",
-            "name",
-            "config",
-            "enabled",
-            "priority",
-            "cache_timeout",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleInventoryPluginCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryPlugin
-        fields = [
-            "id",
-            "inventory",
-            "name",
-            "config",
-            "enabled",
-            "priority",
-            "cache_timeout",
-        ]
-
-
-class AnsibleInventoryPluginUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryPlugin
-        fields = [
-            "name",
-            "config",
-            "enabled",
-            "priority",
-            "cache_timeout",
-        ]
-
-
-# ------------------------------------------------------------------------------
-# Ansible Inventory Template Serializers
-# ------------------------------------------------------------------------------
-class AnsibleInventoryTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryTemplate
-        fields = [
-            "id",
-            "name",
-            "description",
-            "template_type",
-            "template_content",
-            "variables",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleInventoryTemplateCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryTemplate
-        fields = [
-            "id",
-            "name",
-            "description",
-            "template_type",
-            "template_content",
-            "variables",
-        ]
-
-
-class AnsibleInventoryTemplateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleInventoryTemplate
-        fields = [
-            "name",
-            "description",
-            "template_type",
-            "template_content",
-            "variables",
-        ]
-
-
-class AnsibleGroupVariableSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroupVariable
-        fields = [
-            "id",
-            "group",
-            "key",
-            "value",
-            "value_type",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleGroupVariableCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroupVariable
-        fields = ["id", "group", "key", "value", "value_type"]
-
-
-class AnsibleGroupVariableUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroupVariable
-        fields = ["key", "value", "value_type"]
-
-
-class AnsibleGroupRelationshipSerializer(serializers.ModelSerializer):
-    parent_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
-    child_group = serializers.PrimaryKeyRelatedField(queryset=models.AnsibleGroup.objects.all())
-
-    class Meta:
-        model = models.AnsibleGroupRelationship
-        fields = ["id", "parent_group", "child_group", "created_at", "updated_at"]
-
-
-class AnsibleGroupRelationshipCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroupRelationship
-        fields = ["id", "parent_group", "child_group"]
-
-
-class AnsibleGroupRelationshipUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroupRelationship
-        fields = ["parent_group", "child_group"]
-
-
-class AnsibleGroupSerializer(serializers.ModelSerializer):
-    variables = AnsibleGroupVariableSerializer(many=True, read_only=True)
-    child_groups = serializers.SerializerMethodField()
-    parent_groups = serializers.SerializerMethodField()
-    all_variables = serializers.SerializerMethodField()
-    all_hosts = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.AnsibleGroup
-        fields = [
-            "id",
-            "inventory",
-            "name",
-            "description",
-            "is_special",
-            "status",
-            "variables",
-            "child_groups",
-            "parent_groups",
-            "all_variables",
-            "all_hosts",
-            "created_at",
-            "updated_at",
-        ]
-
-    def get_child_groups(self, obj):
-        return [{"id": str(group.id), "name": group.name} for group in obj.child_groups]
-
-    def get_parent_groups(self, obj):
-        return [{"id": str(group.id), "name": group.name} for group in obj.parent_groups]
-
-    def get_all_variables(self, obj):
-        return obj.all_variables
-
-    def get_all_hosts(self, obj):
-        hosts = obj.all_hosts
-        return [
-            {
-                "id": str(host.id),
-                "name": getattr(host, "name", str(host)),
-                "type": host._meta.model_name,
-            }
-            for host in hosts
-        ]
-
-
-class AnsibleGroupCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroup
-        fields = ["id", "inventory", "name", "description", "is_special", "status"]
-
-
-class AnsibleGroupUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.AnsibleGroup
-        fields = ["id", "inventory", "name", "description", "is_special", "status"]
-
-
-class AnsibleHostSerializer(serializers.ModelSerializer):
-    groups = AnsibleGroupSerializer(many=True, read_only=True)
-    host = ResourceRelatedField(read_only=True)
-    content_type = serializers.PrimaryKeyRelatedField(
-        queryset=ContentType.objects.all(), write_only=True
-    )
-    object_id = serializers.UUIDField(write_only=True)
-
-    class Meta:
-        model = models.AnsibleHost
-        fields = [
-            "id",
-            "groups",
-            "host",
-            "content_type",
-            "object_id",
-            "metadata",
-            "ansible_host",
-            "ansible_port",
-            "ansible_user",
-            "ansible_ssh_private_key_file",
-            "created_at",
-            "updated_at",
-        ]
-
-
-class AnsibleHostCreateSerializer(serializers.ModelSerializer):
-    groups = serializers.PrimaryKeyRelatedField(
-        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
-    )
-
-    class Meta:
-        model = models.AnsibleHost
-        fields = [
-            "id",
-            "inventory",
-            "groups",
-            "content_type",
-            "object_id",
-            "ansible_host",
-            "ansible_port",
-            "ansible_user",
-            "ansible_ssh_private_key_file",
-            "metadata",
-        ]
-
-    def create(self, validated_data):
-        groups = validated_data.pop("groups", [])
-        host = models.AnsibleHost.objects.create(**validated_data)
-        if groups:
-            host.groups.set(groups)
-        return host
-
-
-class AnsibleHostUpdateSerializer(serializers.ModelSerializer):
-    groups = serializers.PrimaryKeyRelatedField(
-        queryset=models.AnsibleGroup.objects.all(), many=True, required=False
-    )
-
-    class Meta:
-        model = models.AnsibleHost
-        fields = [
-            "inventory",
-            "groups",
-            "ansible_host",
-            "ansible_port",
-            "ansible_user",
-            "ansible_ssh_private_key_file",
-            "metadata",
-        ]
-
-    def update(self, instance, validated_data):
-        groups = validated_data.pop("groups", None)
-
-        # Update other fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        # Update groups if provided
-        if groups is not None:
-            instance.groups.set(groups)
-
-        return instance
+        model = Group
+        fields = ["id", "name"]

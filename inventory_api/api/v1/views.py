@@ -21,19 +21,403 @@ from .serializers import CustomUserSerializer
 
 
 # ------------------------------------------------------------------------------
-# User ViewSets
+# Ansible ViewSets (ordered per __all__)
 # ------------------------------------------------------------------------------
-class CustomUserViewSet(viewsets.ModelViewSet):
-    queryset = models.CustomUser.objects.all().order_by("id")
-    serializer_class = CustomUserSerializer
+class AnsibleGroupViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroup.objects.all()
+    serializer_class = serializers.AnsibleGroupSerializer
+    ordering = ["name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleGroupCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleGroupUpdateSerializer
+        return serializers.AnsibleGroupSerializer
+
+    # @action(detail=True, methods=["get"])
+    # def variables(self, request, pk=None):
+    #     """Get all variables for a group including inherited ones"""
+    #     group = self.get_object()
+    #     return Response(group.all_variables)
+
+    # @action(detail=True, methods=["get"])
+    # def hosts(self, request, pk=None):
+    #     """Get all hosts in a group including child groups"""
+    #     group = self.get_object()
+    #     hosts = group.all_hosts
+    #     return Response(
+    #         [
+    #             {
+    #                 "id": str(host.id),
+    #                 "name": getattr(host, "name", str(host)),
+    #                 "type": host._meta.model_name,
+    #             }
+    #             for host in hosts
+    #         ]
+    #     )
+
+
+class AnsibleGroupRelationshipViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroupRelationship.objects.all()
+    serializer_class = serializers.AnsibleGroupRelationshipSerializer
+    ordering = ["parent_group__name", "child_group__name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleGroupRelationshipCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleGroupRelationshipUpdateSerializer
+        return serializers.AnsibleGroupRelationshipSerializer
+
+
+class AnsibleGroupVariableViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleGroupVariable.objects.all()
+    serializer_class = serializers.AnsibleGroupVariableSerializer
+    ordering = ["name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleGroupVariableCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleGroupVariableUpdateSerializer
+        return serializers.AnsibleGroupVariableSerializer
+
+
+class AnsibleHostViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleHost.objects.all()
+    serializer_class = serializers.AnsibleHostSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleHostCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleHostUpdateSerializer
+        return serializers.AnsibleHostSerializer
+
+
+class AnsibleHostVariableViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleHostVariable.objects.all()
+    serializer_class = serializers.AnsibleHostVariableSerializer
+    ordering = ["ansible_host"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleHostVariableCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleHostVariableUpdateSerializer
+        return serializers.AnsibleHostVariableSerializer
+
+
+class AnsibleInventoryViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventory.objects.all()
+    serializer_class = serializers.AnsibleInventorySerializer
+    ordering = ["name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryUpdateSerializer
+        return serializers.AnsibleInventorySerializer
+
+    # @action(detail=True, methods=["get"])
+    # def merged_variables(self, request, pk=None) -> Response:
+    #     """Get merged variables for this inventory"""
+    #     inventory = self.get_object()
+    #     group_id = request.query_params.get("group_id")
+    #     host_id = request.query_params.get("host_id")
+
+    #     # Get merged variables
+    #     merged_vars = {}
+
+    #     # Inventory-level variables
+    #     for var in inventory.variables.all():
+    #         merged_vars[var.key] = var.get_typed_value()
+
+    #     # Associated variable sets
+    #     associated_sets = inventory.associated_variable_sets.filter(
+    #         enabled=True, variable_set__status="active"
+    #     ).order_by("load_priority", "variable_set__priority")
+
+    #     for association in associated_sets:
+    #         set_vars = association.variable_set.get_parsed_content()
+    #         merged_vars.update(set_vars)
+
+    #     # Group variables if specified
+    #     if group_id:
+    #         try:
+    #             group = models.AnsibleGroup.objects.get(id=group_id)
+    #             for var in group.variables.all():
+    #                 merged_vars[var.key] = var.get_typed_value()
+    #         except models.AnsibleGroup.DoesNotExist:
+    #             pass
+
+    #     # Host variables if specified
+    #     if host_id:
+    #         try:
+    #             host = models.AnsibleHost.objects.get(id=host_id)
+    #             for var in host.structured_variables.all():
+    #                 merged_vars[var.key] = var.get_typed_value()
+    #         except models.AnsibleHost.DoesNotExist:
+    #             pass
+
+    #     return Response(merged_vars)
+
+
+class AnsibleInventoryTemplateViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryTemplate.objects.all()
+    serializer_class = serializers.AnsibleInventoryTemplateSerializer
+    ordering = ["name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryTemplateCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryTemplateUpdateSerializer
+        return serializers.AnsibleInventoryTemplateSerializer
+
+    # @action(detail=True, methods=["post"])
+    # def render_template(self, request, pk=None) -> Response:
+    #     """Render template with provided context"""
+    #     template = self.get_object()
+    #     context = request.data.get("context", {})
+
+    #     try:
+    #         # Try to import jinja2, but don't fail if not available
+    #         try:
+    #             from jinja2 import Template
+
+    #             jinja_template = Template(template.template_content)
+    #             rendered_content = jinja_template.render(**context)
+    #             return Response({"rendered_content": rendered_content})
+    #         except ImportError:
+    #             return Response({"error": "jinja2 not installed"}, status=400)
+    #     except Exception as e:
+    #         return Response({"error": str(e)}, status=400)
+
+
+class AnsibleInventoryVariableSetAssociationViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleInventoryVariableSetAssociation.objects.all()
+    serializer_class = serializers.AnsibleInventoryVariableSetAssociationSerializer
+    ordering = ["ansible_inventory__name", "load_priority"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleInventoryVariableSetAssociationCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleInventoryVariableSetAssociationUpdateSerializer
+        return serializers.AnsibleInventoryVariableSetAssociationSerializer
+
+
+class AnsibleVariableSetViewSet(viewsets.ModelViewSet):
+    queryset = models.AnsibleVariableSet.objects.all()
+    serializer_class = serializers.AnsibleVariableSetSerializer
+    ordering = ["priority", "name"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.AnsibleVariableSetCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.AnsibleVariableSetUpdateSerializer
+        return serializers.AnsibleVariableSetSerializer
+
+    # @action(detail=False, methods=["get"])
+    # def by_tags(self, request) -> Response:
+    #     """Get variable sets filtered by tags"""
+    #     tags = request.query_params.getlist("tags")
+    #     if tags:
+    #         # Use AND logic: all specified tags must be present
+    #         queryset = self.queryset.filter(status="active")
+    #         for tag in tags:
+    #             queryset = queryset.filter(tags__contains=tag)
+    #     else:
+    #         queryset = self.queryset.filter(status="active")
+
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+
+    # @action(detail=True, methods=["post"])
+    # def validate_content(self, request, pk=None) -> Response:
+    #     """Validate variable set content"""
+    #     variable_set = self.get_object()
+    #     is_valid = variable_set.validate_content()
+    #     return Response({"valid": is_valid})
 
 
 # ------------------------------------------------------------------------------
-# Infrastructure ViewSets
+# Baremetal ViewSets (ordered per __all__)
+# ------------------------------------------------------------------------------
+class BaremetalViewSet(viewsets.ModelViewSet):
+    queryset = models.Baremetal.objects.all()
+    serializer_class = serializers.BaremetalSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalUpdateSerializer
+        return serializers.BaremetalSerializer
+
+
+class BaremetalGroupViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalGroup.objects.all()
+    serializer_class = serializers.BaremetalGroupSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalGroupCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalGroupUpdateSerializer
+        return serializers.BaremetalGroupSerializer
+
+
+class BaremetalGroupTenantQuotaViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalGroupTenantQuota.objects.all()
+    serializer_class = serializers.BaremetalGroupTenantQuotaSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalGroupTenantQuotaCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalGroupTenantQuotaUpdateSerializer
+        return serializers.BaremetalGroupTenantQuotaSerializer
+
+
+class BaremetalModelViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalModel.objects.all()
+    serializer_class = serializers.BaremetalModelSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalModelCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalModelUpdateSerializer
+        return serializers.BaremetalModelSerializer
+
+
+class BaremetalModelGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.BaremetalModelGPU.objects.all()
+    serializer_class = serializers.BaremetalModelGPUSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BaremetalModelGPUCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BaremetalModelGPUUpdateSerializer
+        return serializers.BaremetalModelGPUSerializer
+
+
+class GPUAllocationViewSet(viewsets.ModelViewSet):
+    queryset = models.GPUAllocation.objects.all()
+    serializer_class = serializers.GPUAllocationSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.GPUAllocationCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.GPUAllocationUpdateSerializer
+        return serializers.GPUAllocationSerializer
+
+
+# ------------------------------------------------------------------------------
+# Common ViewSets (shared models)
+# ------------------------------------------------------------------------------
+class RegionViewSet(viewsets.ModelViewSet):
+    queryset = models.Region.objects.all()
+    serializer_class = serializers.RegionSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.RegionCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.RegionUpdateSerializer
+        return serializers.RegionSerializer
+
+
+class TenantViewSet(viewsets.ModelViewSet):
+    queryset = models.Tenant.objects.all()
+    serializer_class = serializers.TenantSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.TenantCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.TenantUpdateSerializer
+        return serializers.TenantSerializer
+
+
+class VendorViewSet(viewsets.ModelViewSet):
+    queryset = models.Vendor.objects.all()
+    serializer_class = serializers.VendorSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.VendorCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.VendorUpdateSerializer
+        return serializers.VendorSerializer
+
+
+# ------------------------------------------------------------------------------
+# GPU ViewSets (ordered per __all__)
+# ------------------------------------------------------------------------------
+class GPUProfileViewSet(viewsets.ModelViewSet):
+    queryset = models.GPUProfile.objects.all()
+    serializer_class = serializers.GPUProfileSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.GPUProfileCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.GPUProfileUpdateSerializer
+        return serializers.GPUProfileSerializer
+
+
+class PhysicalGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.PhysicalGPU.objects.all()
+    serializer_class = serializers.PhysicalGPUSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PhysicalGPUCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PhysicalGPUUpdateSerializer
+        return serializers.PhysicalGPUSerializer
+
+
+class PhysicalGPUModelViewSet(viewsets.ModelViewSet):
+    queryset = models.PhysicalGPUModel.objects.all()
+    serializer_class = serializers.PhysicalGPUModelSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.PhysicalGPUModelCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.PhysicalGPUModelUpdateSerializer
+        return serializers.PhysicalGPUModelSerializer
+
+
+# ------------------------------------------------------------------------------
+# Infrastructure ViewSets (ordered per __all__)
 # ------------------------------------------------------------------------------
 class AvailableGroupViewSet(viewsets.ModelViewSet):
-    queryset = models.AvailableGroup.objects.all().order_by("id")
+    queryset = models.AvailableGroup.objects.all()
     serializer_class = serializers.AvailableGroupSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -44,8 +428,9 @@ class AvailableGroupViewSet(viewsets.ModelViewSet):
 
 
 class FabViewSet(viewsets.ModelViewSet):
-    queryset = models.Fab.objects.all().order_by("id")
+    queryset = models.Fab.objects.all()
     serializer_class = serializers.FabSerializer
+    ordering = ["name"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -56,8 +441,9 @@ class FabViewSet(viewsets.ModelViewSet):
 
 
 class PhaseViewSet(viewsets.ModelViewSet):
-    queryset = models.Phase.objects.all().order_by("id")
+    queryset = models.Phase.objects.all()
     serializer_class = serializers.PhaseSerializer
+    ordering = ["fab__name", "name"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -68,8 +454,9 @@ class PhaseViewSet(viewsets.ModelViewSet):
 
 
 class DataCenterViewSet(viewsets.ModelViewSet):
-    queryset = models.DataCenter.objects.all().order_by("id")
+    queryset = models.DataCenter.objects.all()
     serializer_class = serializers.DataCenterSerializer
+    ordering = ["name"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -80,8 +467,9 @@ class DataCenterViewSet(viewsets.ModelViewSet):
 
 
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = models.Room.objects.all().order_by("id")
+    queryset = models.Room.objects.all()
     serializer_class = serializers.RoomSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -92,8 +480,9 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 class RackViewSet(viewsets.ModelViewSet):
-    queryset = models.Rack.objects.all().order_by("id")
+    queryset = models.Rack.objects.all()
     serializer_class = serializers.RackSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -104,8 +493,9 @@ class RackViewSet(viewsets.ModelViewSet):
 
 
 class UnitViewSet(viewsets.ModelViewSet):
-    queryset = models.Unit.objects.all().order_by("id")
+    queryset = models.Unit.objects.all()
     serializer_class = serializers.UnitSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -119,36 +509,64 @@ class UnitViewSet(viewsets.ModelViewSet):
 # Network ViewSets
 # ------------------------------------------------------------------------------
 class VLANViewSet(viewsets.ModelViewSet):
-    queryset = models.VLAN.objects.all().order_by("id")
+    queryset = models.VLAN.objects.all()
     serializer_class = serializers.VLANSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.VLANCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.VLANUpdateSerializer
+        return serializers.VLANSerializer
 
 
 class VRFViewSet(viewsets.ModelViewSet):
-    queryset = models.VRF.objects.all().order_by("id")
+    queryset = models.VRF.objects.all()
     serializer_class = serializers.VRFSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.VRFCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.VRFUpdateSerializer
+        return serializers.VRFSerializer
 
 
 class BGPConfigViewSet(viewsets.ModelViewSet):
-    queryset = models.BGPConfig.objects.all().order_by("id")
+    queryset = models.BGPConfig.objects.all()
     serializer_class = serializers.BGPConfigSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BGPConfigCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BGPConfigUpdateSerializer
+        return serializers.BGPConfigSerializer
 
 
 class NetworkInterfaceViewSet(viewsets.ModelViewSet):
-    queryset = models.NetworkInterface.objects.all().order_by("id")
+    queryset = models.NetworkInterface.objects.all()
     serializer_class = serializers.NetworkInterfaceSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.NetworkInterfaceCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.NetworkInterfaceUpdateSerializer
+        return serializers.NetworkInterfaceSerializer
 
 
 # ------------------------------------------------------------------------------
-# Purchase ViewSets
+# Purchase ViewSets (ordered per __all__)
 # ------------------------------------------------------------------------------
-class PurchaseRequisitionViewSet(viewsets.ModelViewSet):
-    queryset = models.PurchaseRequisition.objects.all().order_by("id")
-    serializer_class = serializers.PurchaseRequisitionSerializer
-
-
 class PurchaseOrderViewSet(viewsets.ModelViewSet):
-    queryset = models.PurchaseOrder.objects.all().order_by("id")
+    queryset = models.PurchaseOrder.objects.all()
     serializer_class = serializers.PurchaseOrderSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -158,246 +576,26 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
         return serializers.PurchaseOrderSerializer
 
 
-# ------------------------------------------------------------------------------
-# Baremetal ViewSets
-# ------------------------------------------------------------------------------
-class ManufacturerViewSet(viewsets.ModelViewSet):
-    queryset = models.Manufacturer.objects.all().order_by("id")
-    serializer_class = serializers.ManufacturerSerializer
-
-
-class SupplierViewSet(viewsets.ModelViewSet):
-    queryset = models.Supplier.objects.all().order_by("id")
-    serializer_class = serializers.SupplierSerializer
-
-
-class BaremetalModelViewSet(viewsets.ModelViewSet):
-    queryset = models.BaremetalModel.objects.all().order_by("id")
-    serializer_class = serializers.BaremetalModelSerializer
+class PurchaseRequisitionViewSet(viewsets.ModelViewSet):
+    queryset = models.PurchaseRequisition.objects.all()
+    serializer_class = serializers.PurchaseRequisitionSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
-            return serializers.BaremetalModelCreateSerializer
+            return serializers.PurchaseRequisitionCreateSerializer
         elif self.action in ["update", "partial_update"]:
-            return serializers.BaremetalModelUpdateSerializer
-        return serializers.BaremetalModelSerializer
+            return serializers.PurchaseRequisitionUpdateSerializer
+        return serializers.PurchaseRequisitionSerializer
 
 
 # ------------------------------------------------------------------------------
-# Physical Infrastructure ViewSets
+# Scheduling ViewSets (ordered per __all__)
 # ------------------------------------------------------------------------------
-
-
-# Baremetal Group ViewSet
-class BaremetalGroupViewSet(viewsets.ModelViewSet):
-    queryset = models.BaremetalGroup.objects.all().order_by("id")
-    serializer_class = serializers.BaremetalGroupSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.BaremetalGroupCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.BaremetalGroupUpdateSerializer
-        return serializers.BaremetalGroupSerializer
-
-
-# Baremetal ViewSet
-class BaremetalViewSet(viewsets.ModelViewSet):
-    queryset = models.Baremetal.objects.all().order_by("id")
-    serializer_class = serializers.BaremetalSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.BaremetalCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.BaremetalUpdateSerializer
-        return serializers.BaremetalSerializer
-
-
-# Baremetal Group Tenant Quota ViewSet
-class BaremetalGroupTenantQuotaViewSet(viewsets.ModelViewSet):
-    queryset = models.BaremetalGroupTenantQuota.objects.all().order_by("id")
-    serializer_class = serializers.BaremetalGroupTenantQuotaSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.BaremetalGroupTenantQuotaCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.BaremetalGroupTenantQuotaUpdateSerializer
-        return serializers.BaremetalGroupTenantQuotaSerializer
-
-
-# Tenant ViewSet
-class TenantViewSet(viewsets.ModelViewSet):
-    queryset = models.Tenant.objects.all().order_by("id")
-    serializer_class = serializers.TenantSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.TenantCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.TenantUpdateSerializer
-        return serializers.TenantSerializer
-
-
-# Virtual Machine Specification ViewSet
-class VirtualMachineSpecificationViewSet(viewsets.ModelViewSet):
-    queryset = models.VirtualMachineSpecification.objects.all().order_by("id")
-    serializer_class = serializers.VirtualMachineSpecificationSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.VirtualMachineSpecificationCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.VirtualMachineSpecificationUpdateSerializer
-        return serializers.VirtualMachineSpecificationSerializer
-
-
-# K8s Cluster ViewSet
-class K8sClusterViewSet(viewsets.ModelViewSet):
-    queryset = models.K8sCluster.objects.all().order_by("id")
-    serializer_class = serializers.K8sClusterSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.K8sClusterCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.K8sClusterUpdateSerializer
-        return serializers.K8sClusterSerializer
-
-
-# K8s Cluster Plugin ViewSet
-class K8sClusterPluginViewSet(viewsets.ModelViewSet):
-    queryset = models.K8sClusterPlugin.objects.all().order_by("id")
-    serializer_class = serializers.K8sClusterPluginSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.K8sClusterPluginCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.K8sClusterPluginUpdateSerializer
-        return serializers.K8sClusterPluginSerializer
-
-
-# Bastion Cluster Association ViewSet
-class BastionClusterAssociationViewSet(viewsets.ModelViewSet):
-    queryset = models.BastionClusterAssociation.objects.all().order_by("id")
-    serializer_class = serializers.BastionClusterAssociationSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.BastionClusterAssociationCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.BastionClusterAssociationUpdateSerializer
-        return serializers.BastionClusterAssociationSerializer
-
-
-# K8s Cluster To Service Mesh ViewSet
-class K8sClusterToServiceMeshViewSet(viewsets.ModelViewSet):
-    queryset = models.K8sClusterToServiceMesh.objects.all().order_by("id")
-    serializer_class = serializers.K8sClusterToServiceMeshSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.K8sClusterToServiceMeshCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.K8sClusterToServiceMeshUpdateSerializer
-        return serializers.K8sClusterToServiceMeshSerializer
-
-
-# Service Mesh ViewSet
-class ServiceMeshViewSet(viewsets.ModelViewSet):
-    queryset = models.ServiceMesh.objects.all().order_by("id")
-    serializer_class = serializers.ServiceMeshSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.ServiceMeshCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.ServiceMeshUpdateSerializer
-        return serializers.ServiceMeshSerializer
-
-
-# ------------------------------------------------------------------------------
-# New Model ViewSets
-# ------------------------------------------------------------------------------
-
-
-# Region ViewSet
-class RegionViewSet(viewsets.ModelViewSet):
-    queryset = models.Region.objects.all().order_by("id")
-    serializer_class = serializers.RegionSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.RegionCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.RegionUpdateSerializer
-        return serializers.RegionSerializer
-
-
-# Physical GPU Model ViewSet
-class PhysicalGPUModelViewSet(viewsets.ModelViewSet):
-    queryset = models.PhysicalGPUModel.objects.all().order_by("id")
-    serializer_class = serializers.PhysicalGPUModelSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.PhysicalGPUModelCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.PhysicalGPUModelUpdateSerializer
-        return serializers.PhysicalGPUModelSerializer
-
-
-# Physical GPU ViewSet
-class PhysicalGPUViewSet(viewsets.ModelViewSet):
-    queryset = models.PhysicalGPU.objects.all().order_by("id")
-    serializer_class = serializers.PhysicalGPUSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.PhysicalGPUCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.PhysicalGPUUpdateSerializer
-        return serializers.PhysicalGPUSerializer
-
-
-# Baremetal Model GPU ViewSet
-class BaremetalModelGPUViewSet(viewsets.ModelViewSet):
-    queryset = models.BaremetalModelGPU.objects.all().order_by("id")
-    serializer_class = serializers.BaremetalModelGPUSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.BaremetalModelGPUCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.BaremetalModelGPUUpdateSerializer
-        return serializers.BaremetalModelGPUSerializer
-
-
-# Virtual Machine Specification GPU ViewSet
-class VirtualMachineSpecificationGPUViewSet(viewsets.ModelViewSet):
-    queryset = models.VirtualMachineSpecificationGPU.objects.all().order_by("id")
-    serializer_class = serializers.VirtualMachineSpecificationGPUSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.VirtualMachineSpecificationGPUCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.VirtualMachineSpecificationGPUUpdateSerializer
-        return serializers.VirtualMachineSpecificationGPUSerializer
-
-
-# Django Group ViewSet (using built-in Group model)
-class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all().order_by("id")
-    serializer_class = serializers.GroupSerializer
-
-
-# Scheduling Strategy ViewSet
 class SchedulingStrategyViewSet(viewsets.ModelViewSet):
-    queryset = models.SchedulingStrategy.objects.all().order_by("id")
+    queryset = models.SchedulingStrategy.objects.all()
     serializer_class = serializers.SchedulingStrategySerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -407,23 +605,159 @@ class SchedulingStrategyViewSet(viewsets.ModelViewSet):
         return serializers.SchedulingStrategySerializer
 
 
-# Scheduling Strategy Condition ViewSet
-class SchedulingStrategyConditionViewSet(viewsets.ModelViewSet):
-    queryset = models.SchedulingStrategyCondition.objects.all().order_by("id")
-    serializer_class = serializers.SchedulingStrategyConditionSerializer
+class SchedulingStrategyModelViewSet(viewsets.ModelViewSet):
+    queryset = models.SchedulingStrategyModel.objects.all()
+    serializer_class = serializers.SchedulingStrategyModelSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
-            return serializers.SchedulingStrategyConditionCreateSerializer
+            return serializers.SchedulingStrategyModelCreateSerializer
         elif self.action in ["update", "partial_update"]:
-            return serializers.SchedulingStrategyConditionUpdateSerializer
-        return serializers.SchedulingStrategyConditionSerializer
+            return serializers.SchedulingStrategyModelUpdateSerializer
+        return serializers.SchedulingStrategyModelSerializer
 
 
-# Virtual Machine ViewSet
+# ------------------------------------------------------------------------------
+# Users ViewSets (ordered per __all__)
+# ------------------------------------------------------------------------------
+class CustomGroupViewSet(viewsets.ModelViewSet):
+    queryset = models.CustomGroup.objects.all()
+    serializer_class = serializers.CustomGroupSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.CustomGroupCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.CustomGroupUpdateSerializer
+        return serializers.CustomGroupSerializer
+
+
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = models.CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.CustomUserCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.CustomUserUpdateSerializer
+        return serializers.CustomUserSerializer
+
+
+# ------------------------------------------------------------------------------
+# Virtual ViewSets (ordered per __all__)
+# ------------------------------------------------------------------------------
+class BastionClusterAssociationViewSet(viewsets.ModelViewSet):
+    queryset = models.BastionClusterAssociation.objects.all()
+    serializer_class = serializers.BastionClusterAssociationSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.BastionClusterAssociationCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.BastionClusterAssociationUpdateSerializer
+        return serializers.BastionClusterAssociationSerializer
+
+
+class ClusterTemplateViewSet(viewsets.ModelViewSet):
+    queryset = models.ClusterTemplate.objects.all()
+    serializer_class = serializers.ClusterTemplateSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.ClusterTemplateCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.ClusterTemplateUpdateSerializer
+        return serializers.ClusterTemplateSerializer
+
+
+class ClusterTemplateVirtualMachineViewSet(viewsets.ModelViewSet):
+    queryset = models.ClusterTemplateVirtualMachine.objects.all()
+    serializer_class = serializers.ClusterTemplateVirtualMachineSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.ClusterTemplateVirtualMachineCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.ClusterTemplateVirtualMachineUpdateSerializer
+        return serializers.ClusterTemplateVirtualMachineSerializer
+
+
+class K8sClusterViewSet(viewsets.ModelViewSet):
+    queryset = models.K8sCluster.objects.all()
+    serializer_class = serializers.K8sClusterSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.K8sClusterCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.K8sClusterUpdateSerializer
+        return serializers.K8sClusterSerializer
+
+
+class K8sClusterPluginViewSet(viewsets.ModelViewSet):
+    queryset = models.K8sClusterPlugin.objects.all()
+    serializer_class = serializers.K8sClusterPluginSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.K8sClusterPluginCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.K8sClusterPluginUpdateSerializer
+        return serializers.K8sClusterPluginSerializer
+
+
+class K8sClusterPluginAssociationViewSet(viewsets.ModelViewSet):
+    queryset = models.K8sClusterPluginAssociation.objects.all()
+    serializer_class = serializers.K8sClusterPluginAssociationSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.K8sClusterPluginAssociationCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.K8sClusterPluginAssociationUpdateSerializer
+        return serializers.K8sClusterPluginAssociationSerializer
+
+
+class K8sClusterToServiceMeshViewSet(viewsets.ModelViewSet):
+    queryset = models.K8sClusterToServiceMesh.objects.all()
+    serializer_class = serializers.K8sClusterToServiceMeshSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.K8sClusterToServiceMeshCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.K8sClusterToServiceMeshUpdateSerializer
+        return serializers.K8sClusterToServiceMeshSerializer
+
+
+class ServiceMeshViewSet(viewsets.ModelViewSet):
+    queryset = models.ServiceMesh.objects.all()
+    serializer_class = serializers.ServiceMeshSerializer
+    ordering = ["id"]
+
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        if self.action == "create":
+            return serializers.ServiceMeshCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return serializers.ServiceMeshUpdateSerializer
+        return serializers.ServiceMeshSerializer
+
+
 class VirtualMachineViewSet(viewsets.ModelViewSet):
-    queryset = models.VirtualMachine.objects.all().order_by("id")
+    queryset = models.VirtualMachine.objects.all()
     serializer_class = serializers.VirtualMachineSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
@@ -433,251 +767,43 @@ class VirtualMachineViewSet(viewsets.ModelViewSet):
         return serializers.VirtualMachineSerializer
 
 
-# ------------------------------------------------------------------------------
-# Ansible Inventory ViewSets
-# ------------------------------------------------------------------------------
-class AnsibleInventoryViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleInventory.objects.all().order_by("name")
-    serializer_class = serializers.AnsibleInventorySerializer
+class VirtualMachineRoleViewSet(viewsets.ModelViewSet):
+    queryset = models.VirtualMachineRole.objects.all()
+    serializer_class = serializers.VirtualMachineRoleSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
-            return serializers.AnsibleInventoryCreateSerializer
+            return serializers.VirtualMachineRoleCreateSerializer
         elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleInventoryUpdateSerializer
-        return serializers.AnsibleInventorySerializer
-
-    @action(detail=True, methods=["get"])
-    def merged_variables(self, request, pk=None) -> Response:
-        """Get merged variables for this inventory"""
-        inventory = self.get_object()
-        group_id = request.query_params.get("group_id")
-        host_id = request.query_params.get("host_id")
-
-        # Get merged variables
-        merged_vars = {}
-
-        # Inventory-level variables
-        for var in inventory.variables.all():
-            merged_vars[var.key] = var.get_typed_value()
-
-        # Associated variable sets
-        associated_sets = inventory.associated_variable_sets.filter(
-            enabled=True, variable_set__status="active"
-        ).order_by("load_priority", "variable_set__priority")
-
-        for association in associated_sets:
-            set_vars = association.variable_set.get_parsed_content()
-            merged_vars.update(set_vars)
-
-        # Group variables if specified
-        if group_id:
-            try:
-                group = models.AnsibleGroup.objects.get(id=group_id)
-                for var in group.variables.all():
-                    merged_vars[var.key] = var.get_typed_value()
-            except models.AnsibleGroup.DoesNotExist:
-                pass
-
-        # Host variables if specified
-        if host_id:
-            try:
-                host = models.AnsibleHost.objects.get(id=host_id)
-                for var in host.structured_variables.all():
-                    merged_vars[var.key] = var.get_typed_value()
-            except models.AnsibleHost.DoesNotExist:
-                pass
-
-        return Response(merged_vars)
+            return serializers.VirtualMachineRoleUpdateSerializer
+        return serializers.VirtualMachineRoleSerializer
 
 
-class AnsibleInventoryVariableViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleInventoryVariable.objects.all().order_by("inventory__name", "key")
-    serializer_class = serializers.AnsibleInventoryVariableSerializer
+class VirtualMachineSpecificationViewSet(viewsets.ModelViewSet):
+    queryset = models.VirtualMachineSpecification.objects.all()
+    serializer_class = serializers.VirtualMachineSpecificationSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
-            return serializers.AnsibleInventoryVariableCreateSerializer
+            return serializers.VirtualMachineSpecificationCreateSerializer
         elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleInventoryVariableUpdateSerializer
-        return serializers.AnsibleInventoryVariableSerializer
+            return serializers.VirtualMachineSpecificationUpdateSerializer
+        return serializers.VirtualMachineSpecificationSerializer
 
 
-class AnsibleVariableSetViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleVariableSet.objects.all().order_by("priority", "name")
-    serializer_class = serializers.AnsibleVariableSetSerializer
+class VirtualMachineSpecificationRequiredGPUViewSet(viewsets.ModelViewSet):
+    queryset = models.VirtualMachineSpecificationRequiredGPU.objects.all()
+    serializer_class = serializers.VirtualMachineSpecificationRequiredGPUSerializer
+    ordering = ["id"]
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action == "create":
-            return serializers.AnsibleVariableSetCreateSerializer
+            return serializers.VirtualMachineSpecificationRequiredGPUCreateSerializer
         elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleVariableSetUpdateSerializer
-        return serializers.AnsibleVariableSetSerializer
-
-    @action(detail=False, methods=["get"])
-    def by_tags(self, request) -> Response:
-        """Get variable sets filtered by tags"""
-        tags = request.query_params.getlist("tags")
-        if tags:
-            # Use AND logic: all specified tags must be present
-            queryset = self.queryset.filter(status="active")
-            for tag in tags:
-                queryset = queryset.filter(tags__contains=tag)
-        else:
-            queryset = self.queryset.filter(status="active")
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["post"])
-    def validate_content(self, request, pk=None) -> Response:
-        """Validate variable set content"""
-        variable_set = self.get_object()
-        is_valid = variable_set.validate_content()
-        return Response({"valid": is_valid})
-
-
-class AnsibleInventoryVariableSetAssociationViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleInventoryVariableSetAssociation.objects.all().order_by(
-        "inventory__name", "load_priority"
-    )
-    serializer_class = serializers.AnsibleInventoryVariableSetAssociationSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleInventoryVariableSetAssociationCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleInventoryVariableSetAssociationUpdateSerializer
-        return serializers.AnsibleInventoryVariableSetAssociationSerializer
-
-
-class AnsibleHostVariableViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleHostVariable.objects.all().order_by("host__id", "key")
-    serializer_class = serializers.AnsibleHostVariableSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleHostVariableCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleHostVariableUpdateSerializer
-        return serializers.AnsibleHostVariableSerializer
-
-
-class AnsibleInventoryPluginViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleInventoryPlugin.objects.all().order_by(
-        "inventory__name", "priority", "name"
-    )
-    serializer_class = serializers.AnsibleInventoryPluginSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleInventoryPluginCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleInventoryPluginUpdateSerializer
-        return serializers.AnsibleInventoryPluginSerializer
-
-
-class AnsibleInventoryTemplateViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleInventoryTemplate.objects.all().order_by("name")
-    serializer_class = serializers.AnsibleInventoryTemplateSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleInventoryTemplateCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleInventoryTemplateUpdateSerializer
-        return serializers.AnsibleInventoryTemplateSerializer
-
-    @action(detail=True, methods=["post"])
-    def render_template(self, request, pk=None) -> Response:
-        """Render template with provided context"""
-        template = self.get_object()
-        context = request.data.get("context", {})
-
-        try:
-            # Try to import jinja2, but don't fail if not available
-            try:
-                from jinja2 import Template
-
-                jinja_template = Template(template.template_content)
-                rendered_content = jinja_template.render(**context)
-                return Response({"rendered_content": rendered_content})
-            except ImportError:
-                return Response({"error": "jinja2 not installed"}, status=400)
-        except Exception as e:
-            return Response({"error": str(e)}, status=400)
-
-
-class AnsibleGroupViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleGroup.objects.all().order_by("name")
-    serializer_class = serializers.AnsibleGroupSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleGroupCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleGroupUpdateSerializer
-        return serializers.AnsibleGroupSerializer
-
-    @action(detail=True, methods=["get"])
-    def variables(self, request, pk=None):
-        """Get all variables for a group including inherited ones"""
-        group = self.get_object()
-        return Response(group.all_variables)
-
-    @action(detail=True, methods=["get"])
-    def hosts(self, request, pk=None):
-        """Get all hosts in a group including child groups"""
-        group = self.get_object()
-        hosts = group.all_hosts
-        return Response(
-            [
-                {
-                    "id": str(host.id),
-                    "name": getattr(host, "name", str(host)),
-                    "type": host._meta.model_name,
-                }
-                for host in hosts
-            ]
-        )
-
-
-class AnsibleGroupVariableViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleGroupVariable.objects.all().order_by("group__name", "key")
-    serializer_class = serializers.AnsibleGroupVariableSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleGroupVariableCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleGroupVariableUpdateSerializer
-        return serializers.AnsibleGroupVariableSerializer
-
-
-class AnsibleGroupRelationshipViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleGroupRelationship.objects.all().order_by(
-        "parent_group__name", "child_group__name"
-    )
-    serializer_class = serializers.AnsibleGroupRelationshipSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleGroupRelationshipCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleGroupRelationshipUpdateSerializer
-        return serializers.AnsibleGroupRelationshipSerializer
-
-
-class AnsibleHostViewSet(viewsets.ModelViewSet):
-    queryset = models.AnsibleHost.objects.all().order_by("id")
-    serializer_class = serializers.AnsibleHostSerializer
-
-    def get_serializer_class(self) -> Type[BaseSerializer]:
-        if self.action == "create":
-            return serializers.AnsibleHostCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return serializers.AnsibleHostUpdateSerializer
-        return serializers.AnsibleHostSerializer
+            return serializers.VirtualMachineSpecificationRequiredGPUUpdateSerializer
+        return serializers.VirtualMachineSpecificationRequiredGPUSerializer
 
 
 # ------------------------------------------------------------------------------

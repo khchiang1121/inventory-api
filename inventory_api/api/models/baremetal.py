@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from django.core.exceptions import ValidationError
@@ -182,9 +184,13 @@ class BaremetalModel(AbstractBase):
 
     unit_size = models.IntegerField(null=True, blank=True, help_text="Unit size in units")
     type = models.CharField(
+        blank=True,
         max_length=32,
         help_text="Type of the baremetal model",
         choices=[("server", "Server"), ("storage", "Storage"), ("other", "Other")],
+    )
+    external_system_id = models.CharField(
+        max_length=255, blank=True, help_text="External system ID"
     )
 
     class Meta:
